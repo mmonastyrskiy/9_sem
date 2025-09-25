@@ -1,3 +1,4 @@
+
 from random import random,seed,choice
 from time import time
 from math import floor
@@ -8,23 +9,25 @@ def roulette(P: float):
     return random() < P # Реализация функции активации на основе ГПСЧ
 
 
+# Выключатели тестов
 
 
 # константы 
-SAMPLES = [   # Образцы предметов
-    {
-        "c":25, # стоимость
-        "w":50, # вес
-        "m":1   # минимальное количество
-     },
-     {
-        "c":5,
-        "w":2,
-        "m":5
-     },
+SAMPLES = [
+    {"c": 18, "w": 20, "m": 1},
+    {"c": 30, "w": 40, "m": 1},
+    {"c": 25, "w": 50, "m": 1},
+    {"c": 15, "w": 10, "m": 1},
+    {"c": 40, "w": 60, "m": 1},
+    {"c": 20, "w": 30, "m": 1},
+    {"c": 35, "w": 55, "m": 1},
+    {"c": 10, "w": 5, "m": 1},
+    {"c": 45, "w": 70, "m": 1},
+    {"c": 22, "w": 25, "m": 1}
 ]
+
 N = 50 # Количество особей
-S = 100 # вместимость рюкзака
+S = 1500 # вместимость рюкзака
 STOP = 100 # Максимальное количество итераций 
 P_fill = 0.5 # Вероятность вставить предмет в рюкзак
 P_del = 0.5 # Вероятность удалить предмет из рюкзака
@@ -33,19 +36,6 @@ P_mut = 0.05 # Вероятность мутации
 
 
 
-
-def qsort(arr):
-    """
-    Функция реализует рекурсивынй алгоритм быстрой сортировки
-    arr -  Массив особей
-    """
-    if len(arr) <= 1:
-        return arr
-    t = arr[len(arr)//2]
-    left = [x for x in arr if x > t]
-    mid = [x for x in arr if x == t]
-    right = [x for x in arr if x < t]
-    return qsort(left) + mid + qsort(right)
 
 class StabilizationNotReached(Exception):
     """
@@ -77,12 +67,16 @@ class Entity(): # Класс - особь
         self.Fill() # Запускаем алгоритм заполнения 
 
 
-    def __cmp__(self, other): # определяем операторы < > == для сущности на основе ценности рюзкака 
-        return self.Score() - other.Score()
+    def __lt__(self, other):
+        return self.Score() < other.Score()
+    def __eq__(self, other):
+        return self.Score() == other.Score()
+    def __gt__(self,other):
+        return self.Score() > other.Score()
     def __ge__(self,other): # определяем операторы >= для сущности на основе ценности рюзкака 
-        return self.Score >= other.Score()
+        return self.Score() >= other.Score()
     def __le__(self,other):# определяем операторы <= для сущности на основе ценности рюзкака 
-        return self.Score <= other.Score()
+        return self.Score() <= other.Score()
     ## Определение операторов нужно для реализации сортировки
 
     def Score(self):
@@ -97,10 +91,13 @@ class Entity(): # Класс - особь
         Проверка допустимости решения
         """
         global SAMPLES
-        for i in range(self.package):
-            if self.package[i] <= SAMPLES[i]['m']:
+        for i in range(len(self.package)):
+            if self.package[i] < SAMPLES[i]['m']:
                 return False # если один из элементов рюкзака меньше минимального
-        return self.FreeSpace() >=0 # Вес рюкзака не превышает S
+            if self.S < 0: # Вес рюкзака не превышает S
+
+                return  False
+        return True
     
     def FreeSpace(self):
         return self.S # Текущий свободный вес
@@ -118,7 +115,7 @@ class Entity(): # Класс - особь
                 if roulette(P_fill) and self.S >= SAMPLES[i]["w"]: # Если объект нужно положить и он помещается
                     self.package[i]+=1 #Увеличиваем кол-во
                     self.S -= SAMPLES[i]["w"] # Пересчитываем вес
-                    print(f"[{self.gid}][LOAD] Object {i} is loaded into entity {self.eid}") # Выводим запись в консоль
+                    print(f"[{self.gid}][LOAD] Object {i} is loaded into entity {self.eid} currennt load = {self.package}") # Выводим запись в консоль
     def Mutate(self):
         """
         Функция мутации 
@@ -147,19 +144,34 @@ class Entity(): # Класс - особь
         """
         global P_born
         global SAMPLES
-        if not roulette(P_born): 
+        if not roulette(P_born):
+            #print(f"[{self.gid}][BORN]No baby =( ")
             return None # Если детей не будет, выходим из функции 
         
-        r = [self.package[i] if self.package[i]== parent.package[i] else SAMPLES[i]["m"] for i in range(self.package)] # Создаем наследованное решение, общие значения родителей сохраняем, в противном случае ставим минимум
+        r = [self.package[i] if self.package[i]== parent.package[i] else SAMPLES[i]["m"] for i in range(len(self.package))] # Создаем наследованное решение, общие значения родителей сохраняем, в противном случае ставим минимум
         child = Entity(package=r,eid=childid,gid=self.gid+1) # Создаем особь с созданным решением
         child.Fill() # Дозаполняем рюкзак
+        
         if not child._check(): # Если конечное решение недопустимое - выходим без ребенка
+            print(f"[{self.gid}][BORN] Invalid Child {self.package} {self.S}")
             return None
         print(f"[{self.gid}][BORN] Parents {self.eid} and {parent.eid} has born a child {child.eid} with package: {child.package}") # Выводим запись в консоль
         child.Mutate() # Пробуем мутировать ребенка 
         return child # Возвращаем результат
     
 
+def qsort(arr):
+    """
+    Функция реализует рекурсивынй алгоритм быстрой сортировки
+    arr -  Массив особей
+    """
+    if len(arr) <= 1:
+        return arr
+    t = arr[len(arr)//2]
+    left = [x for x in arr if x > t]
+    mid = [x for x in arr if x == t]
+    right = [x for x in arr if x < t]
+    return qsort(left) + mid + qsort(right)
 
 
 class GenerationFactory(): # Класс - Поколение
@@ -171,7 +183,7 @@ class GenerationFactory(): # Класс - Поколение
     def __init__(self):
         global N
         self.population = [] # Массив особей поколения 
-        self.eid = 0 # Текущий ID особи
+        self.eid = 0 # Текущий ID особ/и
         self.gid = 1 # Номер текущего поколения
         self.best = None # Текущее лучшее решение
         while len(self.population) < N: # Пока в поколении не хватает особей создаем новые
@@ -192,10 +204,11 @@ class GenerationFactory(): # Класс - Поколение
     
     def NewGen(self):
         """
-        Функция генерации нового поколения 
+        Функция генерации нового поколенiidия 
         """
         global STOP
         global N
+        print(f"Новое поколение {self.gid}")
         if self.gid > STOP: # Если номер поколения превышает максимум прерываемся с сообщением в консоль
             raise StabilizationNotReached("[END] Stabilization not reached stopping due to limitation of itterations ")
 
@@ -204,6 +217,7 @@ class GenerationFactory(): # Класс - Поколение
         while len(self.population) < N*2:
             p1 = choice(best)  # Случайный родитель из лучших
             p2 = choice(worst)  # случайный родитель из худших
+            print(f"Пытаемся родить: Выбранные родители {p1.eid}  {p2.eid} ")
             c = p1.HaveBaby(p2, self.eid)  # Пытаемся родить потомка
             if c is None:  # Если не родился перезапускаем цикл, ищем новых родителей
                 continue
@@ -219,25 +233,6 @@ class GenerationFactory(): # Класс - Поколение
             f"[{self.gid}][INFO] Generaton Created: Score: {best.Score()} Load: {best.package}")  # Выводим лучшую особь из поколения
         return best  # Возвращаем его из функции
 
-
-        """ best,worst = self.SplitPopulation() # Разбиваем текущее поколение на лучших и худших 
-        new_gen = [] # Вектор нового поколения 
-        new_gen += best # Добавляем лучших из предыдущего поколения 
-        while len(new_gen) < N: # Пока поколение не заполнено
-            p1 = choice(best) # Случайный родитель из лучших
-            p2 = choice(worst) # случайный родитель из худших
-            c = p1.HaveBaby(p2,self.eid) # Пытаемся родить потомка
-            if c is None: # Если не родился перезапускаем цикл, ищем новых родителей
-                continue
-            self.eid +=1 # В противном случае увеличиваем текущий индекс ребенка
-            new_gen.append(c) # Записываем ребенка в новое поколение
-        self.gid+=1 # По завершении генерации увеличиваем номер поколения 
-        new_gen = qsort(new_gen) # сортируем результат
-        self.population = new_gen # делаем новое поколение основным
-        best = self.GetGenBest() # получаем лучший результат
-        print(f"[{self.gid}][INFO] Generaton Created: Score: {best.Score()} Load: {best.package}") # Выводим лучшую особь из поколения
-        return best # Возвращаем его из функции """
-            
 def main():
     """
     Основная функция программы
