@@ -1,6 +1,6 @@
 
 from random import random,seed,choice
-from time import time
+from time import time,perf_counter
 from math import floor
 
 seed(time()) # инициализация ГПСЧ
@@ -33,7 +33,18 @@ P_fill = 0.5 # Вероятность вставить предмет в рюк�
 P_del = 0.5 # Вероятность удалить предмет из рюкзака
 P_born = 0.6 # Вероятность дать потомство
 P_mut = 0.05 # Вероятность мутации
+OPT_MAX = 4
 
+
+def timer(func):
+    def wrapper(*args, **kwargs):
+        start_time = perf_counter()
+        result = func(*args,**kwargs)
+        end_time = perf_counter()
+        exec_time = end_time - start_time
+        print(f"Function '{func.__name__}' executed in {exec_time:.4f} seconds.")
+        return result
+    return wrapper
 
 
 
@@ -115,7 +126,7 @@ class Entity(): # Класс - особь
                 if roulette(P_fill) and self.S >= SAMPLES[i]["w"]: # Если объект нужно положить и он помещается
                     self.package[i]+=1 #Увеличиваем кол-во
                     self.S -= SAMPLES[i]["w"] # Пересчитываем вес
-                    print(f"[{self.gid}][LOAD] Object {i} is loaded into entity {self.eid} currennt load = {self.package}") # Выводим запись в консоль
+                    #print(f"[{self.gid}][LOAD] Object {i} is loaded into entity {self.eid} currennt load = {self.package}") # Выводим запись в консоль
     def Mutate(self):
         """
         Функция мутации 
@@ -132,7 +143,7 @@ class Entity(): # Класс - особь
                         self.S += SAMPLES[i]['w'] # Пересчитываем пустой вес
                         StateChanged = True # Устанавливаем флаг изменения состояния 
         self.Fill() # Перезаполняем рюкзак
-        print(f"[{self.gid}][MUT] Mutation happed to {self.eid} new package: {self.package}") # Выводим запись в консоль
+        #print(f"[{self.gid}][MUT] Mutation happed to {self.eid} new package: {self.package}") # Выводим запись в консоль
 
 
 
@@ -153,9 +164,9 @@ class Entity(): # Класс - особь
         child.Fill() # Дозаполняем рюкзак
         
         if not child._check(): # Если конечное решение недопустимое - выходим без ребенка
-            print(f"[{self.gid}][BORN] Invalid Child {self.package} {self.S}")
+            #print(f"[{self.gid}][BORN] Invalid Child {self.package} {self.S}")
             return None
-        print(f"[{self.gid}][BORN] Parents {self.eid} and {parent.eid} has born a child {child.eid} with package: {child.package}") # Выводим запись в консоль
+        #print(f"[{self.gid}][BORN] Parents {self.eid} and {parent.eid} has born a child {child.eid} with package: {child.package}") # Выводим запись в консоль
         child.Mutate() # Пробуем мутировать ребенка 
         return child # Возвращаем результат
     
@@ -217,7 +228,7 @@ class GenerationFactory(): # Класс - Поколение
         while len(self.population) < N*2:
             p1 = choice(best)  # Случайный родитель из лучших
             p2 = choice(worst)  # случайный родитель из худших
-            print(f"Пытаемся родить: Выбранные родители {p1.eid}  {p2.eid} ")
+            #print(f"Пытаемся родить: Выбранные родители {p1.eid}  {p2.eid} ")
             c = p1.HaveBaby(p2, self.eid)  # Пытаемся родить потомка
             if c is None:  # Если не родился перезапускаем цикл, ищем новых родителей
                 continue
@@ -232,25 +243,34 @@ class GenerationFactory(): # Класс - Поколение
         print(
             f"[{self.gid}][INFO] Generaton Created: Score: {best.Score()} Load: {best.package}")  # Выводим лучшую особь из поколения
         return best  # Возвращаем его из функции
-
+@timer
 def main():
     """
     Основная функция программы
     """
     factory = GenerationFactory() # Создаем генератор поколений и первое поколение
+    old = factory.best # Записываем результат текущего поколения
+    global OPT_MAX
+    opt = 0
     while True: # Бесконечный цикл
-        old = factory.best # Записываем результат текущего поколения
         try:
             new = factory.NewGen() # Пытаемся создать новое поколение и записываем лучшего из него
         except StabilizationNotReached:
-            print(f"Best: {factory.best.Score()} With solution: {factory.best.package}") # Обрабатывсаем верхнюю границу количества поколений 
+            print(f"Best: {new.Score()} With solution: {new.package}") # Обрабатывсаем верхнюю границу количества поколений 
+            break
 
 
         if old >= new: # Если текущий не хуже нового прерываемся,стабилизация достигнута 
-            print(f"[{factory.gid}][END] Stabilization Reached") # Выводим запись в консоль
-            print(f"Best: {new.Score()} With solution: {new.package}")# Выводим полученное решение
-            break # выходим из программы
-        new = old # Если на этом поколении решения не нашлось, то делаем новое поколение текущим.
+            opt +=1
+            print(f"[STAB] current optimum {opt}")
+            if opt >= OPT_MAX:
+                print(f"[{factory.gid}][END] Stabilization Reached") # Выводим запись в консоль
+                print(f"Best: {old.Score()} With solution: {old.package}")# Выводим полученное решение
+                break # выходим из программы
+        else:
+            old = new # Если на этом поколении решения не нашлось, то делаем новое поколение текущим.
+            opt = 0
+            print(f"[STAB] current optimum reset {opt}")
 
 if __name__ == "__main__":
     main() # Точка входа в программу
