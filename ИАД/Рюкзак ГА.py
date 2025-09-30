@@ -13,6 +13,7 @@ def roulette(P: float):
 
 
 # константы 
+"""
 SAMPLES = [
     {"c": 18, "w": 20, "m": 1},
     {"c": 30, "w": 40, "m": 1},
@@ -25,15 +26,29 @@ SAMPLES = [
     {"c": 45, "w": 70, "m": 1},
     {"c": 22, "w": 25, "m": 1}
 ]
+"""
 
-N = 50 # Количество особей
-S = 1500 # вместимость рюкзака
-STOP = 100 # Максимальное количество итераций 
-P_fill = 0.5 # Вероятность вставить предмет в рюкзак
+SAMPLES = [
+    {"c": 5, "w": 10, "m": 1},
+    {"c": 4, "w": 15, "m": 1},
+    {"c": 3, "w": 20, "m": 1},
+    {"c": 5, "w": 25, "m": 1},
+    {"c": 5, "w": 20, "m": 2},
+    {"c": 2, "w": 10, "m": 1},
+    {"c": 20, "w": 5, "m": 2},
+    {"c": 1, "w": 25, "m": 1},
+    {"c": 3, "w": 10, "m": 1},
+    {"c": 2, "w": 10, "m": 1}
+]
+
+N = 10000 # Количество особей
+S = 250 # вместимость рюкзака
+STOP = 200 # Максимальное количество итераций 
+P_fill = 0.4 # Вероятность вставить предмет в рюкзак
 P_del = 0.5 # Вероятность удалить предмет из рюкзака
 P_born = 0.6 # Вероятность дать потомство
-P_mut = 0.05 # Вероятность мутации
-OPT_MAX = 4
+P_mut = 0.4 # Вероятность мутации
+OPT_MAX = 50
 
 
 def timer(func):
@@ -75,7 +90,16 @@ class Entity(): # Класс - особь
         else:
             self.package = [SAMPLES[i]["m"] for i in range(len(SAMPLES)) ] # Рюкзак изначально заполняется минимальным количеством объектов
         self.S = S - sum(SAMPLES[i]["w"] * self.package[i] for i in range(len(self.package))) # Пересчитываем нагрузку, перезаписываем свободное место в сущности
-        self.Fill() # Запускаем алгоритм заполнения 
+        self.Fill() # Запускаем алгоритм заполнения
+        if not self._check():
+            self.refill()
+
+        
+
+    def refill(self):
+        self.package = self.package = [SAMPLES[i]["m"] for i in range(len(SAMPLES)) ]
+        self.S = S - sum(SAMPLES[i]["w"] * self.package[i] for i in range(len(self.package)))
+        self.Fill()
 
 
     def __lt__(self, other):
@@ -106,8 +130,8 @@ class Entity(): # Класс - особь
             if self.package[i] < SAMPLES[i]['m']:
                 return False # если один из элементов рюкзака меньше минимального
             if self.S < 0: # Вес рюкзака не превышает S
+                return False
 
-                return  False
         return True
     
     def FreeSpace(self):
@@ -127,6 +151,8 @@ class Entity(): # Класс - особь
                     self.package[i]+=1 #Увеличиваем кол-во
                     self.S -= SAMPLES[i]["w"] # Пересчитываем вес
                     #print(f"[{self.gid}][LOAD] Object {i} is loaded into entity {self.eid} currennt load = {self.package}") # Выводим запись в консоль
+                    if not self._check():
+                        self.refill()
     def Mutate(self):
         """
         Функция мутации 
@@ -135,7 +161,8 @@ class Entity(): # Класс - особь
         global P_del
         global SAMPLES
         if roulette(P_mut): # Если нужно мутировать
-            StateChanged = False # Флаг для гарантии внесения изменений в рюкзак
+            StateChanged = False #Флаг для гарантии внесения изменений в рюкзак
+            old_package = self.package
             while not StateChanged: # Пока рюкзак не изменится 
                 for i in range(len(self.package)): # Ходим по рюкзаку
                     if roulette(P_del): # Пробуем вытащить каждый из элментов 
@@ -143,6 +170,8 @@ class Entity(): # Класс - особь
                         self.S += SAMPLES[i]['w'] # Пересчитываем пустой вес
                         StateChanged = True # Устанавливаем флаг изменения состояния 
         self.Fill() # Перезаполняем рюкзак
+        if not self._check():
+            self.package = old_package
         #print(f"[{self.gid}][MUT] Mutation happed to {self.eid} new package: {self.package}") # Выводим запись в консоль
 
 
