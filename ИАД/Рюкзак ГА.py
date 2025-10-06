@@ -1,11 +1,15 @@
 
+import functools
+import itertools
+import multiprocessing
 from random import random,seed,choice
 from time import time,perf_counter
 from math import floor
+from tqdm import tqdm
 
 seed(time()) # инициализация ГПСЧ
 
-
+"""
 # Данные задачи
 SAMPLES = [
     {"c": 5, "w": 10, "m": 1},
@@ -141,19 +145,11 @@ SAMPLES = [
     {'c': 65, 'w': 18, 'm': 0},
     {'c': 98, 'w': 31, 'm': 2}
 ]
+"""
 # константы 
-# N = 10
-N = 100 # Количество особей
-#S = 250 # вместимость рюкзака
-S = 3500
-STOP = 200 # Максимальное количество итераций 
-P_fill = 0.4 # Вероятность вставить предмет в рюкзак
-P_del = 0.5 # Вероятность удалить предмет из рюкзака
-P_born = 0.6 # Вероятность дать потомство
-P_mut = 0.4 # Вероятность мутации
-OPT_MAX = 50
-
+S = 250
 ENABLE_TEST_FLAG = 0 # Выключатель тестов
+ENABLE_PARAM_SEARCH = 1
 
 
 def timer(func):
@@ -246,7 +242,7 @@ class StabilizationNotReached(Exception):
 class Entity(): # Класс - особь
     package = [] # Решение для текущей особи
 
-    def __init__(self,package=[],eid=0,gid=0): # Конструктор класса
+    def __init__(self,genetation,package=[]): # Конструктор класса
         """
         Реализует два варианта создания сущностей
         с пустым рюкзаком - первое поколение
@@ -254,9 +250,10 @@ class Entity(): # Класс - особь
         """
         global SAMPLES
         global S
-        self.eid = eid # ID Сущности
-        self.gid =gid # Номер поколения
-        eid +=1
+        self.gen = genetation
+        self.eid = genetation.eid # ID Сущности
+        self.gid =genetation.eid # Номер поколения
+        genetation.eid +=1
         if package != []: # ветвление для разных вариантов создания сущности
             self.package = package
         else:
@@ -315,11 +312,11 @@ class Entity(): # Класс - особь
         """
         Функция заполнения рюкзака
         """
-        global P_fill
+
         global SAMPLES
         while self.HasSpace(): # Пока можем положить что-то еще в рюкзак
             for i in range(len(self.package)): # Итерируемся по рюкзаку 
-                if roulette(P_fill) and self.S >= SAMPLES[i]["w"]: # Если объект нужно положить и он помещается
+                if roulette(self.gen.P_fill) and self.S >= SAMPLES[i]["w"]: # Если объект нужно положить и он помещается
                     self.package[i]+=1 #Увеличиваем кол-во
                     self.S -= SAMPLES[i]["w"] # Пересчитываем вес
                     #print(f"[{self.gid}][LOAD] Object {i} is loaded into entity {self.eid} currennt load = {self.package}") # Выводим запись в консоль
@@ -329,15 +326,14 @@ class Entity(): # Класс - особь
         """
         Функция мутации 
         """
-        global P_mut
-        global P_del
+
         global SAMPLES
-        if roulette(P_mut): # Если нужно мутировать
+        if roulette(self.gen.P_mut): # Если нужно мутировать
             StateChanged = False #Флаг для гарантии внесения изменений в рюкзак
             old_package = self.package
             while not StateChanged: # Пока рюкзак не изменится 
                 for i in range(len(self.package)): # Ходим по рюкзаку
-                    if roulette(P_del): # Пробуем вытащить каждый из элментов 
+                    if roulette(self.gen.P_del): # Пробуем вытащить каждый из элментов 
                         self.package[i] -=1 # Если вытащился, уменьшаем кол-во элементов
                         self.S += SAMPLES[i]['w'] # Пересчитываем пустой вес
                         StateChanged = True # Устанавливаем флаг изменения состояния 
@@ -348,20 +344,19 @@ class Entity(): # Класс - особь
 
 
 
-    def HaveBaby(self,parent,childid):
+    def HaveBaby(self,parent):
         """
         Функция "Деторождения"
         parent - второй родитель
         childid - ID присваеваемый ребенку
         """
-        global P_born
         global SAMPLES
-        if not roulette(P_born):
+        if not roulette(self.gen.P_born):
             #print(f"[{self.gid}][BORN]No baby =( ")
             return None # Если детей не будет, выходим из функции 
         
         r = [self.package[i] if self.package[i]== parent.package[i] else SAMPLES[i]["m"] for i in range(len(self.package))] # Создаем наследованное решение, общие значения родителей сохраняем, в противном случае ставим минимум
-        child = Entity(package=r,eid=childid,gid=self.gid+1) # Создаем особь с созданным решением
+        child = Entity(self.gen,package=r) # Создаем особь с созданным решением
         child.Fill() # Дозаполняем рюкзак
         
         if not child._check(): # Если конечное решение недопустимое - выходим без ребенка
@@ -387,19 +382,39 @@ def qsort(arr):
 
 
 class GenerationFactory(): # Класс - Поколение
-
+    N = 100
+    STOP = 200 # Максимальное количество итераций 
+    P_fill = 0.4 # Вероятность вставить предмет в рюкзак
+    P_del = 0.5 # Вероятность удалить предмет из рюкзака
+    P_born = 0.6 # Вероятность дать потомство
+    P_mut = 0.4 # Вероятность мутации
+    OPT_MAX = 50 # Количество поколений без изменений до остановки алгоритма
+    ELITE_PERCENT = 0.2 # Процент элиты при делении поколений
+    DISABLE_GENERATION_PRINTER = 1
 
     def GetGenBest(self):
         return self.population[0] # Получаем лучшее решение в отсортированном массиве особей
     
-    def __init__(self):
-        global N
+    def __init__(self,N,STOP,P_fill,P_del,P_born,P_mut,OPT_MAX,ELITE_PERCENT):
+
+        self.N = N if N is not None else self.N
+        self.STOP = STOP if STOP is not None else self.STOP
+        self.P_fill = P_fill if P_fill is not None else self.P_fill
+        self.P_del = P_del if P_del is not None else self.P_del
+        self.P_born = P_born if P_born is not None else self.P_born
+        self.P_mut = P_mut if P_mut is not None else self.P_mut
+        self.OPT_MAX = OPT_MAX if OPT_MAX is not None else self.OPT_MAX
+        self.ELITE_PERCENT = ELITE_PERCENT if ELITE_PERCENT is not None else self.ELITE_PERCENT
+
+
+
+
         self.population = [] # Массив особей поколения 
         self.eid = 0 # Текущий ID особ/и
         self.gid = 1 # Номер текущего поколения
         self.best = None # Текущее лучшее решение
-        while len(self.population) < N: # Пока в поколении не хватает особей создаем новые
-            self.population.append(Entity(eid=self.eid,gid=self.gid))
+        while len(self.population) < self.N: # Пока в поколении не хватает особей создаем новые
+            self.population.append(Entity(self))
             self.eid +=1
         self.population = qsort(self.population) # Сортируем особей в поколении по убыванию конечной стоимости
         self.best = self.GetGenBest() # Получаем лучшее решение и сохраняем
@@ -408,8 +423,8 @@ class GenerationFactory(): # Класс - Поколение
 
     
     def SplitPopulation(self): # Разбиваем поколение в соотношении 20/80 с округлением в меньшую сторону
-        global N
-        p20 = floor(N*0.2) # вычисляем индекс разбиения
+
+        p20 = floor(self.N*self.ELITE_PERCENT) # вычисляем индекс разбиения
         best = self.population[:p20] # Первые 20%
         worst = self.population[p20:] # прочее
         return (best,worst)
@@ -418,32 +433,112 @@ class GenerationFactory(): # Класс - Поколение
         """
         Функция генерации нового поколенiidия 
         """
-        global STOP
-        global N
-        print(f"Новое поколение {self.gid}")
-        if self.gid > STOP: # Если номер поколения превышает максимум прерываемся с сообщением в консоль
+        if not self.DISABLE_GENERATION_PRINTER:
+            print(f"Новое поколение {self.gid}")
+        if self.gid > self.STOP: # Если номер поколения превышает максимум прерываемся с сообщением в консоль
             raise StabilizationNotReached("[END] Stabilization not reached stopping due to limitation of itterations ")
 
 
         best, worst = self.SplitPopulation()  # Разбиваем текущее поколение на лучших и худших
-        while len(self.population) < N*2:
+        while len(self.population) < self.N*2:
             p1 = choice(best)  # Случайный родитель из лучших
             p2 = choice(worst)  # случайный родитель из худших
             #print(f"Пытаемся родить: Выбранные родители {p1.eid}  {p2.eid} ")
-            c = p1.HaveBaby(p2, self.eid)  # Пытаемся родить потомка
+            c = p1.HaveBaby(p2)  # Пытаемся родить потомка
             if c is None:  # Если не родился перезапускаем цикл, ищем новых родителей
                 continue
             self.eid += 1  # В противном случае увеличиваем текущий индекс ребенка
             self.population.append(c)  # Записываем ребенка в новое поколение
         self.population = qsort(self.population)
-        new_gen = self.population[:N]
+        new_gen = self.population[:self.N]
         self.gid += 1  # По завершении генерации увеличиваем номер поколения
         new_gen = qsort(new_gen)  # сортируем результат
         self.population = new_gen  # делаем новое поколение основным
         best = self.GetGenBest()  # получаем лучший результат
-        print(
-            f"[{self.gid}][INFO] Generaton Created: Score: {best.Score()} Load: {best.package}")  # Выводим лучшую особь из поколения
+
+        if not self.DISABLE_GENERATION_PRINTER:
+            print(
+                f"[{self.gid}][INFO] Generaton Created: Score: {best.Score()} Load: {best.package}")  # Выводим лучшую особь из поколения
         return best  # Возвращаем его из функции
+
+"""
+def grid_search(params_grid,max_iterations_per_run,expected):
+    """
+"""
+    params_grid - словарь, содержащий диапазоны гиперпараметров для перебора
+    sample - задача
+    expected - ожидаемое значение решения
+    """
+"""
+    best_params = {}
+    best_score = float('+inf')  # Начальная оценка качества (чем меньше, тем лучше)
+
+    # Перебираем комбинации всех возможных значений гиперпараметров
+    keys, values = zip(*params_grid.items())
+    combinations = list(itertools.product(*values))
+
+    for combination in tqdm(combinations):
+        current_params = dict(zip(keys, combination))  # Текущие гиперпараметры
+        #print(f"Тестируем комбинацию: {current_params}")
+
+        # Создаем экземпляр класса GenerationFactory с текущими параметрами
+        gf = GenerationFactory(**current_params)
+
+        try:
+            for _ in range(max_iterations_per_run):
+                best_entity = gf.NewGen()  # Создание нового поколения
+                score = abs(best_entity.Score()-expected)  # Оценка лучшего решения
+                
+                # Проверяем, улучшилась ли лучшая оценка
+                if score < best_score:
+                    best_score = score
+                    best_params = current_params.copy()
+                    
+        except Exception as e:
+            print(f"Ошибка: {e}")
+            break
+
+    return best_params, best_score
+    """
+def run_one_test(current_params,expected,max_iter_test):
+    start_time = time()
+    gf = GenerationFactory(**current_params)
+    best_score = 10000000
+    try:
+        for _ in range(max_iter_test):
+            best_entity = gf.NewGen()
+            score = abs(best_entity.Score()-expected)
+            if score < best_score:
+                best_score = score
+                best_params = current_params
+    except Exception as e:
+        print(f"Ошибка: {e}")
+        return {'score': best_score, 'params': best_params}
+    
+    elapsed_time = time() - start_time
+    result = {'score': best_score, 'elapsed_time': elapsed_time, 'params': best_params}
+    return result
+
+def parallel_grid_search(params_grid,max_iter_test,expected, num_processes=None):
+    """
+    Параллельный поиск гиперпараметров.
+    :param params_grid: Словарь с сеткой гиперпараметров
+    :param num_processes: Число процессов (если None, используется значение равное числу ядер CPU)
+    """
+    # Генерируем все комбинации гиперпараметров
+    keys, values = zip(*params_grid.items())
+    combinations = list(itertools.product(*values))
+    param_combinations = [dict(zip(keys, combo)) for combo in combinations]
+    partial_func = functools.partial(run_one_test, expected=expected)
+    partial_func2 = functools.partial(partial_func,max_iter_test=max_iter_test)
+
+    with multiprocessing.Pool(processes=num_processes) as pool:
+        results = pool.map(partial_func2, param_combinations)
+
+    # Агрегируем результаты
+    best_result = sorted(results, key=lambda r: r['score'])[0]
+    return best_result
+
 @timer
 def main():
     """
@@ -451,7 +546,7 @@ def main():
     """
     factory = GenerationFactory() # Создаем генератор поколений и первое поколение
     old = factory.best # Записываем результат текущего поколения
-    global OPT_MAX
+    OPT_MAX = factory.OPT_MAX
     opt = 0
     while True: # Бесконечный цикл
         try:
@@ -478,6 +573,19 @@ if __name__ == "__main__":
         result,solution = knapsack_test(SAMPLES,S)
         print(f"Общая стоимость: {result}")
         print(f"Вектор решений: {solution}")
+    elif ENABLE_PARAM_SEARCH:
+        param_grid = {
+    'N': [100],
+    'STOP': [200],
+    'P_fill': [0.3, 0.4, 0.5],      # Вероятность добавления предмета
+    'P_del': [0.4, 0.5, 0.6],       # Вероятность удаления предмета
+    'P_born': [0.5, 0.6, 0.7],      # Вероятность появления потомства
+    'P_mut': [0.3, 0.4, 0.5],       # Вероятность мутации
+    'OPT_MAX': [50],
+    'ELITE_PERCENT': [0.1, 0.2, 0.3]   # Доля элитных особей
+}
+        #print(grid_search(param_grid,30,375))
+        print(parallel_grid_search(param_grid,30,375))
     else:
         main() # Точка входа в программу
 
