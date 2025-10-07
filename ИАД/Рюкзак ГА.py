@@ -8,6 +8,8 @@ from math import floor
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from concurrent.futures import ThreadPoolExecutor
+from time import sleep
 
 seed(time()) # инициализация ГПСЧ
 
@@ -44,114 +46,117 @@ SAMPLES = [
     {"c": 2, "w": 10, "m": 1}
 ]
 """
-
+# ОПТ 6380
 SAMPLES = [
-    {'c': 45, 'w': 12, 'm': 1},
-    {'c': 78, 'w': 23, 'm': 0},
-    {'c': 15, 'w': 5, 'm': 1},
-    {'c': 92, 'w': 34, 'm': 2},
-    {'c': 33, 'w': 8, 'm': 0},
-    {'c': 67, 'w': 19, 'm': 1},
-    {'c': 21, 'w': 7, 'm': 1},
-    {'c': 54, 'w': 15, 'm': 0},
-    {'c': 88, 'w': 28, 'm': 1},
-    {'c': 12, 'w': 3, 'm': 2},
-    {'c': 76, 'w': 22, 'm': 1},
-    {'c': 39, 'w': 11, 'm': 0},
-    {'c': 95, 'w': 31, 'm': 1},
-    {'c': 28, 'w': 9, 'm': 1},
-    {'c': 61, 'w': 17, 'm': 0},
-    {'c': 83, 'w': 25, 'm': 2},
-    {'c': 17, 'w': 6, 'm': 1},
-    {'c': 49, 'w': 14, 'm': 0},
-    {'c': 72, 'w': 21, 'm': 1},
-    {'c': 36, 'w': 10, 'm': 1},
-    {'c': 99, 'w': 32, 'm': 0},
-    {'c': 24, 'w': 8, 'm': 2},
-    {'c': 57, 'w': 16, 'm': 1},
-    {'c': 81, 'w': 24, 'm': 0},
-    {'c': 42, 'w': 13, 'm': 1},
-    {'c': 68, 'w': 20, 'm': 1},
-    {'c': 31, 'w': 9, 'm': 0},
-    {'c': 74, 'w': 22, 'm': 2},
-    {'c': 19, 'w': 7, 'm': 1},
-    {'c': 53, 'w': 15, 'm': 0},
-    {'c': 87, 'w': 26, 'm': 1},
-    {'c': 14, 'w': 4, 'm': 1},
-    {'c': 65, 'w': 18, 'm': 0},
-    {'c': 91, 'w': 29, 'm': 2},
-    {'c': 27, 'w': 8, 'm': 1},
-    {'c': 59, 'w': 16, 'm': 0},
-    {'c': 84, 'w': 25, 'm': 1},
-    {'c': 38, 'w': 11, 'm': 1},
-    {'c': 71, 'w': 20, 'm': 0},
-    {'c': 96, 'w': 30, 'm': 2},
-    {'c': 22, 'w': 7, 'm': 1},
-    {'c': 56, 'w': 15, 'm': 0},
-    {'c': 79, 'w': 23, 'm': 1},
-    {'c': 34, 'w': 10, 'm': 1},
-    {'c': 63, 'w': 17, 'm': 0},
-    {'c': 89, 'w': 27, 'm': 2},
-    {'c': 16, 'w': 5, 'm': 1},
-    {'c': 51, 'w': 14, 'm': 0},
-    {'c': 77, 'w': 22, 'm': 1},
-    {'c': 32, 'w': 9, 'm': 1},
-    {'c': 69, 'w': 19, 'm': 0},
-    {'c': 94, 'w': 29, 'm': 2},
-    {'c': 25, 'w': 8, 'm': 1},
-    {'c': 58, 'w': 16, 'm': 0},
-    {'c': 82, 'w': 24, 'm': 1},
-    {'c': 37, 'w': 11, 'm': 1},
-    {'c': 64, 'w': 18, 'm': 0},
-    {'c': 97, 'w': 30, 'm': 2},
-    {'c': 18, 'w': 6, 'm': 1},
-    {'c': 52, 'w': 14, 'm': 0},
-    {'c': 75, 'w': 21, 'm': 1},
-    {'c': 29, 'w': 9, 'm': 1},
-    {'c': 62, 'w': 17, 'm': 0},
-    {'c': 86, 'w': 26, 'm': 2},
-    {'c': 13, 'w': 4, 'm': 1},
-    {'c': 48, 'w': 13, 'm': 0},
-    {'c': 73, 'w': 21, 'm': 1},
-    {'c': 35, 'w': 10, 'm': 1},
-    {'c': 66, 'w': 18, 'm': 0},
-    {'c': 93, 'w': 28, 'm': 2},
-    {'c': 26, 'w': 8, 'm': 1},
-    {'c': 55, 'w': 15, 'm': 0},
-    {'c': 78, 'w': 23, 'm': 1},
-    {'c': 41, 'w': 12, 'm': 1},
-    {'c': 47, 'w': 13, 'm': 0},
-    {'c': 85, 'w': 25, 'm': 2},
-    {'c': 23, 'w': 7, 'm': 1},
-    {'c': 50, 'w': 14, 'm': 0},
-    {'c': 76, 'w': 22, 'm': 1},
-    {'c': 30, 'w': 9, 'm': 1},
-    {'c': 60, 'w': 16, 'm': 0},
-    {'c': 90, 'w': 27, 'm': 2},
-    {'c': 20, 'w': 6, 'm': 1},
-    {'c': 43, 'w': 12, 'm': 0},
-    {'c': 70, 'w': 20, 'm': 1},
-    {'c': 40, 'w': 11, 'm': 1},
-    {'c': 44, 'w': 12, 'm': 0},
-    {'c': 80, 'w': 23, 'm': 2},
-    {'c': 11, 'w': 3, 'm': 1},
-    {'c': 46, 'w': 13, 'm': 0},
-    {'c': 74, 'w': 21, 'm': 1},
-    {'c': 31, 'w': 9, 'm': 1},
-    {'c': 58, 'w': 16, 'm': 0},
-    {'c': 84, 'w': 24, 'm': 2},
-    {'c': 19, 'w': 6, 'm': 1},
-    {'c': 54, 'w': 15, 'm': 0},
-    {'c': 72, 'w': 20, 'm': 1},
-    {'c': 33, 'w': 10, 'm': 1},
-    {'c': 65, 'w': 18, 'm': 0},
-    {'c': 98, 'w': 31, 'm': 2}
+    {'c': 1, 'w': 100, 'm': 1},
+    {'c': 2, 'w': 100, 'm': 1},
+    {'c': 3, 'w': 100, 'm': 2},
+    {'c': 4, 'w': 100, 'm': 1},
+    {'c': 5, 'w': 100, 'm': 1},
+    {'c': 6, 'w': 100, 'm': 1},
+    {'c': 7, 'w': 100, 'm': 1},
+    {'c': 8, 'w': 100, 'm': 1},
+    {'c': 9, 'w': 100, 'm': 1},
+    {'c': 10, 'w': 100, 'm': 1},
+    {'c': 11, 'w': 100, 'm': 1},
+    {'c': 12, 'w': 100, 'm': 1},
+    {'c': 13, 'w': 100, 'm': 1},
+    {'c': 14, 'w': 100, 'm': 1},
+    {'c': 15, 'w': 100, 'm': 1},
+    {'c': 16, 'w': 100, 'm': 1},
+    {'c': 17, 'w': 100, 'm': 1},
+    {'c': 18, 'w': 100, 'm': 1},
+    {'c': 19, 'w': 100, 'm': 1},
+    {'c': 20, 'w': 100, 'm': 1},
+    {'c': 21, 'w': 100, 'm': 1},
+    {'c': 22, 'w': 100, 'm': 1},
+    {'c': 23, 'w': 100, 'm': 1},
+    {'c': 24, 'w': 100, 'm': 1},
+    {'c': 25, 'w': 100, 'm': 1},
+    {'c': 26, 'w': 100, 'm': 1},
+    {'c': 27, 'w': 100, 'm': 2},
+    {'c': 28, 'w': 100, 'm': 1},
+    {'c': 29, 'w': 100, 'm': 1},
+    {'c': 30, 'w': 100, 'm': 1},
+    {'c': 31, 'w': 100, 'm': 1},
+    {'c': 32, 'w': 100, 'm': 1},
+    {'c': 33, 'w': 100, 'm': 1},
+    {'c': 34, 'w': 100, 'm': 1},
+    {'c': 35, 'w': 100, 'm': 1},
+    {'c': 36, 'w': 100, 'm': 1},
+    {'c': 37, 'w': 100, 'm': 1},
+    {'c': 38, 'w': 100, 'm': 1},
+    {'c': 39, 'w': 100, 'm': 1},
+    {'c': 40, 'w': 100, 'm': 1},
+    {'c': 41, 'w': 100, 'm': 1},
+    {'c': 42, 'w': 100, 'm': 1},
+    {'c': 43, 'w': 100, 'm': 1},
+    {'c': 44, 'w': 100, 'm': 1},
+    {'c': 45, 'w': 100, 'm': 1},
+    {'c': 46, 'w': 100, 'm': 1},
+    {'c': 47, 'w': 100, 'm': 1},
+    {'c': 48, 'w': 100, 'm': 1},
+    {'c': 49, 'w': 100, 'm': 1},
+    {'c': 50, 'w': 100, 'm': 1},
+    {'c': 51, 'w': 100, 'm': 1},
+    {'c': 52, 'w': 100, 'm': 1},
+    {'c': 53, 'w': 100, 'm': 1},
+    {'c': 54, 'w': 100, 'm': 1},
+    {'c': 55, 'w': 100, 'm': 1},
+    {'c': 56, 'w': 100, 'm': 1},
+    {'c': 57, 'w': 100, 'm': 1},
+    {'c': 58, 'w': 100, 'm': 1},
+    {'c': 59, 'w': 100, 'm': 1},
+    {'c': 60, 'w': 100, 'm': 1},
+    {'c': 61, 'w': 100, 'm': 1},
+    {'c': 62, 'w': 100, 'm': 1},
+    {'c': 63, 'w': 100, 'm': 1},
+    {'c': 64, 'w': 100, 'm': 1},
+    {'c': 65, 'w': 100, 'm': 1},
+    {'c': 66, 'w': 100, 'm': 1},
+    {'c': 67, 'w': 100, 'm': 1},
+    {'c': 68, 'w': 100, 'm': 1},
+    {'c': 69, 'w': 100, 'm': 1},
+    {'c': 70, 'w': 100, 'm': 1},
+    {'c': 71, 'w': 100, 'm': 1},
+    {'c': 72, 'w': 100, 'm': 1},
+    {'c': 73, 'w': 100, 'm': 1},
+    {'c': 74, 'w': 100, 'm': 1},
+    {'c': 75, 'w': 100, 'm': 1},
+    {'c': 76, 'w': 100, 'm': 1},
+    {'c': 77, 'w': 100, 'm': 1},
+    {'c': 78, 'w': 100, 'm': 1},
+    {'c': 79, 'w': 100, 'm': 1},
+    {'c': 80, 'w': 100, 'm': 1},
+    {'c': 81, 'w': 100, 'm': 1},
+    {'c': 82, 'w': 100, 'm': 1},
+    {'c': 83, 'w': 100, 'm': 1},
+    {'c': 84, 'w': 100, 'm': 1},
+    {'c': 85, 'w': 100, 'm': 1},
+    {'c': 86, 'w': 100, 'm': 1},
+    {'c': 87, 'w': 100, 'm': 1},
+    {'c': 88, 'w': 100, 'm': 1},
+    {'c': 89, 'w': 100, 'm': 1},
+    {'c': 90, 'w': 100, 'm': 1},
+    {'c': 91, 'w': 100, 'm': 1},
+    {'c': 92, 'w': 100, 'm': 1},
+    {'c': 93, 'w': 100, 'm': 1},
+    {'c': 94, 'w': 100, 'm': 1},
+    {'c': 95, 'w': 100, 'm': 1},
+    {'c': 96, 'w': 100, 'm': 1},
+    {'c': 97, 'w': 100, 'm': 1},
+    {'c': 98, 'w': 100, 'm': 1},
+    {'c': 99, 'w': 100, 'm': 1},
+    {'c': 200, 'w': 50, 'm': 1}
 ]
 """
 # константы 
 S = 250
+# S = 10500
 ENABLE_TEST_FLAG = 0 # Выключатель тестов
-ENABLE_PARAM_SEARCH = 1
+ENABLE_PARAM_SEARCH = 0
+ENABLE_MULTIPROCESSING = 1
+
 
 
 def timer(func):
@@ -230,6 +235,72 @@ def knapsack_test(SAMPLES, capacity):
             solution_vector[item["index"]] += additional_count
     
     return total_cost, solution_vector
+
+
+import multiprocessing
+
+class ProcManager():
+    PROC_COUNT = 30           # Количество процессов по умолчанию
+    processes = []            # Список запущенных процессов
+    storage = []              # Хранение результатов выполнения процессов
+    lock = multiprocessing.Lock()   # Блокировка для синхронизации доступа к общим ресурсам
+
+    def collect(self):
+        """
+        Метод собирает результаты выполнения процессов из очереди results.
+        
+        :return: bool - True, если результат успешно собран, иначе False
+        """
+        try:
+            # Попытка извлечь результат из очереди результатов
+            result = self.results.get(block=False)
+            # Добавляем полученный результат в хранилище
+            self.storage.append(result)
+            return True
+        except Exception:
+            # Если очередь пуста или произошла ошибка
+            return False
+
+    def start(self):
+        """
+        Запускает процессы обработки.
+        Создает необходимое количество процессов и запускает их выполнение.
+        После запуска ожидает завершения всех процессов и сбор результата.
+        """
+        self.queue = multiprocessing.Queue()      # Очередь заданий
+        self.results = multiprocessing.Queue()    # Очередь результатов
+        
+        # Устанавливаем количество процессов равное количеству ядер процессора,
+        # если оно не задано явно
+        if not self.PROC_COUNT:
+            self.PROC_COUNT = multiprocessing.cpu_count()
+        
+        # Создание и запуск необходимого количества процессов
+        for _ in range(self.PROC_COUNT):
+            process = multiprocessing.Process(
+                target=multiprocessing_single_run,  # Функция, выполняемая процессом
+                args=(self.queue, self.results, self.lock))  # Аргументы для процесса
+            self.processes.append(process)
+            process.start()
+        
+        # Ожидаем завершения всех процессов и собираем результаты
+        while len(self.storage) != len(self.processes):
+            for i in range(len(self.processes)):
+                if self.processes[i] is None:
+                    continue
+                # Если удалось собрать результат, помечаем процесс как завершённый
+                if self.collect():
+                    self.processes[i] = None
+    
+    def get_best(self):
+        """
+        Возвращает лучший результат среди полученных.
+        Сортирует список хранимых результатов и выводит наилучший вариант.
+        """
+        # Сортируем результаты по первому элементу каждого кортежа
+        best = sorted(self.storage, key=lambda x: x[0])
+        # Выводим наилучший результат и соответствующие параметры
+        print(f"Лучший: {best[-1][0]} с параметрами {best[-1][1]}")
 
 
 
@@ -384,42 +455,37 @@ def qsort(arr):
 
 class GenerationFactory(): # Класс - Поколение
     N = 100
-    STOP = 200 # Максимальное количество итераций 
+    STOP = 10 # Максимальное количество итераций 
     P_fill = 0.4 # Вероятность вставить предмет в рюкзак
     P_del = 0.5 # Вероятность удалить предмет из рюкзака
     P_born = 0.6 # Вероятность дать потомство
     P_mut = 0.4 # Вероятность мутации
     OPT_MAX = 50 # Количество поколений без изменений до остановки алгоритма
     ELITE_PERCENT = 0.2 # Процент элиты при делении поколений
+    MIGRANT_COUNT = 20
     DISABLE_GENERATION_PRINTER = 1
+
 
     def GetGenBest(self):
         return self.population[0] # Получаем лучшее решение в отсортированном массиве особей
     
-    def __init__(self,N,STOP,P_fill,P_del,P_born,P_mut,OPT_MAX,ELITE_PERCENT):
-
-        self.N = N if N is not None else self.N
-        self.STOP = STOP if STOP is not None else self.STOP
-        self.P_fill = P_fill if P_fill is not None else self.P_fill
-        self.P_del = P_del if P_del is not None else self.P_del
-        self.P_born = P_born if P_born is not None else self.P_born
-        self.P_mut = P_mut if P_mut is not None else self.P_mut
-        self.OPT_MAX = OPT_MAX if OPT_MAX is not None else self.OPT_MAX
-        self.ELITE_PERCENT = ELITE_PERCENT if ELITE_PERCENT is not None else self.ELITE_PERCENT
-
-
-
+    def __init__(self,N=100,STOP=10,P_fill=0.4,P_del=0.5,P_born=0.6,P_mut=0.4,OPT_MAX=50,ELITE_PERCENT=0.2):
+        global ENABLE_MULTIPROCESSING
 
         self.population = [] # Массив особей поколения 
         self.eid = 0 # Текущий ID особ/и
         self.gid = 1 # Номер текущего поколения
         self.best = None # Текущее лучшее решение
+
+
+    def GenerateFirst(self):
         while len(self.population) < self.N: # Пока в поколении не хватает особей создаем новые
             self.population.append(Entity(self))
             self.eid +=1
         self.population = qsort(self.population) # Сортируем особей в поколении по убыванию конечной стоимости
         self.best = self.GetGenBest() # Получаем лучшее решение и сохраняем
-        self.gid +=1 # Увеличиваем номер поколения 
+        self.gid +=1 # Увеличиваем номер поколения
+
 
 
     
@@ -430,7 +496,8 @@ class GenerationFactory(): # Класс - Поколение
         worst = self.population[p20:] # прочее
         return (best,worst)
     
-    def NewGen(self):
+    def NewGen(self, migrant_queue=None):
+        global ENABLE_MULTIPROCESSING
         """
         Функция генерации нового поколенiidия 
         """
@@ -451,7 +518,15 @@ class GenerationFactory(): # Класс - Поколение
             self.eid += 1  # В противном случае увеличиваем текущий индекс ребенка
             self.population.append(c)  # Записываем ребенка в новое поколение
         self.population = qsort(self.population)
-        new_gen = self.population[:self.N]
+        if ENABLE_MULTIPROCESSING:
+
+            new_gen = self.population[:self.N-self.MIGRANT_COUNT] # Набираем новое поколение с учетом места для мигрантов
+            to_send = self.population[self.N-self.MIGRANT_COUNT:self.N] # берем худших из лучших на отправку в другой процесс
+            migrant_queue.put(to_send,timeout=3) # отправляем
+            migrants = migrant_queue.get(timeout=5) # забираем
+            new_gen +=migrants # добавляем к новому поколению
+        else:
+            new_gen = self.population[:self.N]
         self.gid += 1  # По завершении генерации увеличиваем номер поколения
         new_gen = qsort(new_gen)  # сортируем результат
         self.population = new_gen  # делаем новое поколение основным
@@ -553,21 +628,28 @@ def plot_heatmaps_by_pairs(results):
         plt.title(f'Tепловая карта: {pair[0]} vs {pair[1]}')
         plt.show()
 
+
+def multiprocessing_single_run(migrant_queue,result_pipe,lock):
+    result = main(migrant_queue) # запускаем алгоритм
+    result_pipe.put(result) # возвращаем результат
+
+
 @timer
-def main():
+def main(migrant_queue = []):
     """
     Основная функция программы
     """
-    factory = GenerationFactory() # Создаем генератор поколений и первое поколение
+    factory = GenerationFactory()
+    factory.GenerateFirst() # Создаем генератор поколений и первое поколение
     old = factory.best # Записываем результат текущего поколения
     OPT_MAX = factory.OPT_MAX
     opt = 0
     while True: # Бесконечный цикл
         try:
-            new = factory.NewGen() # Пытаемся создать новое поколение и записываем лучшего из него
+            new = factory.NewGen(migrant_queue) # Пытаемся создать новое поколение и записываем лучшего из него
         except StabilizationNotReached:
             print(f"Best: {new.Score()} With solution: {new.package}") # Обрабатывсаем верхнюю границу количества поколений 
-            break
+            return (new.Score(),new.package)
 
 
         if old >= new: # Если текущий не хуже нового прерываемся,стабилизация достигнута 
@@ -576,11 +658,11 @@ def main():
             if opt >= OPT_MAX:
                 print(f"[{factory.gid}][END] Stabilization Reached") # Выводим запись в консоль
                 print(f"Best: {old.Score()} With solution: {old.package}")# Выводим полученное решение
-                break # выходим из программы
+                return (old.Score(),new.package) # выходим из программы
         else:
             old = new # Если на этом поколении решения не нашлось, то делаем новое поколение текущим.
             opt = 0
-            print(f"[STAB] current optimum reset {opt}")
+            #print(f"[STAB] current optimum reset {opt}")
 
 if __name__ == "__main__":
     if ENABLE_TEST_FLAG:
@@ -603,6 +685,11 @@ if __name__ == "__main__":
         print(best_result)
         plot_parameter_influence(results)
         plot_heatmaps_by_pairs(results)
+    elif ENABLE_MULTIPROCESSING:
+        manager = ProcManager() # Создаем менеджер процессов
+        manager.start() # Запускаем работу алгоритма
+        manager.get_best() # получаем лучший результат
+
     else:
         main() # Точка входа в программу
 
