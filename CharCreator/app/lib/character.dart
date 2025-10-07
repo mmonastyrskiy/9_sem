@@ -67,11 +67,34 @@ Map<StatNames,Stat> getallstats(){
   StatNames.Survival:?Survival,
   };
 }
+
+Map<StatNames,ModifierStat> getmodifierstats(){
+  return  {
+  StatNames.Acrobatics:?Acrobatics,
+  StatNames.Animal_Handling:?Animal_Handling,
+  StatNames.Arcana:?Arcana,
+  StatNames.Athletics:?Athletics,
+  StatNames.Deception:?Deception,
+  StatNames.History:?History,
+  StatNames.Insight:?Insight,
+  StatNames.Intimidation:?Intimidation,
+  StatNames.Investigation:?Investigation,
+  StatNames.Medicine:?Medicine,
+  StatNames.Nature:?Nature,
+  StatNames.Perception:?Perception,
+  StatNames.Performance:?Performance,
+  StatNames.Persuasion:?Persuasion,
+  StatNames.Religion:?Religion,
+  StatNames.Sleight_of_Hand:?Sleight_of_Hand,
+  StatNames.Stealth:?Stealth,
+  StatNames.Survival:?Survival,
+  };
+}
 Set<ToolSkill>? getToolingskills() => tools;
 Set<Langs>? getLangs() => langs;
 
 Character(BuildContext UIContext){
-  bg = Background("Тест", getallstats(), tools!, langs!, UIContext);
+  bg = Background("Тест", getmodifierstats(), tools!, langs!, UIContext);
 
 }
 }

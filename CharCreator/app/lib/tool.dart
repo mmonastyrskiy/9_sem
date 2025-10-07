@@ -33,15 +33,12 @@ final class ToolSkill implements Stat{
       case "набор для фальсификации": tooltype = ToolsNames.Forgery_Kit;
       case "водный транспорт": tooltype = ToolsNames.Water_Transport;
       case "наземный транспорт":tooltype = ToolsNames.Ground_Transport;
-      default: tooltype = ToolsNames.Herbalism_Kit;
-      metadata.MetaFlags_ = meta!;
+      default: throw ArgumentError('Unknown tool type');
     }
+    metadata.MetaFlags_ = meta!;
   }
 
-  @override
-  int hasprofbounus=-1;
 // TODO ML
-// TODO Типы музыкальных инструментов
  
  static void deletebyMeta(Set<ToolSkill>? tools,MetaFlags m){
     for(ToolSkill l in tools!){

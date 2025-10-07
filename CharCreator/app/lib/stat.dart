@@ -64,17 +64,17 @@ enum Skills {
 
 
 abstract class AffectsStat {
-  void apply(Map<StatNames,Stat> stats,Set<ToolSkill> tools, Set<Langs> langs, BuildContext context);
-  void delete(Map<StatNames,Stat> stats, Set<ToolSkill> tools, Set<Langs> langs);
+  void apply(Map<StatNames,ModifierStat> stats,Set<ToolSkill> tools, Set<Langs> langs, BuildContext context);
+  void delete(Map<StatNames,ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs);
 }
 abstract interface class Stat {
-  int hasprofbounus=0;
+  
 
 
 
 }
 abstract interface class ModifierStat implements Stat{
-  
+  int hasprofbounus=0;
 }
 class BasicStat implements Stat {
   late int value;
@@ -85,8 +85,7 @@ BasicStat(int val){
   mod = Stat2Modifier();
 }
 
-  @override
-  int hasprofbounus=-1;
+
 
 
 
@@ -95,10 +94,9 @@ extension IntToBasicStat on int {
   BasicStat toBasicStat() => BasicStat(this);
 }
 
-final class Skill implements Stat{
+final class Skill implements ModifierStat{
   late BasicStatNames bs;
-  @override
-  int hasprofbounus = 0;
+
   Skill(String bsn){
     // TODO: ML
     switch(bsn.toLowerCase()){
@@ -112,5 +110,8 @@ final class Skill implements Stat{
     }
 
   }
+
+  @override
+  int hasprofbounus=0;
 }
  

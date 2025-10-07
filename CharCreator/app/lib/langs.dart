@@ -31,8 +31,7 @@ enum LangsNames {
 final class Langs implements Stat,Pickable {
   late final LangsNames lang;
   Meta metadata = Meta(); 
-  @override
-  int hasprofbounus=-1;
+
   Langs(String l, [Set<MetaFlags>? metadata]){
     // TODO: ML
     switch(l.toLowerCase()) {

@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 class CoupleMaker {
   static Map<String, dynamic> CMtoMap(Set<String> keys, Set<dynamic> vals) {
     if (keys.length != vals.length) {

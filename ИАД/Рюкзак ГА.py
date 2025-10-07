@@ -5,7 +5,9 @@ import multiprocessing
 from random import random,seed,choice
 from time import time,perf_counter
 from math import floor
-from tqdm import tqdm
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 
 seed(time()) # инициализация ГПСЧ
 
@@ -340,8 +342,7 @@ class Entity(): # Класс - особь
         self.Fill() # Перезаполняем рюкзак
         if not self._check():
             self.package = old_package
-        #print(f"[{self.gid}][MUT] Mutation happed to {self.eid} new package: {self.package}") # Выводим запись в консоль
-
+        #print(f"[{self.gid}][MUT] Mutation happed to {self.eid} new package: {self.package}") # Выводим запись в консол
 
 
     def HaveBaby(self,parent):
@@ -461,45 +462,7 @@ class GenerationFactory(): # Класс - Поколение
                 f"[{self.gid}][INFO] Generaton Created: Score: {best.Score()} Load: {best.package}")  # Выводим лучшую особь из поколения
         return best  # Возвращаем его из функции
 
-"""
-def grid_search(params_grid,max_iterations_per_run,expected):
-    """
-"""
-    params_grid - словарь, содержащий диапазоны гиперпараметров для перебора
-    sample - задача
-    expected - ожидаемое значение решения
-    """
-"""
-    best_params = {}
-    best_score = float('+inf')  # Начальная оценка качества (чем меньше, тем лучше)
 
-    # Перебираем комбинации всех возможных значений гиперпараметров
-    keys, values = zip(*params_grid.items())
-    combinations = list(itertools.product(*values))
-
-    for combination in tqdm(combinations):
-        current_params = dict(zip(keys, combination))  # Текущие гиперпараметры
-        #print(f"Тестируем комбинацию: {current_params}")
-
-        # Создаем экземпляр класса GenerationFactory с текущими параметрами
-        gf = GenerationFactory(**current_params)
-
-        try:
-            for _ in range(max_iterations_per_run):
-                best_entity = gf.NewGen()  # Создание нового поколения
-                score = abs(best_entity.Score()-expected)  # Оценка лучшего решения
-                
-                # Проверяем, улучшилась ли лучшая оценка
-                if score < best_score:
-                    best_score = score
-                    best_params = current_params.copy()
-                    
-        except Exception as e:
-            print(f"Ошибка: {e}")
-            break
-
-    return best_params, best_score
-    """
 def run_one_test(current_params,expected,max_iter_test):
     start_time = time()
     gf = GenerationFactory(**current_params)
@@ -517,6 +480,7 @@ def run_one_test(current_params,expected,max_iter_test):
     
     elapsed_time = time() - start_time
     result = {'score': best_score, 'elapsed_time': elapsed_time, 'params': best_params}
+    print("Thread Ended")
     return result
 
 def parallel_grid_search(params_grid,max_iter_test,expected, num_processes=None):
@@ -537,7 +501,57 @@ def parallel_grid_search(params_grid,max_iter_test,expected, num_processes=None)
 
     # Агрегируем результаты
     best_result = sorted(results, key=lambda r: r['score'])[0]
-    return best_result
+    return results
+def plot_parameter_influence(results):
+    """
+    Функция для построения графиков зависимости среднего счета от параметров.
+    
+    Аргумент:
+    - results: Список словарей формата {'score': ..., 'params': {...}}
+              Где 'score' — оценка, 'params' — словарь с гиперпараметрами.
+    """
+    # Преобразуем результаты в DataFrame
+    df_results = pd.DataFrame([{'score': res['score']} | res['params'] for res in results])
+
+    # Извлекаем имена параметров
+    parameter_names = [col for col in df_results.columns if col != 'score']
+
+    # Рисуем графики для каждого параметра
+    for param_name in parameter_names:
+        grouped_data = df_results.groupby(param_name)['score'].mean().reset_index()
+        plt.figure(figsize=(10, 6))
+        plt.plot(grouped_data[param_name], grouped_data['score'], marker='o', linestyle='-', color='b')
+        plt.title(f'Зависимость среднего балла от параметра "{param_name}"')
+        plt.xlabel(param_name)
+        plt.ylabel('Средняя оценка')
+        plt.grid(True)
+        plt.show()
+
+def plot_heatmaps_by_pairs(results):
+    """
+    Функция для построения тепловых карт по парам параметров.
+    
+    Аргумент:
+    - results: Список словарей формата {'score': ..., 'params': {...}}
+              Где 'score' — оценка, 'params' — словарь с гиперпараметрами.
+    """
+    # Преобразуем результаты в DataFrame
+    df_results = pd.DataFrame([{'score': res['score']} | res['params'] for res in results])
+
+    # Извлекаем имена параметров
+    parameter_names = [col for col in df_results.columns if col != 'score']
+
+    # Формируем пары параметров
+    from itertools import combinations
+    pairs = list(combinations(parameter_names, 2))
+
+    # Строим тепловые карты для каждой пары параметров
+    for pair in pairs:
+        pivot_table = df_results.pivot_table(index=pair[0], columns=pair[1], values='score', aggfunc='mean')
+        plt.figure(figsize=(10, 8))
+        sns.heatmap(pivot_table, annot=True, cmap="YlGnBu", fmt=".2f", linewidths=.5)
+        plt.title(f'Tепловая карта: {pair[0]} vs {pair[1]}')
+        plt.show()
 
 @timer
 def main():
@@ -584,8 +598,11 @@ if __name__ == "__main__":
     'OPT_MAX': [50],
     'ELITE_PERCENT': [0.1, 0.2, 0.3]   # Доля элитных особей
 }
-        #print(grid_search(param_grid,30,375))
-        print(parallel_grid_search(param_grid,30,375))
+        results = parallel_grid_search(param_grid,30,375)
+        best_result =sorted(results, key=lambda r: r['score'])[0]
+        print(best_result)
+        plot_parameter_influence(results)
+        plot_heatmaps_by_pairs(results)
     else:
         main() # Точка входа в программу
 
