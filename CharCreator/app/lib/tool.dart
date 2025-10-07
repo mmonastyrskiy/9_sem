@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
 import 'stat.dart';
+import 'meta.dart';
 enum ToolsNames{
   Thieves_Tools,
   Gaming_Set,
@@ -10,13 +11,17 @@ enum ToolsNames{
   Musical_Instruments,
   Disguise_Kit,
   Forgery_Kit,
-  Herbalism_Kit
+  Herbalism_Kit,
+  Water_Transport,
+  Ground_Transport
 
 }
 final class ToolSkill implements Stat{
-  late  final ToolsNames tooltype;
+  late final ToolsNames tooltype;
+  Meta metadata = Meta();
 
-  ToolSkill(String sk){
+
+  ToolSkill(String sk, [Set<MetaFlags>? meta]){
     switch(sk.toLowerCase()){
       case "воровские инструменты": tooltype = ToolsNames.Thieves_Tools;
       case "игровой набор":tooltype = ToolsNames.Gaming_Set;
@@ -26,7 +31,10 @@ final class ToolSkill implements Stat{
       case "музыкальные инструменты": tooltype = ToolsNames.Musical_Instruments;
       case "набор для грима": tooltype = ToolsNames.Disguise_Kit;
       case "набор для фальсификации": tooltype = ToolsNames.Forgery_Kit;
+      case "водный транспорт": tooltype = ToolsNames.Water_Transport;
+      case "наземный транспорт":tooltype = ToolsNames.Ground_Transport;
       default: tooltype = ToolsNames.Herbalism_Kit;
+      metadata.MetaFlags_ = meta!;
     }
   }
 
@@ -35,12 +43,12 @@ final class ToolSkill implements Stat{
 // TODO ML
 // TODO Типы музыкальных инструментов
  
- static void remove (ToolsNames name,Set<ToolSkill> tools){
-      for (ToolSkill ts in tools){
-      if(ts.tooltype == name){
-        tools.remove(ts);
+ static void deletebyMeta(Set<ToolSkill>? tools,MetaFlags m){
+    for(ToolSkill l in tools!){
+      if (l.metadata.MetaFlags_.contains(m)){
+        tools.remove(l);
       }
     }
- }
+  }
 
  }

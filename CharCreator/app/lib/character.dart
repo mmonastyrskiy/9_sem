@@ -72,7 +72,6 @@ Set<Langs>? getLangs() => langs;
 
 Character(BuildContext UIContext){
   bg = Background("Тест", getallstats(), tools!, langs!, UIContext);
-  print("BG");
 
 }
 }

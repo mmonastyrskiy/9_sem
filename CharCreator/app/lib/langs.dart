@@ -6,6 +6,7 @@ import 'stat.dart';
 import 'ui/uicore.dart';
 import 'snippets.dart';
 import 'ui/uisnippets.dart';
+import 'meta.dart';
 enum LangsNames {
   Common,
   Dwarvish,
@@ -29,9 +30,10 @@ enum LangsNames {
 }
 final class Langs implements Stat,Pickable {
   late final LangsNames lang;
+  Meta metadata = Meta(); 
   @override
   int hasprofbounus=-1;
-  Langs(String l){
+  Langs(String l, [Set<MetaFlags>? metadata]){
     // TODO: ML
     switch(l.toLowerCase()) {
   case "общий": lang = LangsNames.Common;
@@ -52,6 +54,14 @@ final class Langs implements Stat,Pickable {
   case "подземный": lang = LangsNames.Undercommon;
   default: lang = LangsNames.Common; // Значение по умолчанию
   }
+  this.metadata.MetaFlags_ = metadata!;
+  }
+  static void deletebyMeta(Set<Langs>? langs,MetaFlags m){
+    for(Langs l in langs!){
+      if (l.metadata.MetaFlags_.contains(m)){
+        langs.remove(l);
+      }
+    }
   }
   
   @override
@@ -68,8 +78,14 @@ final class Langs implements Stat,Pickable {
     Map<String, dynamic> c =CoupleMaker.CMtoMap(menu, ret);
     String chosen = ModalDispatcher.showListPicker(context, c);
     return chosen;
+  }
+    List<String>? pickmany (BuildContext context){
+    Map<String, dynamic> c =CoupleMaker.CMtoMap(menu, ret);
+    List<String> res = ModalDispatcher.showMultiSelectListPicker(context: context, items: c) as List<String>;
+    return res;
+    }
+    
 
 
 
   }
-}
