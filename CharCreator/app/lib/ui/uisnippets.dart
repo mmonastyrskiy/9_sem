@@ -30,7 +30,7 @@ class ModalDispatcher{
 
 
 
-static Future<List<String>> showMultiSelectListPicker({
+static showMultiSelectListPicker({
   required BuildContext context,
   required Map<String, dynamic> items,
   List<String>? initialSelections, // Новый опциональный аргумент
@@ -105,6 +105,6 @@ static Future<List<String>> showMultiSelectListPicker({
     }),
   );
 
-  return result ?? [];
+  return result ?? {};
 }
 }

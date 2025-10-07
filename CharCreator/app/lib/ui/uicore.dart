@@ -6,4 +6,8 @@ abstract interface class Pickable{
   String? pick(BuildContext bc){
     return null;
   }
+  Set<String>? pickmany(BuildContext bc,[ List<String>? initialSelections]){
+  return null;  
+  }
+  
 }

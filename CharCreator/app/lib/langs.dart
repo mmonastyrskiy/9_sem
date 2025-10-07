@@ -79,9 +79,21 @@ final class Langs implements Stat,Pickable {
     String chosen = ModalDispatcher.showListPicker(context, c);
     return chosen;
   }
-    List<String>? pickmany (BuildContext context){
+    @override
+      Set<String>? pickmany (BuildContext context,[List<String>? initialSelections, int howmany=2]){
     Map<String, dynamic> c =CoupleMaker.CMtoMap(menu, ret);
-    List<String> res = ModalDispatcher.showMultiSelectListPicker(context: context, items: c) as List<String>;
+    Set<String> opt ={};
+    Set<String> res = ModalDispatcher.showMultiSelectListPicker(context: context, items: c,initialSelections: initialSelections) as Set<String>;
+    if (res.length != howmany){
+      while(opt.length != howmany){
+
+      
+      //TODO: Switch to modal error
+    print("Select $howmany");
+    opt = ModalDispatcher.showMultiSelectListPicker(context: context, items: c,initialSelections: res.toList()) as Set<String>;
+    }
+    return opt;
+    }
     return res;
     }
     

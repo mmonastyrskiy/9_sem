@@ -162,12 +162,19 @@ final class Sage implements Background{
     stats[StatNames.History]?.hasprofbounus +=1;
     stats[StatNames.Arcana]?.hasprofbounus +=1;
 
-    
-    Langs ch = Langs(Langs('').pick(context) ?? '',{MetaFlags.IS_PICKED,MetaFlags.IS_PICKED_ON_BG});
-    langs.add(ch);
+
+    //Langs ch = Langs(Langs('').pick(context) ?? '',{MetaFlags.IS_PICKED,MetaFlags.IS_PICKED_ON_BG});
+    //langs.add(ch);
 // TODO: языки могут быть одинаковые, нужен обработчик
-    Langs ch2 = Langs(Langs('').pick(context) ?? '',{MetaFlags.IS_PICKED,MetaFlags.IS_PICKED_ON_BG});
-    langs.add(ch2);
+    //Langs ch2 = Langs(Langs('').pick(context) ?? '',{MetaFlags.IS_PICKED,MetaFlags.IS_PICKED_ON_BG});
+    //langs.add(ch2);
+    
+    Set<String>? r =Langs('').pickmany(context);
+    for (String s in r!){
+      langs.add(Langs(s));
+
+    }
+
 
   }
 
