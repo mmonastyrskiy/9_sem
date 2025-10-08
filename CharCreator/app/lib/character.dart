@@ -5,16 +5,19 @@ import 'stat.dart';
 import 'tool.dart';
 import 'langs.dart';
 import 'package:flutter/material.dart';
+import 'items.dart';
+
+
 class Character {
   late BuildContext UIContext;
   late String name;
   Background? bg;
-  BasicStat? STR = 10.toBasicStat();
-  BasicStat? DEX = 10.toBasicStat();
-  BasicStat? CON =10.toBasicStat();
-  BasicStat? INT = 10.toBasicStat();
-  BasicStat? WIS= 10.toBasicStat();
-  BasicStat? CHR = 10.toBasicStat();
+  BasicStat STR = 10.toBasicStat();
+  BasicStat DEX = 10.toBasicStat();
+  BasicStat CON =10.toBasicStat();
+  BasicStat INT = 10.toBasicStat();
+  BasicStat WIS= 10.toBasicStat();
+  BasicStat CHR = 10.toBasicStat();
   Skill? Acrobatics =Skill("сила");
   Skill? Animal_Handling =Skill("сила");
   Skill? Arcana =Skill("сила");
@@ -33,20 +36,25 @@ class Character {
   Skill? Sleight_of_Hand=Skill("сила");
   Skill? Stealth=Skill("сила");
   Skill? Survival=Skill("сила");
-  Set<ToolSkill>? tools = {};
-  Set<Langs>? langs= {};
+  Set<ToolSkill> tools = {};
+  Set<Langs> langs= {};
+  Health health =Health();
+  Set<Armor> CanUseArmor = {};
+  Set<Weapon> canUseWeapon = {};
+
+
 
   
 
 Map<StatNames,Stat> getallstats(){
   return  {
   StatNames.Background:?bg,
-  StatNames.STR:?STR,
-  StatNames.DEX:?DEX,
-  StatNames.CON:?CON,
-  StatNames.INT:?INT,
-  StatNames.WIS:?WIS,
-  StatNames.CHR:?CHR,
+  StatNames.STR:STR,
+  StatNames.DEX:DEX,
+  StatNames.CON:CON,
+  StatNames.INT:INT,
+  StatNames.WIS:WIS,
+  StatNames.CHR:CHR,
   StatNames.Acrobatics:?Acrobatics,
   StatNames.Animal_Handling:?Animal_Handling,
   StatNames.Arcana:?Arcana,
@@ -68,7 +76,18 @@ Map<StatNames,Stat> getallstats(){
   };
 }
 
-Map<StatNames,ModifierStat> getmodifierstats(){
+Map<BasicStatNames,BasicStat> getbasicstats(){
+  return  {
+  BasicStatNames.STR:STR,
+  BasicStatNames.DEX:DEX,
+  BasicStatNames.CON:CON,
+  BasicStatNames.INT:INT,
+  BasicStatNames.WIS:WIS,
+  BasicStatNames.CHR:CHR 
+};
+}
+
+Map<StatNames,ModifierStat> getskills(){
   return  {
   StatNames.Acrobatics:?Acrobatics,
   StatNames.Animal_Handling:?Animal_Handling,
@@ -90,11 +109,12 @@ Map<StatNames,ModifierStat> getmodifierstats(){
   StatNames.Survival:?Survival,
   };
 }
-Set<ToolSkill>? getToolingskills() => tools;
-Set<Langs>? getLangs() => langs;
+Set<ToolSkill> getToolingskills() => tools;
+Set<Langs> getLangs() => langs;
+int getModifier(BasicStatNames s) => getbasicstats()[s]!.Stat2Modifier();
 
 Character(BuildContext UIContext){
-  bg = Background("Тест", getmodifierstats(), tools!, langs!, UIContext);
+  bg = Background("Тест",this);
 
 }
 }

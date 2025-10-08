@@ -6,6 +6,7 @@ import 'stat.dart';
 import 'tool.dart';
 import 'langs.dart';
 import 'meta.dart';
+import 'character.dart';
 enum BackgroundNames  {
   Entertainer,
   Urchin,
@@ -24,9 +25,13 @@ enum BackgroundNames  {
 
 
 }
-abstract class Background implements AffectsStat,Stat {
-  factory Background(String chosen, Map<StatNames,ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs,BuildContext context)
+abstract class Background implements AffectsStatBackground,Stat {
+  factory Background(String chosen, Character char)
   {
+    Map<StatNames,ModifierStat> stats =char.getskills(); 
+    Set<ToolSkill> tools = char.getToolingskills();
+    Set<Langs> langs = char.getLangs();
+    BuildContext context = char.UIContext;
     switch (chosen.toLowerCase()) {
       case 'артист': return Entertainer(stats, tools, langs, context);
       case 'беспризорник': return Urchin(stats, tools, langs, context); 

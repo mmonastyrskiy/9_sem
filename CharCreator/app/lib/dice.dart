@@ -3,23 +3,23 @@
 
 import 'dart:math';
 
-enum DieType {
+enum DiceType  {
 D4,D6,D10,D12,D100,D8,DN
 }
 
 class DieResult
 {
-  DieType? type;
+  DiceType? type;
   int result=0;
-DieType dim2type (int dt){
+DiceType dim2type (int dt){
   switch(dt){
-    case 4: return DieType.D4;
-    case 6: return DieType.D6;
-    case 8: return DieType.D8;
-    case 10: return DieType.D10;
-    case 12: return DieType.D12;
-    case 100: return DieType.D100;
-    default: return DieType.DN;
+    case 4: return DiceType.D4;
+    case 6: return DiceType.D6;
+    case 8: return DiceType.D8;
+    case 10: return DiceType.D10;
+    case 12: return DiceType.D12;
+    case 100: return DiceType.D100;
+    default: return DiceType.DN;
 
   }
 }
@@ -86,6 +86,7 @@ void add(int dim,{int ammount=1}) {
   if(ammount <= 0){
     return;
   }
+
   for(int i=0; 1<ammount;i++){
   switch(dim){
     case 4: tothrow.add(D4());
@@ -99,9 +100,20 @@ void add(int dim,{int ammount=1}) {
   }
 }
 }
+  void addDT(DiceType dt){
+    switch(dt){
+      case DiceType.D4: tothrow.add(D4());
+      case DiceType.D6: tothrow.add(D6());
+      case DiceType.D10: tothrow.add(D10());
+      case DiceType.D12: tothrow.add(D12());
+
+      default: tothrow.add(D100());
+    }
+
+  }
 
 
-void DoRoll(int size){
+void DoRoll(){
   for(diceFactory d in tothrow){
     res.add(d.throwdie());
   }

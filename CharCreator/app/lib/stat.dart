@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 
 import 'tool.dart';
 import 'langs.dart';
+import 'dice.dart';
+import 'items.dart';
+
 enum StatNames {
   Background,
   STR,
@@ -61,12 +64,19 @@ enum Skills {
   Survival
 
 }
+abstract interface class AffectsStat{}
 
-
-abstract class AffectsStat {
+abstract interface class AffectsStatBackground implements AffectsStat {
   void apply(Map<StatNames,ModifierStat> stats,Set<ToolSkill> tools, Set<Langs> langs, BuildContext context);
   void delete(Map<StatNames,ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs);
 }
+
+abstract interface class AffectsStatClass implements AffectsStat {
+  void apply(Health HitDice,Map<BasicStatNames,BasicStat> stats,Set<Armor> canUseArmor,Set<Weapon> canUseWeapon);
+  void delete(Health HitDice,Map<BasicStatNames,BasicStat> stats,Set<Armor> canUseArmor,Set<Weapon> canUseWeapon);
+}
+
+
 abstract interface class Stat {
   
 
@@ -78,8 +88,8 @@ abstract interface class ModifierStat implements Stat{
 }
 class BasicStat implements Stat {
   late int value;
+  int mod=0;
   int Stat2Modifier()=> mod=((value-10) / 2).floor();
-  late int mod;
 BasicStat(int val){
   value = val;
   mod = Stat2Modifier();
@@ -113,5 +123,11 @@ final class Skill implements ModifierStat{
 
   @override
   int hasprofbounus=0;
+}
+
+class Health {
+  int max_health=0;
+  int current_health=0;
+  DiceType? HitDice;
 }
  
