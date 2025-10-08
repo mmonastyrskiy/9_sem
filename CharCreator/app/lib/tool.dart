@@ -1,7 +1,13 @@
 // ignore_for_file: constant_identifier_names
 
+
+import 'package:flutter/src/widgets/framework.dart';
+
 import 'stat.dart';
 import 'meta.dart';
+import 'ui/uicore.dart';
+import 'ui/uisnippets.dart';
+import 'snippets.dart';
 enum ToolsNames{
   Thieves_Tools,
   Gaming_Set,
@@ -16,7 +22,7 @@ enum ToolsNames{
   Ground_Transport
 
 }
-final class ToolSkill implements Stat{
+final class ToolSkill implements Stat,Pickable{
   late final ToolsNames tooltype;
   Meta metadata = Meta();
 
@@ -48,4 +54,63 @@ final class ToolSkill implements Stat{
     }
   }
 
- }
+
+static Map<String,ToolsNames> str2toolskill(){
+  return {
+     "воровские инструменты":  ToolsNames.Thieves_Tools,
+      "инструменты навигатора": ToolsNames.Nav_Tools,
+      "игровой набор":ToolsNames.Gaming_Set,
+      "инструменты отравителя": ToolsNames.Poisoning_Tools,
+      "инструменты ремесленников": ToolsNames.Artisans_Tools,
+      "музыкальные инструменты": ToolsNames.Musical_Instruments,
+      "набор для грима": ToolsNames.Disguise_Kit,
+      "набор для фальсификации":ToolsNames.Forgery_Kit,
+      "водный транспорт": ToolsNames.Water_Transport,
+      "наземный транспорт":ToolsNames.Ground_Transport
+  };
+}
+  @override
+  Set<String> menu=str2toolskill().keys.toSet();
+
+  @override
+  Set ret=str2toolskill().values.toSet();
+
+  @override
+  String? pick(BuildContext bc,[Set? include]) {
+     
+    Map<String, dynamic> c =CoupleMaker.CMtoMap(menu, ret);
+    if(include != null){
+  for (dynamic elem in include){
+    c.removeWhere((key, value) => value != elem);
+  }
+}
+    String chosen = ModalDispatcher.showListPicker(bc, c);
+    return chosen;
+  }
+  
+
+  @override
+    Set<String>? pickmany(BuildContext bc, [List<String>? initialSelections,int? howmany=2, Set? include]) {
+
+Map<String, dynamic> c =CoupleMaker.CMtoMap(menu, ret);
+if(include != null){
+  for (dynamic elem in include){
+    c.removeWhere((key, value) => value != elem);
+  }
+}
+
+    Set<String> opt ={};
+    Set<String> res = ModalDispatcher.showMultiSelectListPicker(context: bc, items: c,initialSelections: initialSelections) as Set<String>;
+    if (res.length != howmany){
+      while(opt.length != howmany){
+
+      
+      //TODO: Switch to modal error
+    print("Select $howmany");
+    opt = ModalDispatcher.showMultiSelectListPicker(context: bc, items: c,initialSelections: res.toList()) as Set<String>;
+    }
+    return opt;
+    }
+    return res;
+    }
+  }

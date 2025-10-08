@@ -87,7 +87,7 @@ Map<BasicStatNames,BasicStat> getbasicstats(){
 };
 }
 
-Map<StatNames,ModifierStat> getskills(){
+Map<StatNames,Skill> getskills(){
   return  {
   StatNames.Acrobatics:?Acrobatics,
   StatNames.Animal_Handling:?Animal_Handling,

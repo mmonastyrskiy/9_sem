@@ -13,6 +13,32 @@ enum ArmorType {
   Shield
 }
 
+enum WeaponType{
+  SimpleWeapon,
+  MartialWearpon,
+  LongSword,
+  ShortSword,
+  Rapier,
+  HandCrossBow,
+  Dagger,
+  Dart,
+  Sling,
+  CombatStaff,
+  LightCrossBow,
+  Mace,
+  Club,
+  Javeline,
+  Sickle,
+  Scimitar
+}
+
+
+enum OverallWeaponType {
+  SimpleWeapon,
+  MartialWearpon
+}
+
+
 final class Armor implements Item{
 ArmorType? type; 
 Meta metadata = Meta();
@@ -35,12 +61,12 @@ static void deletebyMeta(Set<Armor>? armor,MetaFlags m){
 
 
 class Weapon implements Item{
-ArmorType? type; 
+WeaponType? type;
 Meta metadata = Meta();
 
-Weapon(ArmorType armor, [Set<MetaFlags>? metadata]){
-  type = armor;
+Weapon(WeaponType weapon, [Set<MetaFlags>? metadata]){
   this.metadata.MetaFlags_ = metadata!;
+  type = weapon;
 }
 
 static void deletebyMeta(Set<Weapon>? weapon,MetaFlags m){
@@ -53,3 +79,4 @@ static void deletebyMeta(Set<Weapon>? weapon,MetaFlags m){
   
 
 }
+

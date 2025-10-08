@@ -6,7 +6,7 @@ abstract interface class Pickable{
   String? pick(BuildContext bc){
     return null;
   }
-  Set<String>? pickmany(BuildContext bc,[ List<String>? initialSelections]){
+  Set<String>? pickmany(BuildContext bc,[ List<String>? initialSelections,int howmany=2]){
   return null;  
   }
   
