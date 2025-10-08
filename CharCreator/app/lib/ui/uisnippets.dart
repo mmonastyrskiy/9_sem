@@ -107,4 +107,24 @@ static showMultiSelectListPicker({
 
   return result ?? {};
 }
+
+}
+class PopUpDispatcher{
+  static void showErrorDialog(BuildContext context,String errorMessage) {
+  // Показываем диалоговое окно
+  final dialog = Dialog(
+    child: Container(
+      color: Colors.red,
+      padding: const EdgeInsets.all(16),
+      child: Text(errorMessage, style: const TextStyle(color: Colors.white)),
+    ),
+  );
+
+  Future.delayed(const Duration(seconds: 5)).then((_) => Navigator.of(context).pop());
+
+  showDialog(
+    context: context,
+    builder: (_) => dialog,
+  );
+}
 }

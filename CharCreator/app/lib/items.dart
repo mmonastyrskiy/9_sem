@@ -1,9 +1,13 @@
 // ignore_for_file: constant_identifier_names
 import 'meta.dart';
+import 'money.dart';
+
 
 abstract interface class Item {
+}
 
-
+abstract interface class SellableItem{
+Price price =Price();
 }
 
 enum ArmorType {
@@ -39,7 +43,7 @@ enum OverallWeaponType {
 }
 
 
-final class Armor implements Item{
+class Armor implements Item{
 ArmorType? type; 
 Meta metadata = Meta();
 

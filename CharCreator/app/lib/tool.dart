@@ -1,8 +1,8 @@
 // ignore_for_file: constant_identifier_names
 
 
-import 'package:flutter/src/widgets/framework.dart';
 
+import 'package:flutter/material.dart';
 import 'stat.dart';
 import 'meta.dart';
 import 'ui/uicore.dart';
@@ -44,7 +44,6 @@ final class ToolSkill implements Stat,Pickable{
     metadata.MetaFlags_ = meta!;
   }
 
-// TODO ML
  
  static void deletebyMeta(Set<ToolSkill>? tools,MetaFlags m){
     for(ToolSkill l in tools!){
@@ -105,8 +104,7 @@ if(include != null){
       while(opt.length != howmany){
 
       
-      //TODO: Switch to modal error
-    print("Select $howmany");
+    PopUpDispatcher.showErrorDialog(bc,"Select $howmany");
     opt = ModalDispatcher.showMultiSelectListPicker(context: bc, items: c,initialSelections: res.toList()) as Set<String>;
     }
     return opt;

@@ -116,7 +116,7 @@ final class Skill implements ModifierStat,Pickable{
   Meta metadata = Meta();
 
   Skill(String bsn,{Set<MetaFlags>? flags}){
-    // TODO: ML
+
     switch(bsn.toLowerCase()){
       case "сила": bs = BasicStatNames.STR;
       case "ловкость": bs = BasicStatNames.DEX;
@@ -162,6 +162,17 @@ static Map<String,Skills> string2skill(){
 
 }
 
+static void deletebyMeta(Map<StatNames, Skill> skills, MetaFlags flag) {
+    for(Skill s in skills.values){
+      if(s.metadata.MetaFlags_.contains(flag)){
+        s.hasprofbounus-=1;
+        s.metadata.MetaFlags_.remove(MetaFlags.IS_PICKED_ON_CLASS);
+        s.metadata.MetaFlags_.remove(MetaFlags.IS_PICKED);
+        
+      }
+    }
+  }
+
   @override
   int hasprofbounus=0;
   
@@ -192,9 +203,8 @@ if(include != null){
     if (res.length != howmany){
       while(opt.length != howmany){
 
-      
-      //TODO: Switch to modal error
-    print("Select $howmany");
+
+    PopUpDispatcher.showErrorDialog(bc,"Select $howmany");
     opt = ModalDispatcher.showMultiSelectListPicker(context: bc, items: c,initialSelections: res.toList()) as Set<String>;
     }
     return opt;
@@ -202,6 +212,7 @@ if(include != null){
     return res;
     }
   }
+
 
 
 class Health {

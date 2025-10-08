@@ -6,6 +6,7 @@ import 'tool.dart';
 import 'langs.dart';
 import 'package:flutter/material.dart';
 import 'items.dart';
+import 'money.dart';
 
 
 class Character {
@@ -41,6 +42,8 @@ class Character {
   Health health =Health();
   Set<Armor> CanUseArmor = {};
   Set<Weapon> canUseWeapon = {};
+  Money wallet =Money();
+  List<Item> inventory = [];
 
 
 

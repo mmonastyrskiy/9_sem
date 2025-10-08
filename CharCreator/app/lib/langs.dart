@@ -33,7 +33,6 @@ final class Langs implements Stat,Pickable {
   Meta metadata = Meta(); 
 
   Langs(String l, [Set<MetaFlags>? metadata]){
-    // TODO: ML
     switch(l.toLowerCase()) {
   case "общий": lang = LangsNames.Common;
   case "дварфийский": lang = LangsNames.Dwarvish;
@@ -87,8 +86,7 @@ final class Langs implements Stat,Pickable {
       while(opt.length != howmany){
 
       
-      //TODO: Switch to modal error
-    print("Select $howmany");
+    PopUpDispatcher.showErrorDialog(context,"Select $howmany");
     opt = ModalDispatcher.showMultiSelectListPicker(context: context, items: c,initialSelections: res.toList()) as Set<String>;
     }
     return opt;

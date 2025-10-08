@@ -96,11 +96,7 @@ final class Bard implements CharClass {
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_CLASS);
     stat[BasicStatNames.DEX]!.savingthrow=0;
     stat[BasicStatNames.CHR]!.savingthrow=0;
-    for(Skill s in skills.values){
-      if(s.metadata.MetaFlags_.contains(MetaFlags.IS_PICKED_ON_CLASS)){
-        s.hasprofbounus-=1; 
-      }
-    }
+    Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
 
 
   }
@@ -149,11 +145,7 @@ final class Barbarian implements CharClass{
     Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
     stats[BasicStatNames.STR]!.savingthrow=0;
     stats[BasicStatNames.CON]!.savingthrow=0;
-    for(Skill s in skills.values){
-      if(s.metadata.MetaFlags_.contains(MetaFlags.IS_PICKED_ON_CLASS)){
-        s.hasprofbounus-=1; 
-      }
-    }
+    Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
   }
 
 }
@@ -204,17 +196,15 @@ final class Fighter implements CharClass{
     charHeath.current_health = 0;
     Armor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
     Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
+    Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
     stats[BasicStatNames.STR]!.savingthrow=0;
     stats[BasicStatNames.CON]!.savingthrow=0;
 
-    for(Skill s in skills.values){
-      if(s.metadata.MetaFlags_.contains(MetaFlags.IS_PICKED_ON_CLASS)){
-        s.hasprofbounus-=1; //TODO: При удалении параметра флаги с него не снимаются, нигде
-        
-      }
-    }
+    
 
   }
+
+  
 }
 final class Wizzard implements CharClass{
   Wizzard(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<Armor> CanUseArmor,Set<Weapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
@@ -268,11 +258,7 @@ final class Wizzard implements CharClass{
     stats[BasicStatNames.INT]!.savingthrow=0;
     stats[BasicStatNames.WIS]!.savingthrow=0;
 
-    for(Skill s in skills.values){
-      if(s.metadata.MetaFlags_.contains(MetaFlags.IS_PICKED_ON_CLASS)){
-        s.hasprofbounus-=1; 
-      }
-    }
+    Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
   }
 }
 final class Druid implements CharClass{
@@ -333,11 +319,7 @@ final class Druid implements CharClass{
     stats[BasicStatNames.INT]!.savingthrow=0;
     stats[BasicStatNames.WIS]!.savingthrow=0;
 
-    for(Skill s in skills.values){
-      if(s.metadata.MetaFlags_.contains(MetaFlags.IS_PICKED_ON_CLASS)){
-        s.hasprofbounus-=1; 
-      }
-    }
+    Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
 
 
   }
@@ -389,11 +371,7 @@ final class Clerc implements CharClass{
     stats[BasicStatNames.CHR]!.savingthrow=0;
     stats[BasicStatNames.WIS]!.savingthrow=0;
 
-    for(Skill s in skills.values){
-      if(s.metadata.MetaFlags_.contains(MetaFlags.IS_PICKED_ON_CLASS)){
-        s.hasprofbounus-=1; 
-      }
-    }
+    Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
   }
     
   }
@@ -453,11 +431,7 @@ final class Clerc implements CharClass{
     stats[BasicStatNames.INT]!.savingthrow=0;
 
 
-    for(Skill s in skills.values){
-      if(s.metadata.MetaFlags_.contains(MetaFlags.IS_PICKED_ON_CLASS)){
-        s.hasprofbounus-=1; 
-      }
-    }
+    Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
 
   }
   
@@ -508,11 +482,7 @@ final class Warlock implements CharClass{
     stats[BasicStatNames.CON]!.savingthrow=0;
     stats[BasicStatNames.INT]!.savingthrow=0;
 
-    for(Skill s in skills.values){
-      if(s.metadata.MetaFlags_.contains(MetaFlags.IS_PICKED_ON_CLASS)){
-        s.hasprofbounus-=1; 
-      }
-    }
+    Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
   }
 }
 final class Monk implements CharClass{
@@ -562,11 +532,7 @@ final class Monk implements CharClass{
     stats[BasicStatNames.STR]!.savingthrow=0;
     stats[BasicStatNames.DEX]!.savingthrow=0;
 
-    for(Skill s in skills.values){
-      if(s.metadata.MetaFlags_.contains(MetaFlags.IS_PICKED_ON_CLASS)){
-        s.hasprofbounus-=1; 
-      }
-    }
+    Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
 
   }
 
@@ -623,11 +589,7 @@ final class Paladin implements CharClass{
     stats[BasicStatNames.WIS]!.savingthrow=0;
     stats[BasicStatNames.CHR]!.savingthrow=0;
 
-    for(Skill s in skills.values){
-      if(s.metadata.MetaFlags_.contains(MetaFlags.IS_PICKED_ON_CLASS)){
-        s.hasprofbounus-=1; 
-      }
-    }
+    Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
   }
 }
 
@@ -683,11 +645,7 @@ final class Rouge implements CharClass{
     stats[BasicStatNames.DEX]!.savingthrow=0;
     stats[BasicStatNames.INT]!.savingthrow=0;
 
-    for(Skill s in skills.values){
-      if(s.metadata.MetaFlags_.contains(MetaFlags.IS_PICKED_ON_CLASS)){
-        s.hasprofbounus-=1; 
-      }
-    }
+    Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
   }
 
 }
@@ -743,11 +701,7 @@ final class Ranger implements CharClass{
     stats[BasicStatNames.DEX]!.savingthrow=0;
     stats[BasicStatNames.STR]!.savingthrow=0;
 
-     for(Skill s in skills.values){
-      if(s.metadata.MetaFlags_.contains(MetaFlags.IS_PICKED_ON_CLASS)){
-        s.hasprofbounus-=1; 
-      }
-    }
+     Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
   }
   
 }
@@ -797,10 +751,6 @@ final class Sorcerer implements CharClass{
     stats[BasicStatNames.CON]!.savingthrow=0;
     stats[BasicStatNames.CHR]!.savingthrow=0;
 
-    for(Skill s in skills.values){
-      if(s.metadata.MetaFlags_.contains(MetaFlags.IS_PICKED_ON_CLASS)){
-        s.hasprofbounus-=1; 
-      }
-    }
+    Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
   }
 }
