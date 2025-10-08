@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vibration/vibration.dart';
 class ModalDispatcher{
   static showListPicker(BuildContext context, Map<String, dynamic> items) async {
   List<String> keys = items.keys.toList();
@@ -110,7 +111,9 @@ static showMultiSelectListPicker({
 
 }
 class PopUpDispatcher{
-  static void showErrorDialog(BuildContext context,String errorMessage) {
+  static void showErrorDialog(BuildContext context,String errorMessage)async {
+    await Vibration.vibrate(duration: 500);
+
   // Показываем диалоговое окно
   final dialog = Dialog(
     child: Container(
@@ -125,6 +128,8 @@ class PopUpDispatcher{
   showDialog(
     context: context,
     builder: (_) => dialog,
+    
+
   );
 }
 }
