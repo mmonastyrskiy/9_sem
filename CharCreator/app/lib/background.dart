@@ -28,7 +28,7 @@ enum BackgroundNames  {
 abstract class Background implements AffectsStatBackground,Stat {
   factory Background(String chosen, Character char)
   {
-    Map<StatNames,ModifierStat> stats =char.getskills(); 
+    Map<StatNames,ProfBonusStat> stats =char.getskills(); 
     Set<ToolSkill> tools = char.getToolingskills();
     Set<Langs> langs = char.getLangs();
     BuildContext context = char.UIContext;
@@ -56,7 +56,7 @@ abstract class Background implements AffectsStatBackground,Stat {
 }
 final class Entertainer implements Background {
   @override
-  void apply(Map<StatNames,ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs,BuildContext context) {
+  void apply(Map<StatNames,ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs,BuildContext context) {
     stats[StatNames.Acrobatics]?.hasprofbounus+= 1;
     stats[StatNames.Performance]?.hasprofbounus+= 1;
     tools.add(ToolSkill("Набор для грима",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
@@ -68,12 +68,12 @@ final class Entertainer implements Background {
   }
 
   @override
-  void delete(Map<StatNames,ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
+  void delete(Map<StatNames,ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
     stats[StatNames.Acrobatics]?.hasprofbounus-= 1;
     stats[StatNames.Performance]?.hasprofbounus-= 1;
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
   }
-  Entertainer(Map<StatNames,ModifierStat> stats, Set<ToolSkill> tools,Set<Langs> langs,BuildContext context){
+  Entertainer(Map<StatNames,ProfBonusStat> stats, Set<ToolSkill> tools,Set<Langs> langs,BuildContext context){
     apply(stats, tools,langs,context);
   }
 
@@ -82,7 +82,7 @@ final class Entertainer implements Background {
 final class Urchin implements Background {
 
   @override
-  void apply(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools,Set<Langs> langs, BuildContext context) {
+  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools,Set<Langs> langs, BuildContext context) {
     stats[StatNames.Sleight_of_Hand]?.hasprofbounus +=1;
     stats[StatNames.Stealth]?.hasprofbounus +=1;
     tools.add(ToolSkill("Набор для грима",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
@@ -90,23 +90,23 @@ final class Urchin implements Background {
   }
 
   @override
-  void delete(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools,Set<Langs> langs) {
+  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools,Set<Langs> langs) {
     stats[StatNames.Sleight_of_Hand]?.hasprofbounus -=1;
     stats[StatNames.Stealth]?.hasprofbounus -=1;
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
   }
-  Urchin(Map<StatNames,ModifierStat> stats, Set<ToolSkill> tools,Set<Langs> langs,BuildContext context){
+  Urchin(Map<StatNames,ProfBonusStat> stats, Set<ToolSkill> tools,Set<Langs> langs,BuildContext context){
   apply(stats,tools,langs,context);
   }
 }
 final class Noble implements Background {
 
-  Noble(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+  Noble(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
     apply(stats, tools, langs, context);
   }
 
   @override
-  void apply(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools,Set<Langs> langs, BuildContext context) {
+  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools,Set<Langs> langs, BuildContext context) {
     stats[StatNames.History]?.hasprofbounus +=1;
     stats[StatNames.Persuasion]?.hasprofbounus +=1;
     tools.add(ToolSkill("игровой набор",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
@@ -117,7 +117,7 @@ final class Noble implements Background {
   }
 
   @override
-  void delete(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools,Set<Langs> langs) {
+  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools,Set<Langs> langs) {
     stats[StatNames.History]?.hasprofbounus -=1;
     stats[StatNames.Persuasion]?.hasprofbounus -=1;
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
@@ -125,14 +125,14 @@ final class Noble implements Background {
   }
   }
   final class Guild_artisan implements Background{
-  Guild_artisan(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+  Guild_artisan(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
     apply(stats, tools, langs, context);
   }
 
 
   
   @override
-  void apply(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
+  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
     stats[StatNames.Persuasion]?.hasprofbounus +=1;
     stats[StatNames.Insight]?.hasprofbounus +=1;
     tools.add(ToolSkill("инструменты ремесленников",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
@@ -141,7 +141,7 @@ final class Noble implements Background {
   }
   
   @override
-  void delete(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
+  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
     stats[StatNames.Persuasion]?.hasprofbounus -=1;
     stats[StatNames.Insight]?.hasprofbounus -=1;
     ToolSkill.deletebyMeta(tools,MetaFlags.IS_PICKED_ON_BG);
@@ -151,14 +151,14 @@ final class Noble implements Background {
   }
 
 final class Sailor implements Background{
-  Sailor(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+  Sailor(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
     apply(stats, tools, langs, context);
   }
 
 
 
   @override
-  void apply(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
+  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
     stats[StatNames.Athletics]?.hasprofbounus +=1;
     stats[StatNames.Perception]?.hasprofbounus +=1;
     tools.add(ToolSkill('инструменты навигатора',{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
@@ -166,7 +166,7 @@ final class Sailor implements Background{
     }
 
   @override
-  void delete(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
+  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
     stats[StatNames.Athletics]?.hasprofbounus -=1;
     stats[StatNames.Perception]?.hasprofbounus -=1;
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
@@ -177,13 +177,13 @@ final class Sailor implements Background{
 
 }
 final class Sage implements Background{
-  Sage(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+  Sage(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
     apply(stats, tools, langs, context);
   }
 
 
   @override
-  void apply(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
+  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
     stats[StatNames.History]?.hasprofbounus +=1;
     stats[StatNames.Arcana]?.hasprofbounus +=1;
     
@@ -197,7 +197,7 @@ final class Sage implements Background{
   }
 
   @override
-  void delete(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
+  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
     stats[StatNames.History]?.hasprofbounus -=1;
     stats[StatNames.Arcana]?.hasprofbounus -=1;
     Langs.deletebyMeta(langs, MetaFlags.IS_PICKED_ON_BG);
@@ -205,13 +205,13 @@ final class Sage implements Background{
 
 }
 final class Folk_Hero implements Background{
-  Folk_Hero(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+  Folk_Hero(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
     apply(stats, tools, langs, context);
   }
 
 
   @override
-  void apply(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
+  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
     stats[StatNames.Survival]?.hasprofbounus +=1;
     stats[StatNames.Animal_Handling]?.hasprofbounus +=1;
     tools.add(ToolSkill("инструменты ремесленников",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
@@ -219,7 +219,7 @@ final class Folk_Hero implements Background{
   }
 
   @override
-  void delete(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
+  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
     stats[StatNames.Survival]?.hasprofbounus -=1;
     stats[StatNames.Animal_Handling]?.hasprofbounus -=1;
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
@@ -227,13 +227,13 @@ final class Folk_Hero implements Background{
 
 }
 final class Hermit implements Background {
-  Hermit(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+  Hermit(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
     apply(stats, tools, langs, context);
   }
 
 
   @override
-  void apply(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
+  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
     stats[StatNames.Medicine]?.hasprofbounus+=1;
     stats[StatNames.Religion]?.hasprofbounus+=1;
     tools.add(ToolSkill("Набор травника",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
@@ -243,7 +243,7 @@ final class Hermit implements Background {
   }
 
   @override
-  void delete(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
+  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
     stats[StatNames.Medicine]?.hasprofbounus-=1;
     stats[StatNames.Religion]?.hasprofbounus-=1;
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
@@ -252,12 +252,12 @@ final class Hermit implements Background {
 }
 
 final class Pirate implements Background{
-  Pirate(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+  Pirate(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
     apply(stats, tools, langs, context);
   }
 
   @override
-  void apply(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
+  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
     stats[StatNames.Athletics]?.hasprofbounus+=1;
     stats[StatNames.Perception]?.hasprofbounus+=1;
     tools.add(ToolSkill("инструменты навигатора",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
@@ -265,7 +265,7 @@ final class Pirate implements Background{
   }
 
   @override
-  void delete(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
+  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
     stats[StatNames.Athletics]?.hasprofbounus-=1;
     stats[StatNames.Perception]?.hasprofbounus-=1;
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
@@ -275,12 +275,12 @@ final class Pirate implements Background{
 
 }
 final class Criminal implements Background{
-  Criminal(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+  Criminal(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
     apply(stats, tools, langs, context);
   }
 
   @override
-  void apply(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
+  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
     stats[StatNames.Stealth]?.hasprofbounus+=1;
     stats[StatNames.Deception]?.hasprofbounus+=1;
     tools.add(ToolSkill("воровские инструменты",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
@@ -288,7 +288,7 @@ final class Criminal implements Background{
   }
 
   @override
-  void delete(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
+  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
    stats[StatNames.Stealth]?.hasprofbounus-=1;
     stats[StatNames.Deception]?.hasprofbounus-=1;
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
@@ -296,12 +296,12 @@ final class Criminal implements Background{
 
 }
 final class Acolyte implements Background{
-  Acolyte(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+  Acolyte(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
     apply(stats, tools, langs, context);
   }
 
   @override
-  void apply(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
+  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
     stats[StatNames.Insight]?.hasprofbounus +=1;
     stats[StatNames.Religion]?.hasprofbounus +=1;
     Set<String>? r =Langs('').pickmany(context);
@@ -313,7 +313,7 @@ final class Acolyte implements Background{
   }
 
   @override
-  void delete(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
+  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
     stats[StatNames.Insight]?.hasprofbounus -=1;
     stats[StatNames.Religion]?.hasprofbounus -=1;
     Langs.deletebyMeta(langs, MetaFlags.IS_PICKED_ON_BG);
@@ -321,12 +321,12 @@ final class Acolyte implements Background{
 
 }
 final class Soldier implements Background{
-  Soldier(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+  Soldier(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
     apply(stats, tools, langs, context);
   }
 
   @override
-  void apply(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
+  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
     stats[StatNames.Athletics]?.hasprofbounus +=1;
     stats[StatNames.Intimidation]?.hasprofbounus +=1;
     tools.add(ToolSkill("наземный транспорт",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
@@ -334,7 +334,7 @@ final class Soldier implements Background{
   }
 
   @override
-  void delete(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
+  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
     stats[StatNames.Athletics]?.hasprofbounus -=1;
     stats[StatNames.Intimidation]?.hasprofbounus -=1;
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
@@ -342,12 +342,12 @@ final class Soldier implements Background{
 
 }
 final class Outlander implements Background{
-  Outlander(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+  Outlander(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
     apply(stats, tools, langs, context);
   }
 
   @override
-  void apply(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
+  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
     stats[StatNames.Athletics]?.hasprofbounus +=1;
     stats[StatNames.Survival]?.hasprofbounus +=1;
     tools.add(ToolSkill("музыкальные инструменты",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
@@ -356,19 +356,19 @@ final class Outlander implements Background{
   }
   
   @override
-  void delete(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
+  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
     stats[StatNames.Athletics]?.hasprofbounus -=1;
     stats[StatNames.Survival]?.hasprofbounus -=1;
     Langs.deletebyMeta(langs, MetaFlags.IS_PICKED_ON_BG);
   }
   }
   final class Charlatan implements Background{
-    Charlatan(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+    Charlatan(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
     apply(stats, tools, langs, context);
   }
 
   @override
-  void apply(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
+  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
     stats[StatNames.Sleight_of_Hand]?.hasprofbounus +=1;
     stats[StatNames.Deception]?.hasprofbounus +=1;
     tools.add(ToolSkill("набор для грима",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
@@ -376,7 +376,7 @@ final class Outlander implements Background{
   }
   
   @override
-  void delete(Map<StatNames, ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
+  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
     stats[StatNames.Sleight_of_Hand]?.hasprofbounus -=1;
     stats[StatNames.Deception]?.hasprofbounus -=1;
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);

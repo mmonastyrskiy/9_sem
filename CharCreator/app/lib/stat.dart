@@ -71,8 +71,8 @@ enum Skills {
 abstract interface class AffectsStat{}
 
 abstract interface class AffectsStatBackground implements AffectsStat {
-  void apply(Map<StatNames,ModifierStat> stats,Set<ToolSkill> tools, Set<Langs> langs, BuildContext context);
-  void delete(Map<StatNames,ModifierStat> stats, Set<ToolSkill> tools, Set<Langs> langs);
+  void apply(Map<StatNames,ProfBonusStat> stats,Set<ToolSkill> tools, Set<Langs> langs, BuildContext context);
+  void delete(Map<StatNames,ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs);
 }
 
 abstract interface class AffectsStatClass implements AffectsStat {
@@ -81,37 +81,72 @@ abstract interface class AffectsStatClass implements AffectsStat {
   void delete(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<Armor> canUseArmor,Set<Weapon> canUseWeapon,
   Set<ToolSkill> tools);
 }
+abstract interface class AffectsStatRace implements AffectsStat {
+  void apply(Map<BasicStatNames,BasicStat> stats,Size? size, int? speed,Set<Langs> langs,Set<ToolSkill> tools,Set<Armor> canUseArmor,Health health);
+  void delete(Map<BasicStatNames,BasicStat> stats,Size? size, int? speed,Set<Langs> langs,Set<ToolSkill> tools,Set<Armor> canUseArmor,Health health); // TODO: унификация?
+}
 
 
 abstract interface class Stat {
   
 
-
-
 }
-abstract interface class ModifierStat implements Stat{
+abstract interface class Updateable {
+  List<Modifier> affectedby = [];
+  void update(int effect, Set<MetaFlags> flags);
+  void deletebyMeta(MetaFlags m);
+}
+abstract interface class ProfBonusStat implements Stat{
   int hasprofbounus=0;
 }
-class BasicStat implements Stat {
+
+class BasicStat implements Stat,Updateable {
   late int value;
   int mod=0;
   int savingthrow =0;
+  List<Modifier> affectedby = [];
+
   int Stat2Modifier()=> mod=((value-10) / 2).floor();
 BasicStat(int val){
   value = val;
   mod = Stat2Modifier();
 }
-
-
-
-
+void update(int effect, Set<MetaFlags> flags){
+  value +=effect;
+  mod = Stat2Modifier();
+  affectedby.add(Modifier(effect,flags));
+  // TODO: Надо еще пересчитывать статы зависимые от базовых статов
 
 }
+ void deletebyMeta(MetaFlags m){
+    for(Modifier l in affectedby){
+      if (l.metadata.MetaFlags_.contains(m)){
+        affectedby.remove(l);
+        value + -1*l.value;
+        mod = Stat2Modifier();
+        // TODO: Надо еще пересчитывать статы зависимые от базовых статов
+      }
+    }
+  }
+
+}
+
+class Modifier{
+  int value = 0;
+  Meta metadata = Meta();
+  Modifier(this.value,Set<MetaFlags> flags){
+    metadata.MetaFlags_ = flags;
+
+  }
+}
+
+
+
 extension IntToBasicStat on int {
   BasicStat toBasicStat() => BasicStat(this);
 }
 
-final class Skill implements ModifierStat,Pickable{
+final class Skill implements ProfBonusStat,Pickable{
   late BasicStatNames bs;
   Meta metadata = Meta();
 
@@ -123,7 +158,7 @@ final class Skill implements ModifierStat,Pickable{
       case "Телосложение": bs = BasicStatNames.CON;
       case "интелект": bs = BasicStatNames.INT;
       case "мудрость": bs = BasicStatNames.WIS;
-      default: bs = BasicStatNames.CHR;
+      default: bs = BasicStatNames.CHR; // TODO: тут плохо, надо исключение
       
 
     }
@@ -215,9 +250,45 @@ if(include != null){
 
 
 
-class Health {
+class Health implements Updateable {
   int max_health=0;
   int current_health=0;
   DiceType? HitDice;
+  
+  @override
+  List<Modifier> affectedby= [];
+  
+  @override
+  void deletebyMeta(MetaFlags m) {
+    for(Modifier l in affectedby){
+      if (l.metadata.MetaFlags_.contains(m)){
+        affectedby.remove(l);
+        max_health + -1*l.value;
+      }
+    }
+  }
+  
+  @override
+  void update(int effect, Set<MetaFlags> flags) {
+  max_health +=effect;
+  affectedby.add(Modifier(effect,flags));
+  }
+}
+
+enum MindSets {
+  LG,
+  NG,
+  CG,
+  LN,
+  N,
+  CN,
+  LE,
+  NE,
+  CE,
+  ALL
+}
+
+enum Size {
+  SMALL,MEDIUM,LARGE
 }
  

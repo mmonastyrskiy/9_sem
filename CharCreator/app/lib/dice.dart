@@ -12,6 +12,9 @@ class DieResult
   DiceType? type;
   int result=0;
 DiceType dim2type (int dt){
+  if(dt <= 1){
+    throw ArgumentError("Illigal die side"); // TODO:  добавить обработку
+  }
   switch(dt){
     case 4: return DiceType.D4;
     case 6: return DiceType.D6;
@@ -75,11 +78,13 @@ class ThrowObject{
 List<DieResult> res = [];
 List<diceFactory> tothrow = [];
 
-int total() {
+int total({ bool clear_result = true}) {
   int t = 0;
   for (DieResult r in res){
     t += r.result;
   }
+ if(clear_result){clear();} 
+  
   return t;
 }
 void add(int dim,{int ammount=1}) {

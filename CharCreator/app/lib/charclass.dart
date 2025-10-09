@@ -8,6 +8,7 @@ import 'character.dart';
 import 'items.dart';
 import 'tool.dart';
 import 'package:flutter/material.dart';
+
 // ignore_for_file: constant_identifier_names
 
 enum CharClassNames {
@@ -38,11 +39,22 @@ abstract interface class CharClass implements AffectsStatClass{
 
     Set<ToolSkill> tools = c.getToolingskills();
     Map<BasicStatNames,BasicStat> stats = c.getbasicstats();
-    switch(chosen.toLowerCase()){
+    switch(chosen.toLowerCase()){ // TODO: возможно фабрики стоит переделать именно на аргументы из enum а не на строки
       case 'бард': return Bard(charHeath,stats,skills,CanUseArmor,canUseWeapon,tools,context);
       case 'варвар':return Barbarian(charHeath,stats,skills,CanUseArmor,canUseWeapon,tools,context);
+      case 'воин': return Fighter(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
+      case 'волшебник': return Wizzard(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
+      case 'друид': return Druid(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
+      case 'жрец': return Clerc(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
+      case 'изобретатель': return Artifier(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
+      case 'колдун': return Warlock(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
+      case 'монах': return Monk(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
+      case 'паладин': return Paladin(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
+      case 'плут': return Rouge(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
+      case 'следопыт': return Ranger(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
+      case 'чародей': return Sorcerer(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context); 
 
-      default: throw ArgumentError("Not implemented class");
+      default: throw ArgumentError("Not implemented class"); // TODO: нужен обработчик
     }
   }
 

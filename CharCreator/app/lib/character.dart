@@ -7,11 +7,13 @@ import 'langs.dart';
 import 'package:flutter/material.dart';
 import 'items.dart';
 import 'money.dart';
+import 'race.dart';
 
 
 class Character {
   late BuildContext UIContext;
   late String name;
+  Race? race;
   Background? bg;
   BasicStat STR = 10.toBasicStat();
   BasicStat DEX = 10.toBasicStat();
@@ -44,6 +46,8 @@ class Character {
   Set<Weapon> canUseWeapon = {};
   Money wallet =Money();
   List<Item> inventory = [];
+  Size? size;
+  int? speed;
 
 
 
