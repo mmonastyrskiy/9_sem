@@ -92,7 +92,7 @@ void add(int dim,{int ammount=1}) {
     return;
   }
 
-  for(int i=0; 1<ammount;i++){
+  for(int i=0; i<ammount;i++){
   switch(dim){
     case 4: tothrow.add(D4());
     case 6: tothrow.add(D6());
