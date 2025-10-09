@@ -1,30 +1,52 @@
 // ignore_for_file: constant_identifier_names
 
+// Импорт модуля метаданных
 import 'meta.dart';
+
+// Перечисление названий черт (особенностей) рас и классов
+// Черты представляют собой особые способности, которые получают персонажи
 enum TraitNames {
-  DarkVision,
-  GnomesCunning,
-  CommunicationWithSmallAnimals,
-  CraftKnowledge,
-  Tinker,
-  DwarvenResilience,
-  DwarvenCombatTraining,
-  DwarvenLodge
+  DarkVision,                      // Темное зрение - возможность видеть в темноте
+  GnomesCunning,                   // Гномья смекалка - устойчивость к ментальным эффектам
+  CommunicationWithSmallAnimals,   // Общение с мелкими животными
+  CraftKnowledge,                  // Знание ремесел - понимание механических устройств
+  Tinker,                          // Изобретательство - создание мелких механических устройств
+  DwarvenResilience,               // Стойкость дварфов - устойчивость к ядам
+  DwarvenCombatTraining,           // Боевая подготовка дварфов - владение боевым оружием
+  DwarvenLodge                     // Дварфская выучка - дополнительные хиты за уровень
 }
+
+// Класс для представления черт (особенностей) персонажа
+// Черты обычно получаются от расы, класса или других источников
 class Trait {
+  // Конкретная черта из перечисления
   TraitNames? trait;
-  Meta metadata=Meta();
+  // Метаданные для отслеживания происхождения и статуса черты
+  Meta metadata = Meta();
 
-
-  Trait(TraitNames this.trait,Set<MetaFlags> flags){
+  // Конструктор черты
+  // Аргументы:
+  // - trait: тип черты из перечисления TraitNames
+  // - flags: набор флагов метаданных, указывающих на источник черты
+  Trait(TraitNames this.trait, Set<MetaFlags> flags) {
+    // Устанавливаем флаги метаданных для отслеживания происхождения черты
     metadata.MetaFlags_ = flags;
   }
 
+  // Статический метод для удаления черт из набора по определенному мета-флагу
+  // Используется для очистки черт, полученных от определенного источника (расы, класса и т.д.)
+  // Аргументы:
+  // - traits: набор черт для фильтрации
+  // - flag: флаг метаданных для поиска и удаления
   static void deletebyMeta(Set<Trait> traits, MetaFlags flag) {
-    for(Trait s in traits){
-      if(s.metadata.MetaFlags_.contains(flag)){
+    // Проходим по всем чертам в наборе
+    for (Trait s in traits) {
+      // Проверяем, содержит ли текущая черта указанный мета-флаг
+      if (s.metadata.MetaFlags_.contains(flag)) {
+        // Если содержит - удаляем эту черту из набора
         traits.remove(s);
-        
+        // ВАЖНО: Этот код может вызвать ConcurrentModificationError!
+        // При удалении элемента во время итерации по коллекции
       }
     }
   }

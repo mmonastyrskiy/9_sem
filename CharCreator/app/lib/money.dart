@@ -1,67 +1,103 @@
 // ignore_for_file: non_constant_identifier_names, constant_identifier_names
+
+// Перечисление типов денежных единиц в игре
+// Деньги отсортированы от самых ценных к наименее ценным
 enum MoneyTypes {
-  Platinum,
-  Gold,
-  Elec,
-  Silver,
-  Coper
+  Platinum,  // Платина - самая ценная монета
+  Gold,      // Золото - основная валюта
+  Elec,      // Электрум - сплав золота и серебра
+  Silver,    // Серебро 
+  Coper      // Медь - наименее ценная монета
 }
 
+// Класс для представления денег персонажа
 class Money {
+  // Количество платиновых монет
   int platinum = 0;
+  // Количество золотых монет
   int gold = 0;
-  int elec= 0;
-  int silver=0;
-  int coper=0;
+  // Количество электрумовых монет
+  int elec = 0;
+  // Количество серебряных монет
+  int silver = 0;
+  // Количество медных монет
+  int coper = 0;
 
-  Money([this.platinum=0,this.gold=0,this.elec=0,this.silver=0,this.coper=0]);
-  void add([int platinum=0,int gold=0,int elec=0,int silver=0,int coper=0]) {
+  // Конструктор денег с значениями по умолчанию 0
+  // Позволяет создать объект с начальным количеством монет разных типов
+  Money([this.platinum = 0, this.gold = 0, this.elec = 0, this.silver = 0, this.coper = 0]);
+  
+  // Метод для добавления денег разных типов
+  // Аргументы имеют значения по умолчанию 0, можно добавлять только нужные типы
+  void add([int platinum = 0, int gold = 0, int elec = 0, int silver = 0, int coper = 0]) {
     this.platinum += platinum;
     this.gold += gold;
     this.elec += elec;
     this.silver += silver;
     this.coper += coper;
-    
   }
  
-  void add_gold(int a) => gold += a;
-  void add_plat(int a) => platinum += a;
-  void add_elec(int a) => elec += a;
-  void add_silver(int a) => silver += a;
-  void add_coper(int a) => gold += a;
-  int _to_coper() => platinum*1000+gold*100+elec*50+silver*10+coper;
-  void _optimize(int t){
-    platinum = t ~/ 1000;
-    t-= platinum*1000;
+  // Методы для добавления конкретных типов монет (удобные обертки)
+  void add_gold(int a) => gold += a;        // Добавить золотые монеты
+  void add_plat(int a) => platinum += a;    // Добавить платиновые монеты
+  void add_elec(int a) => elec += a;        // Добавить электрумовые монеты
+  void add_silver(int a) => silver += a;    // Добавить серебряные монеты
+  void add_coper(int a) => coper += a;       // добавить медные монеты
 
-    gold = t ~/ 100;
-    t-= gold*100;
+  // Приватный метод для конвертации всех денег в медные монеты (базовая единица)
+  // Используется для сравнения и вычислений
+  // Курс обмена: 1 платина = 1000 меди, 1 золото = 100 меди, 1 электрум = 50 меди, 1 серебро = 10 меди
+  int _to_coper() => platinum * 1000 + gold * 100 + elec * 50 + silver * 10 + coper;
 
-    elec = t ~/ 50;
-    t-= elec*50;
-
-    silver = t ~/ 10;
-    t-= silver*10;
+  // Приватный метод для оптимизации денег - конвертирует общее количество меди обратно в монеты разных типов
+  // Использует целочисленное деление для распределения по типам монет
+  void _optimize(int t) {
+    // Вычисляем количество платиновых монет
+    platinum = t ~/ 1000;  // Целочисленное деление на 1000
+    t -= platinum * 1000;  // Вычитаем учтенное количество меди
+    
+    // Вычисляем количество золотых монет
+    gold = t ~/ 100;       // Целочисленное деление на 100
+    t -= gold * 100;       // Вычитаем учтенное количество меди
+    
+    // Вычисляем количество электрумовых монет
+    elec = t ~/ 50;        // Целочисленное деление на 50
+    t -= elec * 50;        // Вычитаем учтенное количество меди
+    
+    // Вычисляем количество серебряных монет
+    silver = t ~/ 10;      // Целочисленное деление на 10
+    t -= silver * 10;      // Вычитаем учтенное количество меди
+    
+    // Остаток - медные монеты
     coper = t;
-
-
-
   }
-  bool buy(Price p){
-  if (p._to_coper() > _to_coper()){
-    return false;
+
+  // Метод для покупки предмета по указанной цене
+  // Аргумент: p - цена предмета
+  // Возвращает: bool - true если покупка успешна, false если недостаточно денег
+  bool buy(Price p) {
+    // Проверяем, достаточно ли денег у персонажа
+    if (p._to_coper() > _to_coper()) {
+      return false;  // Недостаточно денег - покупка не удалась
+    } else {
+      // Вычисляем новый баланс в медных монетах после покупки
+      int new_coper = _to_coper() - p._to_coper();
+      // Оптимизируем новый баланс по типам монет
+      _optimize(new_coper);
+      return true;  // Покупка успешна
+    }
   }
-  else{
-    int new_coper = _to_coper() - p._to_coper();
+  
+  // Метод для продажи предмета по указанной цене
+  // Аргумент: p - цена предмета
+  void sell(Price p) {
+    // Вычисляем новый баланс в медных монетах после продажи
+    int new_coper = _to_coper() + p._to_coper();
+    // Оптимизируем новый баланс по типам монет
     _optimize(new_coper);
-    return true;
-
-  }
-
+  }  
 }
-void sell(Price p) {
-  int new_coper = _to_coper() + p._to_coper();
-  _optimize(new_coper);
-}  
-}
-class Price extends Money{}
+
+// Класс для представления цены предмета
+// Наследуется от Money, так как цена использует ту же систему денежных единиц
+class Price extends Money {}

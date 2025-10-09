@@ -39,6 +39,7 @@ final class ToolSkill implements Stat,Pickable{
       case "набор для фальсификации": tooltype = ToolsNames.Forgery_Kit;
       case "водный транспорт": tooltype = ToolsNames.Water_Transport;
       case "наземный транспорт":tooltype = ToolsNames.Ground_Transport;
+      case "набор травника":tooltype=ToolsNames.Herbalism_Kit;
       default: throw ArgumentError('Unknown tool type');
     }
     metadata.MetaFlags_ = meta!;
@@ -65,7 +66,8 @@ static Map<String,ToolsNames> str2toolskill(){
       "набор для грима": ToolsNames.Disguise_Kit,
       "набор для фальсификации":ToolsNames.Forgery_Kit,
       "водный транспорт": ToolsNames.Water_Transport,
-      "наземный транспорт":ToolsNames.Ground_Transport
+      "наземный транспорт":ToolsNames.Ground_Transport,
+      "набор травника":ToolsNames.Herbalism_Kit
   };
 }
   @override

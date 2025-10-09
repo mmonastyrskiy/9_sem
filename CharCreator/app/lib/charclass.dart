@@ -1,7 +1,7 @@
 // ignore_for_file: non_constant_identifier_names, collection_methods_unrelated_type
 
+// Импорт необходимых модулей и библиотек
 import 'package:app/meta.dart';
-
 import 'stat.dart';
 import 'dice.dart';
 import 'character.dart';
@@ -11,37 +11,48 @@ import 'package:flutter/material.dart';
 
 // ignore_for_file: constant_identifier_names
 
+// Перечисление названий классов персонажей на английском
 enum CharClassNames {
-
-Bard,
-Barbarian,
-Fighter,
-Wizzard,
-Druid,
-Clerc,
-Artifier,
-Warlock,
-Monk,
-Paladin,
-Rouge,
-Ranger,
-Sorcerer
+  Bard,
+  Barbarian,
+  Fighter,
+  Wizzard,
+  Druid,
+  Clerc,
+  Artifier,
+  Warlock,
+  Monk,
+  Paladin,
+  Rouge,
+  Ranger,
+  Sorcerer
 }
 
-abstract interface class CharClass implements AffectsStatClass{
-  factory CharClass(String chosen,Character c) 
-  {
+// Абстрактный интерфейс для классов персонажей, реализующий AffectsStatClass
+// Использует фабричный конструктор для создания конкретных классов
+abstract interface class CharClass implements AffectsStatClass {
+  // Фабричный конструктор для создания объектов классов по названию
+  // Аргументы: chosen - название класса, c - объект персонажа
+  factory CharClass(String chosen, Character c) {
+    // Получаем здоровье персонажа
     Health charHeath = c.health;
+    // Получаем доступные типы брони
     Set<Armor> CanUseArmor = c.CanUseArmor;
+    // Получаем доступные типы оружия
     Set<Weapon> canUseWeapon = c.canUseWeapon;
+    // Получаем контекст UI
     BuildContext context = c.UIContext;
-    Map<StatNames,Skill> skills = c.getskills();
-
+    // Получаем навыки персонажа
+    Map<StatNames, Skill> skills = c.getskills();
+    // Получаем инструменты персонажа
     Set<ToolSkill> tools = c.getToolingskills();
-    Map<BasicStatNames,BasicStat> stats = c.getbasicstats();
-    switch(chosen.toLowerCase()){ // TODO: возможно фабрики стоит переделать именно на аргументы из enum а не на строки
-      case 'бард': return Bard(charHeath,stats,skills,CanUseArmor,canUseWeapon,tools,context);
-      case 'варвар':return Barbarian(charHeath,stats,skills,CanUseArmor,canUseWeapon,tools,context);
+    // Получаем базовые характеристики
+    Map<BasicStatNames, BasicStat> stats = c.getbasicstats();
+    
+    // Создаем конкретный класс based на переданном названии
+    switch (chosen.toLowerCase()) { // TODO: возможно фабрики стоит переделать именно на аргументы из enum а не на строки
+      case 'бард': return Bard(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
+      case 'варвар': return Barbarian(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
       case 'воин': return Fighter(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
       case 'волшебник': return Wizzard(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
       case 'друид': return Druid(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
@@ -54,208 +65,264 @@ abstract interface class CharClass implements AffectsStatClass{
       case 'следопыт': return Ranger(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
       case 'чародей': return Sorcerer(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context); 
 
+      // Если класс не найден, выбрасываем исключение
       default: throw ArgumentError("Not implemented class"); // TODO: нужен обработчик
     }
   }
-
 }
-final class Bard implements CharClass {
-  Bard(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<Armor> CanUseArmor,Set<Weapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
-    apply(charHeath,stats,skills,CanUseArmor,canUseWeapon, tools, context);
-  }
-  @override
-  void apply(Health charHeath,Map<BasicStatNames,BasicStat> stat,Map<StatNames,Skill> skills,Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context) {
-    charHeath.HitDice = DiceType.D8;
-    ThrowObject tosser = ThrowObject();
-    tosser.addDT(charHeath.HitDice!);
-    tosser.DoRoll();
-    CanUseArmor.add(Armor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.ShortSword,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.LongSword,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Rapier,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.HandCrossBow,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    tools.add(ToolSkill("музыкальные инструменты",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_CLASS}));
-    
 
+// Класс "Бард"
+final class Bard implements CharClass {
+  // Конструктор - автоматически применяет бонусы класса при создании
+  Bard(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+    apply(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
+  }
+  
+  @override
+  void apply(Health charHeath, Map<BasicStatNames, BasicStat> stat, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+    // Устанавливаем тип кости хитов для Барда - D8
+    charHeath.HitDice = DiceType.D8;
+    // Создаем объект для бросков костей
+    ThrowObject tosser = ThrowObject();
+    // Добавляем кость хитов для броска
+    tosser.addDT(charHeath.HitDice!);
+    // Выполняем бросок кости
+    tosser.DoRoll();
+    // Добавляем легкую броню в доступные типы
+    CanUseArmor.add(Armor(ArmorType.Light, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    // Добавляем простое оружие в доступные типы
+    canUseWeapon.add(Weapon(WeaponType.SimpleWeapon, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    // Добавляем короткий меч в доступные типы
+    canUseWeapon.add(Weapon(WeaponType.ShortSword, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    // Добавляем длинный меч в доступные типы
+    canUseWeapon.add(Weapon(WeaponType.LongSword, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    // Добавляем рапиру в доступные типы
+    canUseWeapon.add(Weapon(WeaponType.Rapier, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    // Добавляем ручной арбалет в доступные типы
+    canUseWeapon.add(Weapon(WeaponType.HandCrossBow, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    // Добавляем музыкальные инструменты в доступные инструменты
+    tools.add(ToolSkill("музыкальные инструменты", {MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_CLASS}));
+    
+    // Получаем модификатор телосложения
     int CONmodifier = stat[BasicStatNames.CON]!.mod;
-    charHeath.max_health = tosser.total()+CONmodifier;
+    // Устанавливаем максимальное здоровье как результат броска + модификатор телосложения
+    charHeath.max_health = tosser.total() + CONmodifier;
+    // Устанавливаем текущее здоровье равным максимальному
     charHeath.current_health = charHeath.max_health;
 
-    stat[BasicStatNames.DEX]!.savingthrow=1;
-    stat[BasicStatNames.CHR]!.savingthrow=1;
-    Set<String>? choise = Skill('').pickmany(context, null, 3);
-    for(String s in choise!)
-    {
-      Skills skilltoadd = Skill.string2skill()[s]!;
-      skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED_ON_CLASS);
-      skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED); 
-      skills[skilltoadd]!.hasprofbounus+=1;
-
-
-
-    }
+    // Устанавливаем бонус спасброска для ловкости
+    stat[BasicStatNames.DEX]!.savingthrow = 1;
+    // Устанавливаем бонус спасброска для харизмы
+    stat[BasicStatNames.CHR]!.savingthrow = 1;
     
+    // Позволяем игроку выбрать 3 навыка через UI
+    Set<String>? choise = Skill('').pickmany(context, null, 3);
+    // Обрабатываем выбранные навыки
+    for (String s in choise!) {
+      // Преобразуем строку в enum навыка
+      Skills skilltoadd = Skill.string2skill()[s]!;
+      // Добавляем метку выбора на классе к навыку
+      skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED_ON_CLASS);
+      // Добавляем общую метку выбора к навыку
+      skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED); 
+      // Увеличиваем бонус владения навыком
+      skills[skilltoadd]!.hasprofbounus += 1;
+    }
   }
 
   @override
-  void delete(Health charHeath,stat,Map<StatNames,Skill> skills,Set<Armor> CanUseArmor,Set<Weapon> canUseWeapon,Set<ToolSkill> tools) {
+  void delete(Health charHeath, stat, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools) {
+    // Сбрасываем кость хитов
     charHeath.HitDice = null;
+    // Сбрасываем максимальное здоровье
     charHeath.max_health = 0;
+    // Сбрасываем текущее здоровье
     charHeath.current_health = 0;
+    // Удаляем всю броню, помеченную как выбранная на классе
     Armor.deletebyMeta(CanUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
+    // Удаляем все оружие, помеченное как выбранное на классе
     Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
+    // Удаляем все инструменты, помеченные как выбранные на классе
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_CLASS);
-    stat[BasicStatNames.DEX]!.savingthrow=0;
-    stat[BasicStatNames.CHR]!.savingthrow=0;
-    Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
-
-
+    // Сбрасываем бонус спасброска для ловкости
+    stat[BasicStatNames.DEX]!.savingthrow = 0;
+    // Сбрасываем бонус спасброска для харизмы
+    stat[BasicStatNames.CHR]!.savingthrow = 0;
+    // Удаляем все навыки, помеченные как выбранные на классе
+    Skill.deletebyMeta(skills, MetaFlags.IS_PICKED_ON_CLASS);
   }
-
 }
-final class Barbarian implements CharClass{
-  Barbarian(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<Armor> CanUseArmor,Set<Weapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
-    apply(charHeath,stats,skills,CanUseArmor,canUseWeapon, tools, context);
+
+// Класс "Варвар"
+final class Barbarian implements CharClass {
+  // Конструктор
+  Barbarian(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+    apply(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
   }
   
   @override
   void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+    // Устанавливаем кость хитов D12 для Варвара (самая большая)
     charHeath.HitDice = DiceType.D12;
+    // Создаем объект для бросков
     ThrowObject tosser = ThrowObject();
+    // Добавляем кость хитов
     tosser.addDT(charHeath.HitDice!);
+    // Выполняем бросок
     tosser.DoRoll();
+    // Получаем модификатор телосложения
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
-    charHeath.max_health = tosser.total()+CONmodifier;
+    // Устанавливаем максимальное здоровье
+    charHeath.max_health = tosser.total() + CONmodifier;
+    // Устанавливаем текущее здоровье
     charHeath.current_health = charHeath.max_health;
 
-    canUseArmor.add(Armor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Medium,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Shield,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.MartialWearpon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    // Добавляем легкую броню
+    canUseArmor.add(Armor(ArmorType.Light, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    // Добавляем среднюю броню
+    canUseArmor.add(Armor(ArmorType.Medium, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    // Добавляем щиты
+    canUseArmor.add(Armor(ArmorType.Shield, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    // Добавляем простое оружие
+    canUseWeapon.add(Weapon(WeaponType.SimpleWeapon, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    // Добавляем воинское оружие
+    canUseWeapon.add(Weapon(WeaponType.MartialWearpon, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
 
-    stats[BasicStatNames.STR]!.savingthrow=1;
-    stats[BasicStatNames.CON]!.savingthrow=1;
+    // Устанавливаем бонус спасброска для силы
+    stats[BasicStatNames.STR]!.savingthrow = 1;
+    // Устанавливаем бонус спасброска для телосложения
+    stats[BasicStatNames.CON]!.savingthrow = 1;
 
-    Set<String>? choise = Skill('').pickmany(context, null, null,{Skills.Athletics,Skills.Perception,Skills.Survival,Skills.Intimidation,Skills.Animal_Handling});
-    for(String s in choise!)
-    {
+    // Позволяем выбрать навыки из ограниченного списка
+    Set<String>? choise = Skill('').pickmany(context, null, null, {Skills.Athletics, Skills.Perception, Skills.Survival, Skills.Intimidation, Skills.Animal_Handling});
+    // Обрабатываем выбранные навыки
+    for (String s in choise!) {
       Skills skilltoadd = Skill.string2skill()[s]!;
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED_ON_CLASS);
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED); 
-      skills[skilltoadd]!.hasprofbounus+=1;
-  }
+      skills[skilltoadd]!.hasprofbounus += 1;
+    }
   }
   
   @override
   void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools) {
+    // Сбрасываем кость хитов
     charHeath.HitDice = null;
+    // Сбрасываем максимальное здоровье
     charHeath.max_health = 0;
+    // Сбрасываем текущее здоровье
     charHeath.current_health = 0;
+    // Удаляем броню класса
     Armor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
+    // Удаляем оружие класса
     Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
-    stats[BasicStatNames.STR]!.savingthrow=0;
-    stats[BasicStatNames.CON]!.savingthrow=0;
-    Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
+    // Сбрасываем бонусы спасбросков
+    stats[BasicStatNames.STR]!.savingthrow = 0;
+    stats[BasicStatNames.CON]!.savingthrow = 0;
+    // Удаляем навыки класса
+    Skill.deletebyMeta(skills, MetaFlags.IS_PICKED_ON_CLASS);
   }
-
 }
 
-
-
-
-
-final class Fighter implements CharClass{
-  Fighter(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<Armor> CanUseArmor,Set<Weapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
-    apply(charHeath,stats,skills,CanUseArmor,canUseWeapon, tools, context);
+// Класс "Воин"
+final class Fighter implements CharClass {
+  // Конструктор
+  Fighter(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+    apply(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
   }
   
   @override
   void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+    // Устанавливаем кость хитов D10 для Воина
     charHeath.HitDice = DiceType.D10;
     ThrowObject tosser = ThrowObject();
     tosser.addDT(charHeath.HitDice!);
     tosser.DoRoll();
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
-    charHeath.max_health = tosser.total()+CONmodifier;
+    charHeath.max_health = tosser.total() + CONmodifier;
     charHeath.current_health = charHeath.max_health;
 
-    canUseArmor.add(Armor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Medium,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Heavy,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Shield,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.MartialWearpon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    stats[BasicStatNames.STR]!.savingthrow=1;
-    stats[BasicStatNames.CON]!.savingthrow=1;
+    // Добавляем все типы брони (легкую, среднюю, тяжелую и щиты)
+    canUseArmor.add(Armor(ArmorType.Light, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseArmor.add(Armor(ArmorType.Medium, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseArmor.add(Armor(ArmorType.Heavy, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseArmor.add(Armor(ArmorType.Shield, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    // Добавляем все типы оружия (простое и воинское)
+    canUseWeapon.add(Weapon(WeaponType.SimpleWeapon, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(Weapon(WeaponType.MartialWearpon, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    
+    // Устанавливаем бонусы спасбросков
+    stats[BasicStatNames.STR]!.savingthrow = 1;
+    stats[BasicStatNames.CON]!.savingthrow = 1;
 
+    // Позволяем выбрать навыки из широкого списка боевых и тактических навыков
     Set<String>? choise = Skill('').pickmany(context, null, null,
-    {Skills.Acrobatics,Skills.Athletics,Skills.Perception,Skills.Survival,Skills.Intimidation,Skills.History,Skills.Insight,Skills.Animal_Handling});
-    for(String s in choise!)
-    {
+    {Skills.Acrobatics, Skills.Athletics, Skills.Perception, Skills.Survival, Skills.Intimidation, Skills.History, Skills.Insight, Skills.Animal_Handling});
+    
+    // Обрабатываем выбранные навыки
+    for (String s in choise!) {
       Skills skilltoadd = Skill.string2skill()[s]!;
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED_ON_CLASS);
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED); 
-      skills[skilltoadd]!.hasprofbounus+=1;
-  }
+      skills[skilltoadd]!.hasprofbounus += 1;
+    }
   }
   
   @override
   void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools) {
+    // Сбрасываем здоровье
     charHeath.HitDice = null;
     charHeath.max_health = 0;
     charHeath.current_health = 0;
+    // Удаляем броню и оружие класса
     Armor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
     Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
-    Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
-    stats[BasicStatNames.STR]!.savingthrow=0;
-    stats[BasicStatNames.CON]!.savingthrow=0;
-
-    
-
+    // Удаляем навыки класса
+    Skill.deletebyMeta(skills, MetaFlags.IS_PICKED_ON_CLASS);
+    // Сбрасываем бонусы спасбросков
+    stats[BasicStatNames.STR]!.savingthrow = 0;
+    stats[BasicStatNames.CON]!.savingthrow = 0;
   }
-
-  
 }
-final class Wizzard implements CharClass{
-  Wizzard(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<Armor> CanUseArmor,Set<Weapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
-    apply(charHeath,stats,skills,CanUseArmor,canUseWeapon, tools, context);
+
+// Класс "Волшебник" (остальные классы имеют аналогичную структуру)
+final class Wizzard implements CharClass {
+  Wizzard(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+    apply(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
   }
   
   @override
   void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+    // У Волшебника самая маленькая кость хитов - D6
     charHeath.HitDice = DiceType.D6;
     ThrowObject tosser = ThrowObject();
     tosser.addDT(charHeath.HitDice!);
     tosser.DoRoll();
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
-    charHeath.max_health = tosser.total()+CONmodifier;
+    charHeath.max_health = tosser.total() + CONmodifier;
     charHeath.current_health = charHeath.max_health;
 
+    // Волшебник может использовать только простое оружие
+    canUseWeapon.add(Weapon(WeaponType.Dagger, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(Weapon(WeaponType.Dart, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(Weapon(WeaponType.Sling, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(Weapon(WeaponType.CombatStaff, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(Weapon(WeaponType.LightCrossBow, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
 
-    canUseWeapon.add(Weapon(WeaponType.Dagger,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Dart,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Sling,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.CombatStaff,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.LightCrossBow,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    // Бонусы спасбросков для интеллекта и мудрости
+    stats[BasicStatNames.INT]!.savingthrow = 1;
+    stats[BasicStatNames.WIS]!.savingthrow = 1;
 
-
-    stats[BasicStatNames.INT]!.savingthrow=1;
-    stats[BasicStatNames.WIS]!.savingthrow=1;
-
-
+    // Навыки связанные с знаниями и магией
     Set<String>? choise = Skill('').pickmany(context, null, null,
-    {Skills.History,Skills.Arcana,Skills.Medicine,Skills.Perception,Skills.Investigation,Skills.Religion});
-    for(String s in choise!)
-    {
+    {Skills.History, Skills.Arcana, Skills.Medicine, Skills.Perception, Skills.Investigation, Skills.Religion});
+    
+    for (String s in choise!) {
       Skills skilltoadd = Skill.string2skill()[s]!;
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED_ON_CLASS);
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED); 
-      skills[skilltoadd]!.hasprofbounus+=1;
-  }
-
-
+      skills[skilltoadd]!.hasprofbounus += 1;
+    }
   }
   
   @override
@@ -264,18 +331,30 @@ final class Wizzard implements CharClass{
     charHeath.max_health = 0;
     charHeath.current_health = 0;
 
+    // Удаляем оружие класса
     Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
 
+    // Сбрасываем бонусы спасбросков
+    stats[BasicStatNames.INT]!.savingthrow = 0;
+    stats[BasicStatNames.WIS]!.savingthrow = 0;
 
-    stats[BasicStatNames.INT]!.savingthrow=0;
-    stats[BasicStatNames.WIS]!.savingthrow=0;
-
-    Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
+    // Удаляем навыки класса
+    Skill.deletebyMeta(skills, MetaFlags.IS_PICKED_ON_CLASS);
   }
 }
-final class Druid implements CharClass{
-  Druid(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<Armor> CanUseArmor,Set<Weapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
-    apply(charHeath,stats,skills,CanUseArmor,canUseWeapon, tools, context);
+
+// Остальные классы (Druid, Clerc, Artifier, Warlock, Monk, Paladin, Rouge, Ranger, Sorcerer)
+// имеют аналогичную структуру с различными комбинациями:
+// - Кости хитов (D6, D8, D10, D12)
+// - Доступные типы брони и оружия
+// - Бонусы спасбросков
+// - Навыки для выбора
+// - Инструменты
+
+// Класс "Друид"
+final class Druid implements CharClass {
+  Druid(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+    apply(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
   }
   
   @override
@@ -285,38 +364,39 @@ final class Druid implements CharClass{
     tosser.addDT(charHeath.HitDice!);
     tosser.DoRoll();
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
-    charHeath.max_health = tosser.total()+CONmodifier; //TODO: Есть вариант альтернативно выбрать серидину
+    charHeath.max_health = tosser.total() + CONmodifier; //TODO: Есть вариант альтернативно выбрать серидину
     charHeath.current_health = charHeath.max_health;
 
-    canUseArmor.add(Armor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Medium,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Shield,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    // Друид может использовать легкую, среднюю броню и щиты (но не металлические)
+    canUseArmor.add(Armor(ArmorType.Light, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseArmor.add(Armor(ArmorType.Medium, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseArmor.add(Armor(ArmorType.Shield, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
 
-    canUseWeapon.add(Weapon(WeaponType.CombatStaff,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Mace,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Dart,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Club,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Javeline,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Scimitar,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Sickle,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    // Характерное для друида оружие
+    canUseWeapon.add(Weapon(WeaponType.CombatStaff, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(Weapon(WeaponType.Mace, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(Weapon(WeaponType.Dart, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(Weapon(WeaponType.Club, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(Weapon(WeaponType.Javeline, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(Weapon(WeaponType.Scimitar, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(Weapon(WeaponType.Sickle, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
 
-    tools.add(ToolSkill("набор травника",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_CLASS}));
+    // Набор травника - характерный инструмент друида
+    tools.add(ToolSkill("набор травника", {MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_CLASS}));
 
-    stats[BasicStatNames.INT]!.savingthrow=1;
-    stats[BasicStatNames.WIS]!.savingthrow=1;
+    stats[BasicStatNames.INT]!.savingthrow = 1;
+    stats[BasicStatNames.WIS]!.savingthrow = 1;
 
+    // Навыки связанные с природой и выживанием
     Set<String>? choise = Skill('').pickmany(context, null, null,
-    {Skills.Perception,Skills.Survival,Skills.Arcana,Skills.Medicine,Skills.Animal_Handling,Skills.Nature,Skills.Insight,Skills.Religion});
-    for(String s in choise!)
-    {
+    {Skills.Perception, Skills.Survival, Skills.Arcana, Skills.Medicine, Skills.Animal_Handling, Skills.Nature, Skills.Insight, Skills.Religion});
+    
+    for (String s in choise!) {
       Skills skilltoadd = Skill.string2skill()[s]!;
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED_ON_CLASS);
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED); 
-      skills[skilltoadd]!.hasprofbounus+=1;
-  }
-
-
-
+      skills[skilltoadd]!.hasprofbounus += 1;
+    }
   }
   
   @override
@@ -324,16 +404,15 @@ final class Druid implements CharClass{
     charHeath.HitDice = null;
     charHeath.max_health = 0;
     charHeath.current_health = 0;
+    
     Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
     Armor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_CLASS);
 
-    stats[BasicStatNames.INT]!.savingthrow=0;
-    stats[BasicStatNames.WIS]!.savingthrow=0;
+    stats[BasicStatNames.INT]!.savingthrow = 0;
+    stats[BasicStatNames.WIS]!.savingthrow = 0;
 
-    Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
-
-
+    Skill.deletebyMeta(skills, MetaFlags.IS_PICKED_ON_CLASS);
   }
 }
 

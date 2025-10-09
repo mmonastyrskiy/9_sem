@@ -1,86 +1,119 @@
 // ignore_for_file: constant_identifier_names
+
+// Импорт необходимых модулей
 import 'meta.dart';
 import 'money.dart';
 
-
+// Абстрактный интерфейс для представления любого предмета в игре
 abstract interface class Item {
+  // Базовый интерфейс, который могут реализовывать все предметы
+  // Не содержит методов, служит только для маркировки объектов как предметов
 }
 
-abstract interface class SellableItem{
-Price price =Price();
+// Абстрактный интерфейс для предметов, которые можно продавать/покупать
+abstract interface class SellableItem {
+  // Цена предмета - используется для торговли и экономики
+  Price price = Price();
 }
 
+// Перечисление типов брони в игре
 enum ArmorType {
-  Light,
-  Medium,
-  Heavy,
-  Shield
+  Light,    // Легкая броня - обеспечивает базовую защиту, не ограничивает движения
+  Medium,   // Средняя броня - баланс между защитой и подвижностью
+  Heavy,    // Тяжелая броня - максимальная защита, но ограничивает подвижность
+  Shield    // Щит - дополнительная защита, обычно используется в одной руке
 }
 
-enum WeaponType{
-  SimpleWeapon,
-  MartialWearpon,
-  LongSword,
-  ShortSword,
-  Rapier,
-  HandCrossBow,
-  Dagger,
-  Dart,
-  Sling,
-  CombatStaff,
-  LightCrossBow,
-  Mace,
-  Club,
-  Javeline,
-  Sickle,
-  Scimitar
+// Перечисление типов оружия в игре
+enum WeaponType {
+  SimpleWeapon,    // Простое оружие - базовое оружие, доступное всем классам
+  MartialWearpon,  // Воинское оружие - специализированное оружие для военных классов
+  LongSword,       // Длинный меч - двуручное рубящее/колющее оружие
+  ShortSword,      // Короткий меч - одноручное легкое оружие
+  Rapier,          // Рапира - изящное колющее оружие для фехтования
+  HandCrossBow,    // Ручной арбалет - небольшое метательное оружие
+  Dagger,          // Кинжал - маленькое скрытое оружие
+  Dart,            // Дротик - метательное оружие для ближней дистанции
+  Sling,           // Праща - простое метательное оружие
+  CombatStaff,     // Боевой посох - простое двуручное оружие
+  LightCrossBow,   // Легкий арбалет - метательное оружие средней мощности
+  Mace,            // Булава - дробящее оружие
+  Club,            // Дубина - простое дробящее оружие
+  Javeline,        // Метательное копье - оружие для бросков
+  Sickle,          // Серп - легкое режущее оружие
+  Scimitar         // Скимитар - изогнутый меч для режущих ударов
 }
 
-
+// Перечисление общих категорий оружия (для группировки)
 enum OverallWeaponType {
-  SimpleWeapon,
-  MartialWearpon
+  SimpleWeapon,   // Простое оружие - базовая категория
+  MartialWearpon  // Воинское оружие - продвинутая категория
 }
 
+// Класс, представляющий броню в игре
+class Armor implements Item {
+  // Тип брони (легкая, средняя, тяжелая, щит)
+  ArmorType? type; 
+  // Метаданные брони - флаги, указывающие на происхождение, статус и т.д.
+  Meta metadata = Meta();
 
-class Armor implements Item{
-ArmorType? type; 
-Meta metadata = Meta();
+  // Конструктор брони
+  // Аргументы:
+  // - armor: тип создаваемой брони
+  // - metadata: необязательный набор флагов метаданных
+  Armor(ArmorType armor, [Set<MetaFlags>? metadata]) {
+    // Устанавливаем тип брони
+    type = armor;
+    // Устанавливаем метаданные (если переданы) или оставляем пустыми
+    this.metadata.MetaFlags_ = metadata!;
+  }
 
-Armor(ArmorType armor, [Set<MetaFlags>? metadata]){
-  type = armor;
-  this.metadata.MetaFlags_ = metadata!;
-}
-
-static void deletebyMeta(Set<Armor>? armor,MetaFlags m){
-    for(Armor l in armor!){
-      if (l.metadata.MetaFlags_.contains(m)){
+  // Статический метод для удаления брони из набора по определенному мета-флагу
+  // Аргументы:
+  // - armor: набор брони для фильтрации (может быть null)
+  // - m: флаг метаданных для поиска и удаления
+  static void deletebyMeta(Set<Armor>? armor, MetaFlags m) {
+    // Проходим по всем элементам брони в наборе
+    for (Armor l in armor!) {
+      // Проверяем, содержит ли текущий элемент брони указанный мета-флаг
+      if (l.metadata.MetaFlags_.contains(m)) {
+        // Если содержит - удаляем этот элемент из набора
         armor.remove(l);
       }
     }
   }
-  
-
 }
 
+// Класс, представляющий оружие в игре
+class Weapon implements Item {
+  // Тип оружия (меч, лук, посох и т.д.)
+  WeaponType? type;
+  // Метаданные оружия - флаги для отслеживания статуса и происхождения
+  Meta metadata = Meta();
 
-class Weapon implements Item{
-WeaponType? type;
-Meta metadata = Meta();
+  // Конструктор оружия
+  // Аргументы:
+  // - weapon: тип создаваемого оружия
+  // - metadata: необязательный набор флагов метаданных
+  Weapon(WeaponType weapon, [Set<MetaFlags>? metadata]) {
+    // Устанавливаем метаданные (если переданы)
+    this.metadata.MetaFlags_ = metadata!;
+    // Устанавливаем тип оружия
+    type = weapon;
+  }
 
-Weapon(WeaponType weapon, [Set<MetaFlags>? metadata]){
-  this.metadata.MetaFlags_ = metadata!;
-  type = weapon;
-}
-
-static void deletebyMeta(Set<Weapon>? weapon,MetaFlags m){
-    for(Weapon l in weapon!){
-      if (l.metadata.MetaFlags_.contains(m)){
+  // Статический метод для удаления оружия из набора по определенному мета-флагу
+  // Аргументы:
+  // - weapon: набор оружия для фильтрации (может быть null)
+  // - m: флаг метаданных для поиска и удаления
+  static void deletebyMeta(Set<Weapon>? weapon, MetaFlags m) {
+    // Проходим по всем элементам оружия в наборе
+    for (Weapon l in weapon!) {
+      // Проверяем, содержит ли текущий элемент оружия указанный мета-флаг
+      if (l.metadata.MetaFlags_.contains(m)) {
+        // Если содержит - удаляем этот элемент из набора
         weapon.remove(l);
       }
     }
   }
-  
-
 }
-
