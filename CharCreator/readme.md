@@ -107,6 +107,7 @@ late BuildContext UIContext;      // Контекст UI
 late String name;                // Имя персонажа
 Race? race;                      // Раса персонажа
 Background? bg;                  // Предыстория
+CharClass? class_;               // класс персонажа
 
 // Базовые характеристики
 BasicStat STR = 10.toBasicStat();
@@ -554,6 +555,7 @@ classDiagram
         +String name
         +Race? race
         +Background? bg
+        +CharClass? class_;
         +BasicStat STR, DEX, CON, INT, WIS, CHR
         +Skill Acrobatics, Animal_Handling, etc.
         +Set~ToolSkill~ tools

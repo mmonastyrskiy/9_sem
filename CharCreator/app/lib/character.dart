@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'items.dart';
 import 'money.dart';
 import 'race.dart';
+import 'charclass.dart';
 
 // Основной класс персонажа для RPG системы
 class Character {
@@ -20,6 +21,7 @@ class Character {
   Race? race;
   // Предыстория персонажа (может быть null если не выбрана)
   Background? bg;
+  CharClass? class_;
   
   // Базовые характеристики персонажа (сила, ловкость, телосложение, интеллект, мудрость, харизма)
   // Инициализируются стандартным значением 10
