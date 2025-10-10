@@ -454,7 +454,7 @@ Character player = Character(context);
 player.race = Race("лесной гном", player);
 
 // Установка класса
-player.bg = CharClass("бард", player);
+player.class_ = CharClass("бард", player);
 
 // Установка предыстории
 player.bg = Background("артист", player);
