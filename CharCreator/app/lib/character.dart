@@ -51,6 +51,12 @@ class Character {
   Skill? Sleight_of_Hand = Skill("сила");
   Skill? Stealth = Skill("сила");
   Skill? Survival = Skill("сила");
+  int ProfBonus = 2;
+  int lvl=1;
+  int exp = 0;
+  late int PassiveInsight = WIS.mod + 10;
+  late int InitiativeBonus = DEX.mod;
+  late int armor = 10 + DEX.mod;
   
   // Коллекции инструментов и языков персонажа
   Set<ToolSkill> tools = {};
