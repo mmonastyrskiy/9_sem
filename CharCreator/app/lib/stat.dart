@@ -98,10 +98,10 @@ abstract interface class AffectsStatClass implements AffectsStat {
 abstract interface class AffectsStatRace implements AffectsStat {
   // Применяет эффекты расы к характеристикам, размеру, скорости, языкам, инструментам, броне и здоровью
   void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, 
-             Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health);
+             Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon);
   // Удаляет эффекты расы
   void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, 
-              Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health); // TODO: унификация?
+              Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,Set<Weapon> canUseWeapon); // TODO: унификация?
 }
 
 // Базовый интерфейс для всех статистик
@@ -124,7 +124,7 @@ abstract interface class ProfBonusStat implements Stat {
 }
 
 // Класс для базовых характеристик (сила, ловкость, телосложение, интеллект, мудрость, харизма)
-class BasicStat implements Stat, Updateable {
+class BasicStat implements Stat, Updateable,Pickable {
   late int value;        // Базовое значение характеристики (например, 15 для силы)
   int mod = 0;           // Модификатор характеристики (рассчитывается из value)
   int savingthrow = 0;   // Бонус спасброска (0 - нет, 1 - есть)
@@ -170,6 +170,36 @@ class BasicStat implements Stat, Updateable {
       }
     }
   }
+  
+
+
+  @override
+  Set<String> menu=str2BasicStat().keys.toSet();
+  
+  @override
+  Set ret=str2BasicStat().values.toSet();
+  
+  @override
+  String? pick(BuildContext bc) {
+    // TODO: implement pick
+    throw UnimplementedError();
+  }
+  
+  @override
+  Set<String>? pickmany(BuildContext bc, [List<String>? initialSelections, int howmany = 2]) {
+    // TODO: implement pickmany
+    throw UnimplementedError();
+  }
+ static Map<String,BasicStatNames> str2BasicStat(){
+  return {
+  "сила" :BasicStatNames.STR,  // Сила
+  "ловкость":BasicStatNames.DEX,  // Ловкость
+  "телосложение":BasicStatNames.CON,  // Телосложение
+  "интеллект":BasicStatNames.INT,  // Интеллект
+  "мудрость":BasicStatNames.WIS,  // Мудрость
+  "харизма":BasicStatNames.CHR   // Харизма
+};
+}
 }
 
 // Класс для представления модификатора (изменения значения)
@@ -235,6 +265,36 @@ final class Skill implements ProfBonusStat, Pickable {
       'убеждение': Skills.Persuasion  
     };
   }
+
+
+
+
+
+ static Map<Skills,StatNames> S2SN() {
+    return {
+      Skills.Athletics:StatNames.Athletics,
+      Skills.Acrobatics:StatNames.Acrobatics,
+      Skills.Sleight_of_Hand:StatNames.Sleight_of_Hand,
+      Skills.Stealth:StatNames.Stealth,
+      Skills.Investigation:StatNames.Investigation,
+      Skills.History:StatNames.History,
+      Skills.Arcana:StatNames.Arcana,
+      Skills.Nature:StatNames.Nature,
+      Skills.Religion:StatNames.Religion,
+      Skills.Perception:StatNames.Perception,
+      Skills.Survival:StatNames.Survival,
+      Skills.Medicine:StatNames.Medicine,
+      Skills.Insight:StatNames.Insight,
+      Skills.Animal_Handling:StatNames.Animal_Handling,
+      Skills.Performance:StatNames.Performance,
+      Skills.Intimidation:StatNames.Intimidation,
+      Skills.Deception:StatNames.Deception,
+      Skills.Persuasion:StatNames.Persuasion  
+    };
+  }
+
+
+
 
   // Статический метод для удаления бонусов владения по мета-флагу
   static void deletebyMeta(Map<StatNames, Skill> skills, MetaFlags flag) {

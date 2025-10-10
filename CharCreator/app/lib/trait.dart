@@ -18,7 +18,20 @@ enum TraitNames {
   Brave,
   AgilityOfHalflings,
   StabilityOfStocky,
-  NaturalStealth
+  NaturalStealth,
+  LegacyOfDragons,
+  BreathWeapon,
+  ChosenDamageResistance,
+  MenacingLook,
+  UnwaveringResilience,
+  FerociousAttacks,
+  FaerieLegacy,
+  HellishResistance,
+  DevilsLegacy,
+  HeightenedSenses,
+  Trance,
+  FastFeet,
+  CamouflageInTheWilderness
 }
 
 // Класс для представления черт (особенностей) персонажа

@@ -26,6 +26,8 @@ enum BackgroundNames  {
   Charlatan
 }
 
+// TODO: У большинства статов не прописана Мета, на тот момент класса Modifier не было. Надо адаптировать через вызов поля metadata у Stats
+
 // Абстрактный класс Background, реализующий два интерфейса
 // Использует фабричный конструктор для создания конкретных предысторий
 abstract class Background implements AffectsStatBackground, Stat {

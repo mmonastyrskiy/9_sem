@@ -117,10 +117,10 @@ class Character {
   // Возвращает Map всех навыков персонажа
   Map<StatNames, Skill> getskills() {
     return {
-      StatNames.Acrobatics: ?Acrobatics,              // Акробатика
       StatNames.Animal_Handling: ?Animal_Handling,    // Уход за животными
       StatNames.Arcana: ?Arcana,                      // Магия
       StatNames.Athletics: ?Athletics,                // Атлетика
+      StatNames.Acrobatics: ?Acrobatics,              // Акробатика
       StatNames.Deception: ?Deception,                // Обман
       StatNames.History: ?History,                    // История
       StatNames.Insight: ?Insight,                    // Проницательность

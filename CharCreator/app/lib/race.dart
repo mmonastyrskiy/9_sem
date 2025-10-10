@@ -3,6 +3,7 @@
 
 // Импорт необходимых модулей
 import 'package:app/meta.dart';
+import 'package:flutter/material.dart';
 import 'tool.dart';
 import 'stat.dart';
 import 'character.dart';
@@ -14,11 +15,13 @@ import 'items.dart';
 enum RaceName {
   Gnome,        // Гном
   Dwarf,        // Дварф
-  Halfing,      // Полурослик 
+  Dragonborn,    // Драконорожденный
+  HalfOrc,       // Полуорк
+  Halfing,      // Полурослик
   HalfElf,      // Полуэльф
   Elf,          // Эльф
-  Human,        // Человек
-  Tiefling      // Тифлинг
+  Tiefling,      // Тифлинг
+  Human          // Человек
 }
 
 // Перечисление подрас в игре
@@ -29,6 +32,8 @@ enum SubRaces {
   HillDwarf,       // Холмовой дварф
   StockyHalfling,      // Коренастый полурослик
   LighFootedHalfling,        // легконогий полурослик
+  HighElf,                   // Высший эльф
+  ForestElf                   // лесной эльф 
 
 }
 
@@ -58,14 +63,282 @@ abstract interface class Race implements AffectsStatRace {
     Set<Armor> CanUseArmor = c.CanUseArmor;
     // Получаем здоровье персонажа
     Health health = c.health;
+    Map<StatNames, Skill> skills = c.getskills();
+    BuildContext context = c.UIContext;
+    Set<Weapon> canUseWeapon = c.canUseWeapon;
 
     // Создаем конкретную расу based на переданном названии
-    switch(chosen) {
-      case 'лесной гном': return ForestGnome(stats, size, speed, langs, tools, CanUseArmor, health);
-      default: throw ArgumentError("Not implemented Race"); // TODO: добавить другие расы
-    }
+    switch(chosen.toLowerCase()) {
+      case 'лесной гном': return ForestGnome(stats, size, speed, langs, tools, CanUseArmor, health,skills,context,canUseWeapon);
+      case 'скальный гном':return RockGnome(stats, size, speed, langs, tools, CanUseArmor, health, skills, context, canUseWeapon);
+      case 'горный дварф':return MountainDwarf(stats, size, speed, langs, tools, CanUseArmor, health, skills, context, canUseWeapon);
+      case 'холмовой дварф':return HillDwarf(stats, size, speed, langs, tools, CanUseArmor, health, skills, context, canUseWeapon);
+      case 'коренастый полурослик': return StockyHalfling(stats, size, speed, langs, tools, CanUseArmor, health, skills, context, canUseWeapon);
+      case 'легконогий полурослик':return LighFootedHalfling(stats, size, speed, langs, tools, CanUseArmor, health, skills, context, canUseWeapon);
+      case 'высший эльф':return HighElf(stats, size, speed, langs, tools, CanUseArmor, health, skills, context, canUseWeapon);
+      case 'лесной эльф': return ForestElf(stats, size, speed, langs, tools, CanUseArmor, health, skills, context, canUseWeapon);
+      case 'драконорожденный':return Dragonborn(stats, size, speed, langs, tools, CanUseArmor, health, skills, context, canUseWeapon);
+      case 'полуорк':return HalfOrc(stats, size, speed, langs, tools, CanUseArmor, health, skills, context, canUseWeapon);
+      case 'полуэльф':return HalfElf(stats, size, speed, langs, tools, CanUseArmor, health, skills, context, canUseWeapon);
+      case 'тифлинг':return Tiefling(stats, size, speed, langs, tools, CanUseArmor, health, skills, context, canUseWeapon);
+      case 'человек':return Human(stats, size, speed, langs, tools, CanUseArmor, health, skills, context, canUseWeapon);
+      default: throw ArgumentError("Not implemented Race"); 
+  }
   }
 }
+
+
+
+
+final class Tiefling implements Race {
+  Tiefling(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
+    apply(stats, size, speed, langs, tools, canUseArmor, health,skills,context,canUseWeapon);
+  }
+  
+  @override
+  List<MindSets> PossibleMindset=[MindSets.ALL];
+  
+  @override
+  Set<Trait> traits={};
+  
+  @override
+  void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health, Map<StatNames, Skill> skills, BuildContext context,Set<Weapon> canUseWeapon) {
+     // Бонус к силе +2 с меткой от расы
+    stats[BasicStatNames.CHR]?.update(2, {MetaFlags.AFFECTED_BY_RACE});
+    // Бонус к харизме +1 с меткой от расы
+    stats[BasicStatNames.INT]?.update(1, {MetaFlags.AFFECTED_BY_RACE});
+    size = Size.MEDIUM;
+    speed = 30;
+    traits.add(Trait(TraitNames.DarkVision, {MetaFlags.AFFECTED_BY_RACE}));
+    traits.add(Trait(TraitNames.HellishResistance, {MetaFlags.AFFECTED_BY_RACE}));
+    traits.add(Trait(TraitNames.DevilsLegacy, {MetaFlags.AFFECTED_BY_RACE}));
+    langs.add(Langs('общий', {MetaFlags.AFFECTED_BY_RACE, MetaFlags.IS_PICKED}));
+    langs.add(Langs('инфернальный', {MetaFlags.IS_PICKED, MetaFlags.AFFECTED_BY_RACE}));
+  }
+  
+  @override
+  void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health, Map<StatNames, Skill> skills,Set<Weapon> canUseWeapon) {
+    stats[BasicStatNames.INT]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    stats[BasicStatNames.CHR]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    size = null;
+    speed = null;
+    Trait.deletebyMeta(traits, MetaFlags.AFFECTED_BY_RACE);
+    Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
+  }
+}
+
+
+final class Human implements Race{
+  @override
+  List<MindSets> PossibleMindset = [MindSets.ALL];
+
+  @override
+  Set<Trait> traits={};
+
+
+  Human(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
+    apply(stats, size, speed, langs, tools, canUseArmor, health,skills,context,canUseWeapon);
+  }
+
+  @override
+  void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health, Map<StatNames, Skill> skills, BuildContext context,Set<Weapon> canUseWeapon) {
+    stats[BasicStatNames.STR]?.update(1, {MetaFlags.AFFECTED_BY_RACE});
+    stats[BasicStatNames.DEX]?.update(1, {MetaFlags.AFFECTED_BY_RACE});
+    stats[BasicStatNames.CON]?.update(1, {MetaFlags.AFFECTED_BY_RACE});
+    stats[BasicStatNames.INT]?.update(1, {MetaFlags.AFFECTED_BY_RACE});
+    stats[BasicStatNames.WIS]?.update(1, {MetaFlags.AFFECTED_BY_RACE});
+    stats[BasicStatNames.CHR]?.update(1, {MetaFlags.AFFECTED_BY_RACE});
+    size = Size.MEDIUM;
+    speed = 30;
+    langs.add(Langs('общий', {MetaFlags.AFFECTED_BY_RACE, MetaFlags.IS_PICKED}));
+    Langs ch = Langs(Langs('').pick(context) ?? '',{MetaFlags.IS_PICKED,MetaFlags.IS_PICKED_ON_RACE,MetaFlags.AFFECTED_BY_RACE});
+    langs.add(ch);
+
+
+
+  }
+
+  @override
+  void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health, Map<StatNames, Skill> skills,Set<Weapon> canUseWeapon) {
+    stats[BasicStatNames.STR]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    stats[BasicStatNames.CON]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    stats[BasicStatNames.INT]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    stats[BasicStatNames.DEX]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    stats[BasicStatNames.WIS]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    stats[BasicStatNames.CHR]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    size = null;
+    speed = null;
+    Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
+
+
+  }
+
+}
+
+abstract class Elf implements Race {
+  @override
+  List<MindSets> PossibleMindset= [MindSets.ALL];
+
+}
+
+final class Dragonborn implements Race {
+
+  Dragonborn(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
+    apply(stats, size, speed, langs, tools, canUseArmor, health,skills,context,canUseWeapon);
+  }
+  @override
+  List<MindSets> PossibleMindset = [MindSets.ALL];
+
+  @override
+  Set<Trait> traits={};
+
+  @override
+  void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, 
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
+   // Бонус к силе +2 с меткой от расы
+    stats[BasicStatNames.STR]?.update(2, {MetaFlags.AFFECTED_BY_RACE});
+    // Бонус к харизме +1 с меткой от расы
+    stats[BasicStatNames.CHR]?.update(1, {MetaFlags.AFFECTED_BY_RACE});
+
+    size = Size.MEDIUM;
+    speed = 30;
+    traits.add(Trait(TraitNames.LegacyOfDragons, {MetaFlags.AFFECTED_BY_RACE}));
+    traits.add(Trait(TraitNames.BreathWeapon, {MetaFlags.AFFECTED_BY_RACE}));
+    traits.add(Trait(TraitNames.BreathWeapon, {MetaFlags.AFFECTED_BY_RACE}));
+    traits.add(Trait(TraitNames.ChosenDamageResistance, {MetaFlags.AFFECTED_BY_RACE}));
+    langs.add(Langs('общий', {MetaFlags.AFFECTED_BY_RACE, MetaFlags.IS_PICKED}));
+    langs.add(Langs('драконий', {MetaFlags.IS_PICKED, MetaFlags.AFFECTED_BY_RACE}));
+  }
+
+  @override
+  void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
+   Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,Set<Weapon> canUseWeapon) {
+    stats[BasicStatNames.STR]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    stats[BasicStatNames.CHR]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    // Сбрасываем размер
+    size = null;
+    // Сбрасываем скорость
+    speed = null;
+    Trait.deletebyMeta(traits, MetaFlags.AFFECTED_BY_RACE);
+    Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
+  }
+
+}
+
+
+final class HalfElf implements Race{
+  @override
+  List<MindSets> PossibleMindset=[MindSets.ALL];
+
+  @override
+  Set<Trait> traits={};
+
+
+  HalfElf(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
+    apply(stats, size, speed, langs, tools, canUseArmor, health,skills,context,canUseWeapon);
+  }
+
+  @override
+  void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health, Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
+    stats[BasicStatNames.STR]?.update(2, {MetaFlags.AFFECTED_BY_RACE});
+    traits.add(Trait(TraitNames.DarkVision, {MetaFlags.AFFECTED_BY_RACE}));
+    traits.add(Trait(TraitNames.FaerieLegacy, {MetaFlags.AFFECTED_BY_RACE}));
+    Set<String>? chosen = BasicStat().pickmany(context);
+    for(String s in chosen!){
+      BasicStatNames? t = BasicStat.str2BasicStat()[s];
+      stats[t]?.update(1, {MetaFlags.AFFECTED_BY_RACE,MetaFlags.IS_PICKED,MetaFlags.IS_PICKED_ON_RACE});
+    }
+    size = Size.MEDIUM;
+    speed = 30;
+    Set<String>? choise = Skill('').pickmany(context, null, null, {Skills.Athletics, Skills.Perception, Skills.Survival, Skills.Intimidation, Skills.Animal_Handling});
+    // Обрабатываем выбранные навыки
+    for (String s in choise!) {
+      Skills skilltoadd = Skill.string2skill()[s]!;
+      StatNames? SN2add = Skill.S2SN()[skilltoadd];
+      skills[SN2add]!.addMeta(MetaFlags.IS_PICKED_ON_RACE);
+      skills[SN2add]!.addMeta(MetaFlags.IS_PICKED); 
+      skills[SN2add]!.hasprofbounus += 1; //  TODO: Какой-то колхоз, в классе это работало без обертки S2SN, надо разобраться
+      Langs ch = Langs(Langs('').pick(context) ?? '',{MetaFlags.IS_PICKED,MetaFlags.IS_PICKED_ON_RACE,MetaFlags.AFFECTED_BY_RACE});
+    langs.add(ch);
+    langs.add(Langs('общий',{MetaFlags.AFFECTED_BY_RACE,MetaFlags.IS_PICKED}));
+    langs.add(Langs('эльфийский',{MetaFlags.AFFECTED_BY_RACE,MetaFlags.IS_PICKED}));
+    }
+  }
+
+  @override
+  void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health, Map<StatNames, Skill> skills,Set<Weapon> canUseWeapon) {
+    size = null;
+    speed = null;
+    Trait.deletebyMeta(traits, MetaFlags.AFFECTED_BY_RACE);
+    Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
+    Skill.deletebyMeta(skills, MetaFlags.AFFECTED_BY_RACE);
+
+
+    stats[BasicStatNames.STR]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    stats[BasicStatNames.DEX]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    stats[BasicStatNames.CON]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    stats[BasicStatNames.INT]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    stats[BasicStatNames.WIS]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    stats[BasicStatNames.CHR]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+  }
+
+}
+
+
+final class HalfOrc implements Race {
+
+  HalfOrc(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
+    apply(stats, size, speed, langs, tools, canUseArmor, health,skills,context,canUseWeapon);
+  }
+  @override
+  List<MindSets> PossibleMindset = [MindSets.ALL];
+
+  @override
+  Set<Trait> traits={};
+
+  @override
+  void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, 
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill>skills,BuildContext context,Set<Weapon> canUseWeapon) {
+   // Бонус к силе +2 с меткой от расы
+    stats[BasicStatNames.STR]?.update(2, {MetaFlags.AFFECTED_BY_RACE});
+    // Бонус к харизме +1 с меткой от расы
+    stats[BasicStatNames.CON]?.update(1, {MetaFlags.AFFECTED_BY_RACE});
+
+    size = Size.MEDIUM;
+    speed = 30;
+    traits.add(Trait(TraitNames.DarkVision, {MetaFlags.AFFECTED_BY_RACE}));
+    traits.add(Trait(TraitNames.MenacingLook, {MetaFlags.AFFECTED_BY_RACE}));
+    skills[StatNames.Intimidation]?.hasprofbounus +=1;
+    skills[StatNames.Intimidation]?.metadata.MetaFlags_.add(MetaFlags.AFFECTED_BY_RACE);
+    traits.add(Trait(TraitNames.UnwaveringResilience, {MetaFlags.AFFECTED_BY_RACE}));
+    traits.add(Trait(TraitNames.FerociousAttacks, {MetaFlags.AFFECTED_BY_RACE}));
+    langs.add(Langs('общий', {MetaFlags.AFFECTED_BY_RACE, MetaFlags.IS_PICKED}));
+    langs.add(Langs('орочий', {MetaFlags.IS_PICKED, MetaFlags.AFFECTED_BY_RACE}));
+  }
+
+  @override
+  void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health,skills,Set<Weapon> canUseWeapon) {
+    stats[BasicStatNames.STR]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    stats[BasicStatNames.CON]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    // Сбрасываем размер
+    size = null;
+    // Сбрасываем скорость
+    speed = null;
+    Trait.deletebyMeta(traits, MetaFlags.AFFECTED_BY_RACE);
+    Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
+    Skill.deletebyMeta(skills, MetaFlags.AFFECTED_BY_RACE);
+  }
+
+}
+
+
+
+
 
 // Абстрактный класс для расы Гномов
 abstract class Gnome implements Race {
@@ -100,14 +373,14 @@ final class ForestGnome extends Gnome {
   
   // Конструктор лесного гнома - автоматически применяет расовые бонусы
   ForestGnome(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
-  Set<Armor> canUseArmor, Health health) {
-    apply(stats, size, speed, langs, tools, canUseArmor, health);
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
+    apply(stats, size, speed, langs, tools, canUseArmor, health,skills,context,canUseWeapon);
   }
 
   // Применяет расовые бонусы лесного гнома к персонажу
   @override
   void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
-  Set<Armor> canUseArmor, Health health) {
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
     // Бонус к интеллекту +2 с меткой от расы
     stats[BasicStatNames.INT]?.update(2, {MetaFlags.AFFECTED_BY_RACE});
     // Бонус к ловкости +1 с меткой от расы
@@ -131,9 +404,10 @@ final class ForestGnome extends Gnome {
   // Удаляет расовые бонусы лесного гнома у персонажа
   @override
   void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, 
-  Set<Armor> canUseArmor, Health health) {
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,Set<Weapon> canUseWeapon) {
     // Удаляем бонусы к характеристикам по метке расы
     stats[BasicStatNames.INT]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    stats[BasicStatNames.DEX]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
     // Сбрасываем размер
     size = null;
     // Сбрасываем скорость
@@ -153,14 +427,14 @@ final class RockGnome extends Gnome {
   
   // Конструктор скального гнома
   RockGnome(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, 
-  Set<Armor> canUseArmor, Health health) {
-    apply(stats, size, speed, langs, tools, canUseArmor, health);
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
+    apply(stats, size, speed, langs, tools, canUseArmor, health,skills,context,canUseWeapon);
   }
 
   // Применяет расовые бонусы скального гнома к персонажу
   @override
   void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, 
-  Set<Armor> canUseArmor, Health health) {
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
     // Бонус к интеллекту +2
     stats[BasicStatNames.INT]?.update(2, {MetaFlags.AFFECTED_BY_RACE});
     // Бонус к телосложению +1
@@ -188,7 +462,7 @@ final class RockGnome extends Gnome {
   // Удаляет расовые бонусы скального гнома
   @override
   void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
-  Set<Armor> canUseArmor, Health health) {
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,Set<Weapon> canUseWeapon) {
     // Удаляем бонусы к характеристикам
     stats[BasicStatNames.INT]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
     stats[BasicStatNames.CON]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
@@ -210,14 +484,14 @@ final class MountainDwarf extends Dwarf {
 
   // Конструктор горного дварфа
   MountainDwarf(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
-  Set<Armor> canUseArmor, Health health) {
-    apply(stats, size, speed, langs, tools, canUseArmor, health);
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
+    apply(stats, size, speed, langs, tools, canUseArmor, health,skills,context,canUseWeapon);
   }
 
   // Применяет расовые бонусы горного дварфа к персонажу
   @override
   void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
-  Set<Armor> canUseArmor, Health health) {
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
     // Бонус к телосложению +2
     stats[BasicStatNames.CON]?.update(2, {MetaFlags.AFFECTED_BY_RACE});
     // Бонус к силе +1
@@ -246,7 +520,7 @@ final class MountainDwarf extends Dwarf {
   // Удаляет расовые бонусы горного дварфа
   @override
   void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
-  Set<Armor> canUseArmor, Health health) {
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,Set<Weapon> canUseWeapon) {
     // Удаляем бонусы к характеристикам
     stats[BasicStatNames.STR]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
     stats[BasicStatNames.CON]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
@@ -269,14 +543,14 @@ final class HillDwarf extends Dwarf {
 
   // Конструктор холмового дварфа
   HillDwarf(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
-  Set<Armor> canUseArmor, Health health) {
-    apply(stats, size, speed, langs, tools, canUseArmor, health);
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
+    apply(stats, size, speed, langs, tools, canUseArmor, health,skills,context,canUseWeapon);
   }
 
   // Применяет расовые бонусы холмового дварфа к персонажу
   @override
   void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, 
-  Set<Armor> canUseArmor, Health health) {
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
     // Бонус к телосложению +2
     stats[BasicStatNames.CON]?.update(2, {MetaFlags.AFFECTED_BY_RACE});
     // Бонус к мудрости +1
@@ -306,7 +580,7 @@ final class HillDwarf extends Dwarf {
   // Удаляет расовые бонусы холмового дварфа
   @override
   void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, 
-  Set<Armor> canUseArmor, Health health) {
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,Set<Weapon> canUseWeapon) {
     // Удаляем бонусы к характеристикам
     stats[BasicStatNames.WIS]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
     stats[BasicStatNames.CON]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
@@ -326,12 +600,13 @@ final class StockyHalfling extends Halfing{
   Set<Trait> traits={};
 
 StockyHalfling(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
-  Set<Armor> canUseArmor, Health health) {
-    apply(stats, size, speed, langs, tools, canUseArmor, health);
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
+    apply(stats, size, speed, langs, tools, canUseArmor, health,skills,context,canUseWeapon);
   }
 
   @override
-  void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health) {
+  void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
+   Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
     stats[BasicStatNames.DEX]?.update(2, {MetaFlags.AFFECTED_BY_RACE});
     stats[BasicStatNames.CON]?.update(1, {MetaFlags.AFFECTED_BY_RACE});
         size = Size.SMALL;
@@ -349,7 +624,8 @@ StockyHalfling(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set
   }
 
   @override
-  void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health) {
+  void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
+   Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,Set<Weapon> canUseWeapon) {
     stats[BasicStatNames.DEX]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
     stats[BasicStatNames.CON]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
     size=null;
@@ -367,12 +643,13 @@ final class LighFootedHalfling extends Halfing{
   Set<Trait> traits={};
 
 LighFootedHalfling(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
-  Set<Armor> canUseArmor, Health health) {
-    apply(stats, size, speed, langs, tools, canUseArmor, health);
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
+    apply(stats, size, speed, langs, tools, canUseArmor, health,skills,context,canUseWeapon);
   }
 
   @override
-  void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health) {
+  void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
+   Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
     stats[BasicStatNames.CHR]?.update(2, {MetaFlags.AFFECTED_BY_RACE});
     stats[BasicStatNames.CON]?.update(1, {MetaFlags.AFFECTED_BY_RACE});
         size = Size.SMALL;
@@ -390,7 +667,8 @@ LighFootedHalfling(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed,
   }
 
   @override
-  void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health) {
+  void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, 
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,Set<Weapon> canUseWeapon) {
     stats[BasicStatNames.DEX]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
     stats[BasicStatNames.CHR]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
     size=null;
@@ -398,6 +676,108 @@ LighFootedHalfling(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed,
 
     Trait.deletebyMeta(traits, MetaFlags.AFFECTED_BY_RACE);
     Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
+  }
+
+}
+final class HighElf extends Elf{
+
+  HighElf(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
+    apply(stats, size, speed, langs, tools, canUseArmor, health,skills,context,canUseWeapon);
+  }
+
+  @override
+  Set<Trait> traits={};
+
+  @override
+  void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health, Map<StatNames, Skill> skills, BuildContext context,Set<Weapon> canUseWeapon) {
+    stats[BasicStatNames.DEX]?.update(2, {MetaFlags.AFFECTED_BY_RACE});
+    stats[BasicStatNames.INT]?.update(1, {MetaFlags.AFFECTED_BY_RACE});
+    size = Size.MEDIUM;
+    // Скорость 25 футов
+    speed = 30;
+    traits.add(Trait(TraitNames.DarkVision, {MetaFlags.AFFECTED_BY_RACE}));
+    traits.add(Trait(TraitNames.HeightenedSenses, {MetaFlags.AFFECTED_BY_RACE}));
+    skills[StatNames.Insight]?.hasprofbounus +=1;
+    skills[StatNames.Insight]?.metadata.MetaFlags_.add(MetaFlags.AFFECTED_BY_RACE);
+    traits.add(Trait(TraitNames.FaerieLegacy, {MetaFlags.AFFECTED_BY_RACE}));
+    traits.add(Trait(TraitNames.Trance, {MetaFlags.AFFECTED_BY_RACE}));
+    langs.add(Langs('общий', {MetaFlags.AFFECTED_BY_RACE, MetaFlags.IS_PICKED}));
+    langs.add(Langs('эльфийский', {MetaFlags.IS_PICKED, MetaFlags.AFFECTED_BY_RACE}));
+    //TODO: магия 
+    Langs ch = Langs(Langs('').pick(context) ?? '',{MetaFlags.IS_PICKED,MetaFlags.IS_PICKED_ON_RACE,MetaFlags.AFFECTED_BY_RACE});
+    langs.add(ch);
+    canUseWeapon.add(Weapon(WeaponType.LongSword,{MetaFlags.IS_PICKED_ON_RACE,MetaFlags.AFFECTED_BY_RACE}));
+    canUseWeapon.add(Weapon(WeaponType.ShortSword,{MetaFlags.IS_PICKED_ON_RACE,MetaFlags.AFFECTED_BY_RACE}));
+    canUseWeapon.add(Weapon(WeaponType.ShortBow,{MetaFlags.IS_PICKED_ON_RACE,MetaFlags.AFFECTED_BY_RACE}));
+    canUseWeapon.add(Weapon(WeaponType.LongBow,{MetaFlags.IS_PICKED_ON_RACE,MetaFlags.AFFECTED_BY_RACE}));
+
+  }
+
+  @override
+  void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, 
+  Set<Armor> canUseArmor, Health health, Map<StatNames, Skill> skills,Set<Weapon> canUseWeapon) {
+    stats[BasicStatNames.DEX]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    stats[BasicStatNames.INT]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    size = null;
+    // Скорость 25 футов
+    speed = null;
+    Trait.deletebyMeta(traits, MetaFlags.AFFECTED_BY_RACE);
+    Skill.deletebyMeta(skills, MetaFlags.AFFECTED_BY_RACE);
+    Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
+    Weapon.deletebyMeta(canUseWeapon, MetaFlags.AFFECTED_BY_RACE);
+  }
+
+}
+
+
+
+final class ForestElf extends Elf{
+
+  ForestElf(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
+    apply(stats, size, speed, langs, tools, canUseArmor, health,skills,context,canUseWeapon);
+  }
+
+  @override
+  Set<Trait> traits={};
+
+  @override
+  void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health, Map<StatNames, Skill> skills, BuildContext context,Set<Weapon> canUseWeapon) {
+    stats[BasicStatNames.DEX]?.update(2, {MetaFlags.AFFECTED_BY_RACE});
+    stats[BasicStatNames.WIS]?.update(1, {MetaFlags.AFFECTED_BY_RACE});
+    size = Size.MEDIUM;
+    // Скорость 25 футов
+    speed = 35;
+    traits.add(Trait(TraitNames.FastFeet, {MetaFlags.AFFECTED_BY_RACE}));
+    traits.add(Trait(TraitNames.CamouflageInTheWilderness, {MetaFlags.AFFECTED_BY_RACE}));
+    traits.add(Trait(TraitNames.DarkVision, {MetaFlags.AFFECTED_BY_RACE}));
+    traits.add(Trait(TraitNames.HeightenedSenses, {MetaFlags.AFFECTED_BY_RACE}));
+    skills[StatNames.Insight]?.hasprofbounus +=1;
+    skills[StatNames.Insight]?.metadata.MetaFlags_.add(MetaFlags.AFFECTED_BY_RACE);
+    traits.add(Trait(TraitNames.FaerieLegacy, {MetaFlags.AFFECTED_BY_RACE}));
+    traits.add(Trait(TraitNames.Trance, {MetaFlags.AFFECTED_BY_RACE}));
+    langs.add(Langs('общий', {MetaFlags.AFFECTED_BY_RACE, MetaFlags.IS_PICKED}));
+    langs.add(Langs('эльфийский', {MetaFlags.IS_PICKED, MetaFlags.AFFECTED_BY_RACE}));
+    canUseWeapon.add(Weapon(WeaponType.LongSword,{MetaFlags.IS_PICKED_ON_RACE,MetaFlags.AFFECTED_BY_RACE}));
+    canUseWeapon.add(Weapon(WeaponType.ShortSword,{MetaFlags.IS_PICKED_ON_RACE,MetaFlags.AFFECTED_BY_RACE}));
+    canUseWeapon.add(Weapon(WeaponType.ShortBow,{MetaFlags.IS_PICKED_ON_RACE,MetaFlags.AFFECTED_BY_RACE}));
+    canUseWeapon.add(Weapon(WeaponType.LongBow,{MetaFlags.IS_PICKED_ON_RACE,MetaFlags.AFFECTED_BY_RACE}));
+
+  }
+
+  @override
+  void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, 
+  Set<Armor> canUseArmor, Health health, Map<StatNames, Skill> skills,Set<Weapon> canUseWeapon) {
+    stats[BasicStatNames.DEX]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    stats[BasicStatNames.WIS]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    size = null;
+    // Скорость 25 футов
+    speed = null;
+    Trait.deletebyMeta(traits, MetaFlags.AFFECTED_BY_RACE);
+    Skill.deletebyMeta(skills, MetaFlags.AFFECTED_BY_RACE);
+    Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
+    Weapon.deletebyMeta(canUseWeapon, MetaFlags.AFFECTED_BY_RACE);
   }
 
 }
