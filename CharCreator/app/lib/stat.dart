@@ -134,9 +134,17 @@ class BasicStat implements Stat, Updateable {
 
   // Метод для расчета модификатора характеристики по D&D правилам: (value - 10) / 2 с округлением вниз
   int Stat2Modifier() => mod = ((value - 10) / 2).floor();
+  BasicStat generate(){
+    ThrowObject tosser = ThrowObject();
+    tosser.add(6,ammount: 6);
+    tosser.DoRoll();
+    value = tosser.total();
+    Stat2Modifier();
+    return this;
+  }
   
   // Конструктор базовой характеристики
-  BasicStat(int val) {
+  BasicStat([int val=10]) {
     value = val;          // Устанавливаем базовое значение
     mod = Stat2Modifier(); // Рассчитываем модификатор
   }

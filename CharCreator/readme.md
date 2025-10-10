@@ -110,12 +110,12 @@ Background? bg;                  // Предыстория
 CharClass? class_;               // класс персонажа
 
 // Базовые характеристики
-BasicStat STR = 10.toBasicStat();
-BasicStat DEX = 10.toBasicStat();
-BasicStat CON = 10.toBasicStat();
-BasicStat INT = 10.toBasicStat();
-BasicStat WIS = 10.toBasicStat();
-BasicStat CHR = 10.toBasicStat();
+BasicStat DEX = BasicStat().generate(); // ловкость
+BasicStat CON = BasicStat().generate(); // телосложение
+BasicStat INT = BasicStat().generate(); // интеллект
+BasicStat STR = BasicStat().generate(); // сила
+BasicStat WIS = BasicStat().generate(); // мудрость
+BasicStat CHR = BasicStat().generate(); // харизма
 
 // Навыки
 Skill? Acrobatics = Skill("сила");
@@ -143,6 +143,7 @@ int? speed;                      // Скорость перемещения
 - `Set<Langs> getLangs()` - возвращает языки
 - `int getModifier(BasicStatNames s)` - возвращает модификатор характеристики
 
+
 ## Система статистик
 
 ### BasicStat
@@ -160,6 +161,7 @@ List<Modifier> affectedby = [];  // Список модификаторов
 - `int Stat2Modifier()` - вычисляет модификатор по D&D правилам
 - `void update(int effect, Set<MetaFlags> flags)` - обновляет значение
 - `void deletebyMeta(MetaFlags m)` - удаляет модификаторы по флагу
+- `BasicStat generate()` - генерация значения харрактеристики на основе броска кубика
 
 ### Skill
 **Назначение**: Представляет навык персонажа.

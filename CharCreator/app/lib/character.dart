@@ -25,12 +25,12 @@ class Character {
   
   // Базовые характеристики персонажа (сила, ловкость, телосложение, интеллект, мудрость, харизма)
   // Инициализируются стандартным значением 10
-  BasicStat STR = 10.toBasicStat();
-  BasicStat DEX = 10.toBasicStat();
-  BasicStat CON = 10.toBasicStat();
-  BasicStat INT = 10.toBasicStat();
-  BasicStat WIS = 10.toBasicStat();
-  BasicStat CHR = 10.toBasicStat();
+  BasicStat STR = BasicStat().generate();
+  BasicStat DEX = BasicStat().generate();
+  BasicStat CON = BasicStat().generate();
+  BasicStat INT = BasicStat().generate();
+  BasicStat WIS = BasicStat().generate();
+  BasicStat CHR = BasicStat().generate();
   
   // Навыки персонажа, инициализируются с временным значением "сила"
   Skill? Acrobatics = Skill("сила");

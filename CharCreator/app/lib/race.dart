@@ -14,8 +14,6 @@ import 'items.dart';
 enum RaceName {
   Gnome,        // Гном
   Dwarf,        // Дварф
-  Dragonborn,   // Драконорожденный
-  HalfOrc,      // Полуорк
   Halfing,      // Полурослик 
   HalfElf,      // Полуэльф
   Elf,          // Эльф
@@ -28,7 +26,10 @@ enum SubRaces {
   ForestGnome,    // Лесной гном
   RockGnome,      // Скальный гном
   MountainDwarf,  // Горный дварф
-  HillDwarf       // Холмовой дварф
+  HillDwarf,       // Холмовой дварф
+  StockyHalfling,      // Коренастый полурослик
+  LighFootedHalfling,        // легконогий полурослик
+
 }
 
 // Абстрактный интерфейс для рас, реализующий AffectsStatRace
@@ -68,21 +69,30 @@ abstract interface class Race implements AffectsStatRace {
 
 // Абстрактный класс для расы Гномов
 abstract class Gnome implements Race {
+   @override
+  List<MindSets> PossibleMindset = [MindSets.ALL];
   // Базовый класс для всех подрас гномов
   // Определяет общие характеристики для гномов
 }
 
 // Абстрактный класс для расы Дварфов
 abstract class Dwarf implements Race {
+   @override
+  List<MindSets> PossibleMindset = [MindSets.ALL];
   // Базовый класс для всех подрас дварфов
   // Определяет общие характеристики для дварфов
+}
+abstract class Halfing implements Race{
+  @override
+  List<MindSets> PossibleMindset = [MindSets.ALL];
+  // Базовый класс для всех подрас полуросликов
+  // Определяет общие характеристики для полуросликов
 }
 
 // Конкретный класс для Лесного Гнома
 final class ForestGnome extends Gnome {
   // Список возможных мировоззрений - ВСЕ (неограниченный выбор)
-  @override
-  List<MindSets> PossibleMindset = [MindSets.ALL];
+
   
   // Набор черт лесного гнома
   @override
@@ -137,8 +147,7 @@ final class ForestGnome extends Gnome {
 
 // Конкретный класс для Скального Гнома
 final class RockGnome extends Gnome {
-  @override
-  List<MindSets> PossibleMindset = [MindSets.ALL];
+
   @override
   Set<Trait> traits = {};
   
@@ -195,8 +204,7 @@ final class RockGnome extends Gnome {
 
 // Конкретный класс для Горного Дварфа
 final class MountainDwarf extends Dwarf {
-  @override
-  List<MindSets> PossibleMindset = [MindSets.ALL];
+
   @override
   Set<Trait> traits = {};
 
@@ -255,8 +263,7 @@ final class MountainDwarf extends Dwarf {
 
 // Конкретный класс для Холмового Дварфа
 final class HillDwarf extends Dwarf {
-  @override
-  List<MindSets> PossibleMindset = [MindSets.ALL];
+ 
   @override
   Set<Trait> traits = {};
 
@@ -313,4 +320,84 @@ final class HillDwarf extends Dwarf {
     ToolSkill.deletebyMeta(tools, MetaFlags.AFFECTED_BY_RACE);
     Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
   }
+}
+final class StockyHalfling extends Halfing{
+  @override
+  Set<Trait> traits={};
+
+StockyHalfling(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
+  Set<Armor> canUseArmor, Health health) {
+    apply(stats, size, speed, langs, tools, canUseArmor, health);
+  }
+
+  @override
+  void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health) {
+    stats[BasicStatNames.DEX]?.update(2, {MetaFlags.AFFECTED_BY_RACE});
+    stats[BasicStatNames.CON]?.update(1, {MetaFlags.AFFECTED_BY_RACE});
+        size = Size.SMALL;
+    // Скорость 25 футов
+    speed = 25;
+     
+     traits.add(Trait(TraitNames.Lucky, {MetaFlags.AFFECTED_BY_RACE}));
+     traits.add(Trait(TraitNames.Brave, {MetaFlags.AFFECTED_BY_RACE}));
+     traits.add(Trait(TraitNames.AgilityOfHalflings, {MetaFlags.AFFECTED_BY_RACE}));
+     traits.add(Trait(TraitNames.StabilityOfStocky, {MetaFlags.AFFECTED_BY_RACE}));
+
+      langs.add(Langs('общий', {MetaFlags.AFFECTED_BY_RACE, MetaFlags.IS_PICKED}));
+    langs.add(Langs('полуросликов', {MetaFlags.IS_PICKED, MetaFlags.AFFECTED_BY_RACE}));
+  
+  }
+
+  @override
+  void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health) {
+    stats[BasicStatNames.DEX]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    stats[BasicStatNames.CON]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    size=null;
+    speed=null;
+
+    Trait.deletebyMeta(traits, MetaFlags.AFFECTED_BY_RACE);
+    Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
+  }
+
+}
+
+
+final class LighFootedHalfling extends Halfing{
+  @override
+  Set<Trait> traits={};
+
+LighFootedHalfling(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
+  Set<Armor> canUseArmor, Health health) {
+    apply(stats, size, speed, langs, tools, canUseArmor, health);
+  }
+
+  @override
+  void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health) {
+    stats[BasicStatNames.CHR]?.update(2, {MetaFlags.AFFECTED_BY_RACE});
+    stats[BasicStatNames.CON]?.update(1, {MetaFlags.AFFECTED_BY_RACE});
+        size = Size.SMALL;
+    // Скорость 25 футов
+    speed = 25;
+     
+     traits.add(Trait(TraitNames.Lucky, {MetaFlags.AFFECTED_BY_RACE}));
+     traits.add(Trait(TraitNames.Brave, {MetaFlags.AFFECTED_BY_RACE}));
+     traits.add(Trait(TraitNames.AgilityOfHalflings, {MetaFlags.AFFECTED_BY_RACE}));
+     traits.add(Trait(TraitNames.NaturalStealth, {MetaFlags.AFFECTED_BY_RACE}));
+
+      langs.add(Langs('общий', {MetaFlags.AFFECTED_BY_RACE, MetaFlags.IS_PICKED}));
+    langs.add(Langs('полуросликов', {MetaFlags.IS_PICKED, MetaFlags.AFFECTED_BY_RACE}));
+  
+  }
+
+  @override
+  void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health) {
+    stats[BasicStatNames.DEX]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    stats[BasicStatNames.CHR]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
+    size=null;
+    speed=null;
+
+    Trait.deletebyMeta(traits, MetaFlags.AFFECTED_BY_RACE);
+    Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
+  }
+
 }

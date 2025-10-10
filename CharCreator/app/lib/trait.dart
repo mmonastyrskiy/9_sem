@@ -13,7 +13,12 @@ enum TraitNames {
   Tinker,                          // Изобретательство - создание мелких механических устройств
   DwarvenResilience,               // Стойкость дварфов - устойчивость к ядам
   DwarvenCombatTraining,           // Боевая подготовка дварфов - владение боевым оружием
-  DwarvenLodge                     // Дварфская выучка - дополнительные хиты за уровень
+  DwarvenLodge,                     // Дварфская выучка - дополнительные хиты за уровень
+  Lucky,
+  Brave,
+  AgilityOfHalflings,
+  StabilityOfStocky,
+  NaturalStealth
 }
 
 // Класс для представления черт (особенностей) персонажа
