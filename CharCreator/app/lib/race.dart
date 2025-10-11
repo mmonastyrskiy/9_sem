@@ -2,7 +2,7 @@
 // ignore_for_file: constant_identifier_names
 
 // Импорт необходимых модулей
-import 'package:app/meta.dart';
+import 'meta.dart';
 import 'package:flutter/material.dart';
 import 'tool.dart';
 import 'stat.dart';

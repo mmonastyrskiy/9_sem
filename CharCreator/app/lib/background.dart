@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, camel_case_types
 
 // Импорт необходимых библиотек Flutter и пользовательских модулей
 import 'package:flutter/material.dart';
@@ -268,7 +268,7 @@ final class Sage implements Background{
 }
 
 // Класс предыстории "Народный герой"
-final class Folk_Hero implements Background{
+final class Folk_Hero  implements Background{
   // Конструктор
   Folk_Hero(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
     apply(stats, tools, langs, context);

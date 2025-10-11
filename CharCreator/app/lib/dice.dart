@@ -123,7 +123,7 @@ void add(int dim,{int ammount=1}) {
   }
 
   // Цикл для добавления указанного количества костей
-  for(int i=0; 1<ammount;i++){
+  for(int i=0; i<ammount;i++){
   // Выбор соответствующего типа кости based на количестве граней
   switch(dim){
     case 4: tothrow.add(D4()); break; // Добавляем D4 кость

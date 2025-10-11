@@ -1,7 +1,7 @@
 // ignore_for_file: non_constant_identifier_names, collection_methods_unrelated_type
 
 // Импорт необходимых модулей и библиотек
-import 'package:app/meta.dart';
+import 'meta.dart';
 import 'stat.dart';
 import 'dice.dart';
 import 'character.dart';

@@ -16,7 +16,7 @@ class Character {
   // Контекст UI для взаимодействия с Flutter виджетами
   late BuildContext UIContext;
   // Имя персонажа
-  late String name;
+  String name="";
   // Раса персонажа (может быть null если не выбрана)
   Race? race;
   // Предыстория персонажа (может быть null если не выбрана)
@@ -25,38 +25,49 @@ class Character {
   
   // Базовые характеристики персонажа (сила, ловкость, телосложение, интеллект, мудрость, харизма)
   // Инициализируются стандартным значением 10
-  BasicStat STR = BasicStat().generate();
-  BasicStat DEX = BasicStat().generate();
-  BasicStat CON = BasicStat().generate();
-  BasicStat INT = BasicStat().generate();
-  BasicStat WIS = BasicStat().generate();
-  BasicStat CHR = BasicStat().generate();
+  BasicStat STR = 10.toBasicStat();
+  BasicStat DEX = 10.toBasicStat();
+  BasicStat CON = 10.toBasicStat();
+  BasicStat INT = 10.toBasicStat();
+  BasicStat WIS = 10.toBasicStat();
+  BasicStat CHR = 10.toBasicStat();
+  List<String> AbilityNames () => ["Сила","Ловкость","Телосложение","Интеллект","Мудрость","Харизма"] ;
   
+
+
+  void Reroll(){
+  STR = BasicStat().generate();
+  DEX = BasicStat().generate();
+  CON = BasicStat().generate();
+  INT = BasicStat().generate();
+  WIS = BasicStat().generate();
+  CHR = BasicStat().generate();
+  }
   // Навыки персонажа, инициализируются с временным значением "сила"
-  Skill? Acrobatics = Skill("сила");
-  Skill? Animal_Handling = Skill("сила");
-  Skill? Arcana = Skill("сила");
-  Skill? Athletics = Skill("сила");
-  Skill? Deception = Skill("сила");
-  Skill? History = Skill("сила");
-  Skill? Insight = Skill("сила");
-  Skill? Intimidation = Skill("сила");
-  Skill? Investigation = Skill("сила");
-  Skill? Medicine = Skill("сила");
-  Skill? Nature = Skill("сила");
-  Skill? Perception = Skill("сила");
-  Skill? Performance = Skill("сила");
-  Skill? Persuasion = Skill("сила");
-  Skill? Religion = Skill("сила");
-  Skill? Sleight_of_Hand = Skill("сила");
-  Skill? Stealth = Skill("сила");
-  Skill? Survival = Skill("сила");
+  Skill? Acrobatics;
+  Skill? Animal_Handling;
+  Skill? Arcana;
+  Skill? Athletics;
+  Skill? Deception;
+  Skill? History;
+  Skill? Insight;
+  Skill? Intimidation;
+  Skill? Investigation;
+  Skill? Medicine;
+  Skill? Nature;
+  Skill? Perception;
+  Skill? Performance;
+  Skill? Persuasion;
+  Skill? Religion;
+  Skill? Sleight_of_Hand;
+  Skill? Stealth;
+  Skill? Survival;
   int ProfBonus = 2;
   int lvl=1;
   int exp = 0;
-  late int PassiveInsight = WIS.mod + 10;
-  late int InitiativeBonus = DEX.mod;
-  late int armor = 10 + DEX.mod;
+  late int PassiveInsight;
+  late int InitiativeBonus;
+  late int armor;
   
   // Коллекции инструментов и языков персонажа
   Set<ToolSkill> tools = {};
@@ -76,6 +87,7 @@ class Character {
   // Физические характеристики
   Size? size;
   int? speed;
+  
 
   // Возвращает Map всех статистик персонажа (базовые характеристики + навыки + предыстория)
   Map<StatNames, Stat> getallstats() {
@@ -157,7 +169,12 @@ class Character {
   // Конструктор персонажа
   // Принимает UIContext для взаимодействия с UI
   Character(this.UIContext) {
-    // Сохраняем переданный контекст
-    bg = Background("Тест", this);
+  STR = BasicStat().generate();
+  DEX = BasicStat().generate();
+  CON = BasicStat().generate();
+  INT = BasicStat().generate();
+  WIS = BasicStat().generate();
+  CHR = BasicStat().generate();
+  name = "Безымянный";
   }
 }

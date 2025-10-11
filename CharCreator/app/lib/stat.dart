@@ -1,7 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names
 
 // Импорт необходимых библиотек и модулей
-import 'package:app/ui/uicore.dart';
+import 'ui/uicore.dart';
 import 'package:flutter/material.dart';
 import 'tool.dart';
 import 'langs.dart';
@@ -136,8 +136,13 @@ class BasicStat implements Stat, Updateable,Pickable {
   int Stat2Modifier() => mod = ((value - 10) / 2).floor();
   BasicStat generate(){
     ThrowObject tosser = ThrowObject();
-    tosser.add(6,ammount: 6);
+    tosser.add(6,ammount: 4);
     tosser.DoRoll();
+    print(tosser.tostr());
+    print("------------------------------");
+    tosser.strip(1);
+    print(tosser.tostr());
+    print("------------------------------");
     value = tosser.total();
     Stat2Modifier();
     return this;

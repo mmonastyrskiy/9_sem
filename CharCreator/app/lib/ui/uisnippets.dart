@@ -1,7 +1,6 @@
 // Импорт необходимых библиотек Flutter
 import 'package:flutter/material.dart';
 // Импорт библиотеки для работы с вибрацией
-import 'package:vibration/vibration.dart';
 
 // Класс для управления модальными окнами выбора
 class ModalDispatcher{
@@ -160,7 +159,6 @@ class PopUpDispatcher{
   // - errorMessage: текст сообщения об ошибке
   static void showErrorDialog(BuildContext context,String errorMessage)async {
     // Активируем вибрацию на 500 миллисекунд
-    await Vibration.vibrate(duration: 500);
 
   // Показываем диалоговое окно
   final dialog = Dialog(
