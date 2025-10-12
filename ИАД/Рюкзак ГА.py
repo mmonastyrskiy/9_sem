@@ -32,7 +32,7 @@ SAMPLES = [
 
 
 """
-"""
+
 ## ОПТ 375
 SAMPLES = [
     {"c": 5, "w": 10, "m": 1},
@@ -46,8 +46,8 @@ SAMPLES = [
     {"c": 3, "w": 10, "m": 1},
     {"c": 2, "w": 10, "m": 1}
 ]
-"""
 
+"""
 # ОПТ 6380
 SAMPLES = [
     {'c': 1, 'w': 100, 'm': 1},
@@ -151,12 +151,13 @@ SAMPLES = [
     {'c': 99, 'w': 100, 'm': 1},
     {'c': 200, 'w': 50, 'm': 1}
 ]
+"""
 
 # константы 
-#S = 250
-S = 10500
-ENABLE_TEST_FLAG = 1 # Выключатель тестов
-ENABLE_PARAM_SEARCH = 0
+S = 250
+#S = 10500
+ENABLE_TEST_FLAG = 0 # Выключатель тестов
+ENABLE_PARAM_SEARCH = 1
 ENABLE_MULTIPROCESSING = 0
 
 
@@ -553,6 +554,7 @@ def run_one_test(current_params,expected,max_iter_test):
                 best_params = current_params
     except Exception as e:
         print(f"Ошибка: {e}")
+        best_params = current_params
         return {'score': best_score, 'params': best_params}
     
     elapsed_time = time() - start_time
@@ -673,14 +675,14 @@ if __name__ == "__main__":
         print(f"Вектор решений: {solution}")
     elif ENABLE_PARAM_SEARCH:
         param_grid = {
-    'N': [i for i in range(100,500,20)],
-    'STOP': [i for i in range(10,200,10)],
-    'P_fill': arange(0,1,0.1),      # Вероятность добавления предмета
-    'P_del': arange(0,1,0.1),       # Вероятность удаления предмета
-    'P_born': arange(0,1,0.1),      # Вероятность появления потомства
-    'P_mut': arange(0,1,0.1),       # Вероятность мутации
-    'OPT_MAX': [i for i in range(10,50,5)],
-    'ELITE_PERCENT': arange(0,1,0.1)   # Доля элитных особей
+    'N': [i for i in range(100,500,100)],
+    'STOP': [i for i in range(10,200,50)],
+    'P_fill': arange(0.1,1,0.3),      # Вероятность добавления предмета
+    'P_del': arange(0.1,1,0.3),       # Вероятность удаления предмета
+    'P_born': arange(0.1,1,0.3),      # Вероятность появления потомства
+    'P_mut': arange(0.1,1,0.3),       # Вероятность мутации
+    'OPT_MAX': [i for i in range(10,50,10)],
+    'ELITE_PERCENT': arange(0.1,1,0.3)   # Доля элитных особей
 }
         results = parallel_grid_search(param_grid,30,375)
         best_result =sorted(results, key=lambda r: r['score'])[0]

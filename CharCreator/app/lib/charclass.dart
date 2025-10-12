@@ -884,6 +884,7 @@ final class Sorcerer implements CharClass{
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED); 
       skills[skilltoadd]!.hasprofbounus+=1;
   }
+  //FIXME: THIS IS A HACK UNCOMMENT AND FIX
   }
   
   @override

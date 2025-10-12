@@ -31,6 +31,7 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> {
   @override
   void initState() {
     super.initState();
+    c = Character(context);
   }
 
   Color _getAbilityColor(int value) {
@@ -40,9 +41,19 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> {
     return Colors.red;
   }
 
+  // Метод для обновления персонажа после редактирования
+  void _updateCharacter(String name, String characterClass, String race, String background) {
+    setState(() {
+      c.name = name;
+      c.SetName(name);
+      c.HandleClassChange(characterClass);
+      c.HandleRaceChange(race);
+      c.HandleBgChange(background);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    c = Character(context);
     return DefaultTabController(
       length: 4,
       child: Scaffold(
@@ -75,10 +86,8 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> {
                 context: context,
                 builder: (context) => EditCharacterDialog(
                   character: c,
-                  onCharacterChanged: () {
-                    setState(() {
-                      print("SetState ran");
-                    });
+                  onCharacterChanged: (newName, newClass, newRace, newBackground) {
+                    _updateCharacter(newName, newClass, newRace, newBackground);
                   },
                 ),
               );
@@ -165,10 +174,8 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> {
                         context: context,
                         builder: (context) => EditCharacterDialog(
                           character: c,
-                          onCharacterChanged: () {
-                            setState(() {
-                              print("SetState ran");
-                            });
+                          onCharacterChanged: (newName, newClass, newRace, newBackground) {
+                            _updateCharacter(newName, newClass, newRace, newBackground);
                           },
                         ),
                       );
@@ -181,30 +188,13 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> {
 
           const SizedBox(height: 20),
 
-          // Заголовок характеристик
-          const Row(
-            children: [
-              Icon(Icons.auto_stories, color: Colors.amber, size: 24),
-              SizedBox(width: 8),
-              Text(
-                'Характеристики персонажа',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.amber,
-                ),
-              ),
-              Spacer(),
-              Text(
-                'Двойной тап для\nпереброса всех',
-                textAlign: TextAlign.right,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.grey,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ],
+          // Заголовок характеристик как отдельный виджет
+          CharacteristicsHeader(
+            onRerollAll: () {
+              setState(() {
+                c.Reroll();
+              });
+            },
           ),
 
           const SizedBox(height: 16),
@@ -477,10 +467,90 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> {
   }
 }
 
+// Заголовок характеристик как отдельный Stateful Widget
+class CharacteristicsHeader extends StatefulWidget {
+  final VoidCallback onRerollAll;
+
+  const CharacteristicsHeader({
+    super.key,
+    required this.onRerollAll,
+  });
+
+  @override
+  CharacteristicsHeaderState createState() => CharacteristicsHeaderState();
+}
+
+class CharacteristicsHeaderState extends State<CharacteristicsHeader> {
+  bool _isHighlighted = false;
+
+  void _handleDoubleTap() {
+    setState(() {
+      _isHighlighted = true;
+    });
+
+    widget.onRerollAll();
+
+    // Сбрасываем подсветку через короткое время
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        setState(() {
+          _isHighlighted = false;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onDoubleTap: _handleDoubleTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: _isHighlighted ? Colors.amber.withOpacity(0.2) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: _isHighlighted 
+              ? Border.all(color: Colors.amber, width: 2)
+              : null,
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.auto_stories, color: Colors.amber, size: 24),
+            const SizedBox(width: 8),
+            const Text(
+              'Характеристики персонажа',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.amber,
+              ),
+            ),
+            const Spacer(),
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              opacity: _isHighlighted ? 0.7 : 1.0,
+              child: const Text(
+                'Двойной тап для\nпереброса всех',
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.grey,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 // Обновленный диалог редактирования персонажа
 class EditCharacterDialog extends StatefulWidget {
   final Character character;
-  final Function() onCharacterChanged;
+  final Function(String, String, String, String) onCharacterChanged;
 
   const EditCharacterDialog({
     super.key,
@@ -499,21 +569,19 @@ class EditCharacterDialogState extends State<EditCharacterDialog> {
   // Списки для выбора класса, расы и предыстории
   final List<String> classes = [
     'Варвар', 'Бард', 'Жрец', 'Друид', 'Воин', 'Паладин', 
-    'Следопыт', 'Плут', 'Чародей', 'Колдун', 'Волшебник', 'Монах'
+    'Следопыт', 'Плут', 'Чародей', 'Колдун', 'Волшебник', 'Монах',"Тест2"
   ];
 
   final List<String> races = [
     "Лесной гном", "Скальный гном", "Горный дварф", "Холмовой дварф", "Драконорожденный",
     "Полуорк", "Коренастый полурослик", "Легконогий полурослик", "Полуэльф",
-    "Высший эльф", "Лесной Эльф", "Тифлинг", "Человек"
+    "Высший эльф", "Лесной Эльф", "Тифлинг", "Человек","Тест1"
   ];
 
   final List<String> backgrounds = [
     'артист','беспризорник','гильдейский ремесленник','моряк','мудрец','народный герой',
-    'отшельник','пират','преступник','прислужник','солдат','чужеземец','шарлатан'
+    'отшельник','пират','преступник','прислужник','солдат','чужеземец','шарлатан',"Тест3"
   ];
-
-
 
   String? selectedClass;
   String? selectedRace;
@@ -526,7 +594,7 @@ class EditCharacterDialogState extends State<EditCharacterDialog> {
     
     // Получаем текущие значения через методы класса Character
     final currentClass = widget.character.currentclass();
-    final currentRace = widget.character.currentRace(); // Предполагаем, что в классе Character есть поле race
+    final currentRace = widget.character.currentRace();
     final currentBackground = widget.character.currentbg();
     
     // Устанавливаем значения, проверяя их наличие в списках
@@ -543,28 +611,16 @@ class EditCharacterDialogState extends State<EditCharacterDialog> {
 
   void _saveChanges() {
     if (_formKey.currentState!.validate()) {
-      final newName = _nameController.text.trim();
+      String newName = _nameController.text.trim();
       
-      // Сохраняем изменения через методы класса Character
-      widget.character.name = newName;
-      widget.character.SetName(newName);
+      // Вызываем колбэк с новыми данными
+      widget.onCharacterChanged(
+        newName, 
+        selectedClass!, 
+        selectedRace!, 
+        selectedBackground!
+      );
       
-      // Изменяем класс через специальный метод
-      if (selectedClass != null && selectedClass != widget.character.currentclass()) {
-        widget.character.HandleClassChange(selectedClass!);
-      }
-      
-      // Сохраняем расу
-      if (selectedRace != null) {
-        widget.character.HandleRaceChange(selectedRace!);
-      }
-      
-      // Сохраняем предысторию
-      if (selectedBackground != null) {
-        widget.character.HandleBgChange(selectedBackground!);
-      }
-      
-      widget.onCharacterChanged();
       Navigator.of(context).pop();
     }
   }

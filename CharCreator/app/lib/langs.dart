@@ -84,7 +84,7 @@ final class Langs implements Stat,Pickable {
     if (res.length != howmany){
 
     PopUpDispatcher.showErrorDialog(context,"Select $howmany");
-    this.pickmany(context);
+    pickmany(context);
     }
     return res;
     }
