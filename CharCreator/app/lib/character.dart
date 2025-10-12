@@ -187,9 +187,25 @@ void HandleBgChange(String new_){
   if (bg !=null){
     bg?.delete(getskills(), tools, langs);
   }
+  
   bg =Background(new_, this);
 
 }
+
+
+String currentRace(){
+  return race!.racename;
+}
+void HandleRaceChange(String new_){
+  if (race !=null){
+    race?.delete(getbasicstats(), size, speed, langs, tools, CanUseArmor, health, getskills(), canUseWeapon);
+  }
+  
+  race =Race(new_, this);
+
+}
+
+
   Character(this.UIContext) {
   STR = BasicStat().generate();
   DEX = BasicStat().generate();
@@ -218,6 +234,7 @@ void HandleBgChange(String new_){
   Survival = Skill("Мудрость");
   bg = Background('', this);
   class_ =CharClass("", this);
+  race = Race("", this);
   
 
 

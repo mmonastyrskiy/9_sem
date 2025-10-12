@@ -40,6 +40,7 @@ enum SubRaces {
 // Абстрактный интерфейс для рас, реализующий AffectsStatRace
 // Определяет общую структуру для всех рас в игре
 abstract interface class Race implements AffectsStatRace {
+  String racename = "";
   // Набор черт (особенностей), которые предоставляет раса
   Set<Trait> traits = {};
   
@@ -82,12 +83,37 @@ abstract interface class Race implements AffectsStatRace {
       case 'полуэльф':return HalfElf(stats, size, speed, langs, tools, CanUseArmor, health, skills, context, canUseWeapon);
       case 'тифлинг':return Tiefling(stats, size, speed, langs, tools, CanUseArmor, health, skills, context, canUseWeapon);
       case 'человек':return Human(stats, size, speed, langs, tools, CanUseArmor, health, skills, context, canUseWeapon);
-      default: throw ArgumentError("Not implemented Race"); 
+      default: return Undefined(stats, size, speed, langs, tools, CanUseArmor, health, skills, context, canUseWeapon);
   }
   }
 }
 
 
+final class Undefined implements Race {
+
+  Undefined(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools,
+  Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
+    apply(stats, size, speed, langs, tools, canUseArmor, health,skills,context,canUseWeapon);
+  }
+  
+  @override
+  List<MindSets> PossibleMindset=[MindSets.ALL];
+
+  @override
+  String racename="Не определено";
+
+  @override
+  Set<Trait> traits={};
+
+  @override
+  void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health, Map<StatNames, Skill> skills, BuildContext context, Set<Weapon> canUseWeapon) {
+  }
+
+  @override
+  void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health, Map<StatNames, Skill> skills, Set<Weapon> canUseWeapon) {
+
+  }
+}
 
 
 final class Tiefling implements Race {
@@ -126,6 +152,9 @@ final class Tiefling implements Race {
     Trait.deletebyMeta(traits, MetaFlags.AFFECTED_BY_RACE);
     Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
   }
+
+  @override
+  String racename = "Тифлинг";
 }
 
 
@@ -174,6 +203,9 @@ final class Human implements Race{
 
 
   }
+
+  @override
+  String racename="Человек";
 
 }
 
@@ -225,6 +257,9 @@ final class Dragonborn implements Race {
     Trait.deletebyMeta(traits, MetaFlags.AFFECTED_BY_RACE);
     Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
   }
+
+  @override
+  String racename="Драконорожденный";
 
 }
 
@@ -286,6 +321,9 @@ final class HalfElf implements Race{
     stats[BasicStatNames.CHR]?.deletebyMeta(MetaFlags.AFFECTED_BY_RACE);
   }
 
+  @override
+  String racename="Полуэльф";
+
 }
 
 
@@ -333,6 +371,9 @@ final class HalfOrc implements Race {
     Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
     Skill.deletebyMeta(skills, MetaFlags.AFFECTED_BY_RACE);
   }
+
+  @override
+  String racename="Полуорк";
 
 }
 
@@ -417,6 +458,9 @@ final class ForestGnome extends Gnome {
     // Удаляем все языки с меткой расы
     Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
   }
+
+  @override
+  String racename="лесной гном";
 }
 
 // Конкретный класс для Скального Гнома
@@ -474,6 +518,9 @@ final class RockGnome extends Gnome {
     Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
     ToolSkill.deletebyMeta(tools, MetaFlags.AFFECTED_BY_RACE);
   }
+
+  @override
+  String racename="Скальный гном";
 }
 
 // Конкретный класс для Горного Дварфа
@@ -533,6 +580,9 @@ final class MountainDwarf extends Dwarf {
     Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
     Armor.deletebyMeta(canUseArmor, MetaFlags.AFFECTED_BY_RACE);
   }
+
+  @override
+  String racename="Горный дварф";
 }
 
 // Конкретный класс для Холмового Дварфа
@@ -594,6 +644,9 @@ final class HillDwarf extends Dwarf {
     ToolSkill.deletebyMeta(tools, MetaFlags.AFFECTED_BY_RACE);
     Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
   }
+
+  @override
+  String racename="Холмовой дварф";
 }
 final class StockyHalfling extends Halfing{
   @override
@@ -634,6 +687,9 @@ StockyHalfling(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set
     Trait.deletebyMeta(traits, MetaFlags.AFFECTED_BY_RACE);
     Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
   }
+
+  @override
+  String racename="Коренастый полурослик";
 
 }
 
@@ -677,6 +733,9 @@ LighFootedHalfling(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed,
     Trait.deletebyMeta(traits, MetaFlags.AFFECTED_BY_RACE);
     Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
   }
+
+  @override
+  String racename = "Легконогий полурослик";
 
 }
 final class HighElf extends Elf{
@@ -727,6 +786,9 @@ final class HighElf extends Elf{
     Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
     Weapon.deletebyMeta(canUseWeapon, MetaFlags.AFFECTED_BY_RACE);
   }
+
+  @override
+  String racename = "Высший эльф";
 
 }
 
@@ -779,5 +841,8 @@ final class ForestElf extends Elf{
     Langs.deletebyMeta(langs, MetaFlags.AFFECTED_BY_RACE);
     Weapon.deletebyMeta(canUseWeapon, MetaFlags.AFFECTED_BY_RACE);
   }
+
+  @override
+  String racename = "Лесной эльф";
 
 }

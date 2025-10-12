@@ -100,16 +100,12 @@ if(include != null){
   }
 }
 
-    Set<String> opt ={};
     Set<String> res = ModalDispatcher.showMultiSelectListPicker(context: bc, items: c,initialSelections: initialSelections) as Set<String>;
     if (res.length != howmany){
-      while(opt.length != howmany){
 
-      
     PopUpDispatcher.showErrorDialog(bc,"Select $howmany");
-    opt = ModalDispatcher.showMultiSelectListPicker(context: bc, items: c,initialSelections: res.toList()) as Set<String>;
-    }
-    return opt;
+    pickmany(bc);
+
     }
     return res;
     }

@@ -366,6 +366,7 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> {
                         padding: const EdgeInsets.all(8.0),
                         child: Column(
                           children: [
+                            //TODO: Подставить реальные данные
                             // Пример навыков - здесь можно добавить реальные данные
                             _buildSkillItem("Акробатика", "+5", true),
                             _buildSkillItem("Атлетика", "+3", false),
@@ -477,10 +478,6 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> {
 }
 
 // Обновленный диалог редактирования персонажа
-
-
-// Обновленный диалог редактирования персонажа
-// Обновленный диалог редактирования персонажа
 class EditCharacterDialog extends StatefulWidget {
   final Character character;
   final Function() onCharacterChanged;
@@ -499,19 +496,27 @@ class EditCharacterDialogState extends State<EditCharacterDialog> {
   late TextEditingController _nameController;
   final _formKey = GlobalKey<FormState>();
 
-  // Списки для выбора класса и предыстории с уникальными значениями
+  // Списки для выбора класса, расы и предыстории
   final List<String> classes = [
     'Варвар', 'Бард', 'Жрец', 'Друид', 'Воин', 'Паладин', 
     'Следопыт', 'Плут', 'Чародей', 'Колдун', 'Волшебник', 'Монах'
   ];
 
-  final List<String> backgrounds = [
-    'Аристократ', 'Благородный', 'Горожанин', 'Криминальный авторитет',
-    'Моряк', 'Народный герой', 'Отшельник', 'Пират', 'Прислужник культа',
-    'Солдат', 'Чужеземец', 'Учёный', 'Шарлатан'
+  final List<String> races = [
+    "Лесной гном", "Скальный гном", "Горный дварф", "Холмовой дварф", "Драконорожденный",
+    "Полуорк", "Коренастый полурослик", "Легконогий полурослик", "Полуэльф",
+    "Высший эльф", "Лесной Эльф", "Тифлинг", "Человек"
   ];
 
+  final List<String> backgrounds = [
+    'артист','беспризорник','гильдейский ремесленник','моряк','мудрец','народный герой',
+    'отшельник','пират','преступник','прислужник','солдат','чужеземец','шарлатан'
+  ];
+
+
+
   String? selectedClass;
+  String? selectedRace;
   String? selectedBackground;
 
   @override
@@ -521,10 +526,12 @@ class EditCharacterDialogState extends State<EditCharacterDialog> {
     
     // Получаем текущие значения через методы класса Character
     final currentClass = widget.character.currentclass();
+    final currentRace = widget.character.currentRace(); // Предполагаем, что в классе Character есть поле race
     final currentBackground = widget.character.currentbg();
     
     // Устанавливаем значения, проверяя их наличие в списках
     selectedClass = classes.contains(currentClass) ? currentClass : classes.first;
+    selectedRace = races.contains(currentRace) ? currentRace : races.first;
     selectedBackground = backgrounds.contains(currentBackground) ? currentBackground : backgrounds.first;
   }
 
@@ -545,6 +552,11 @@ class EditCharacterDialogState extends State<EditCharacterDialog> {
       // Изменяем класс через специальный метод
       if (selectedClass != null && selectedClass != widget.character.currentclass()) {
         widget.character.HandleClassChange(selectedClass!);
+      }
+      
+      // Сохраняем расу
+      if (selectedRace != null) {
+        widget.character.HandleRaceChange(selectedRace!);
       }
       
       // Сохраняем предысторию
@@ -649,7 +661,57 @@ class EditCharacterDialogState extends State<EditCharacterDialog> {
                       style: TextStyle(color: Colors.grey[500], fontSize: 12),
                     ),
                     
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
+                    
+                    // Выбор расы
+                    DropdownButtonFormField<String>(
+                      value: selectedRace,
+                      decoration: InputDecoration(
+                        labelText: 'Раса персонажа',
+                        labelStyle: const TextStyle(color: Colors.amber),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.amber),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.amber),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.amber, width: 2),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[800],
+                        prefixIcon: const Icon(Icons.people, color: Colors.amber),
+                      ),
+                      dropdownColor: Colors.grey[800],
+                      style: const TextStyle(color: Colors.white),
+                      items: races.map((String raceItem) {
+                        return DropdownMenuItem<String>(
+                          value: raceItem,
+                          child: Text(
+                            raceItem,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            selectedRace = newValue;
+                          });
+                        }
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Выберите расу';
+                        }
+                        return null;
+                      },
+                    ),
+                    
+                    const SizedBox(height: 16),
                     
                     // Выбор класса
                     DropdownButtonFormField<String>(

@@ -343,15 +343,13 @@ final class Skill implements ProfBonusStat, Pickable {
 
     Set<String> opt = {};
     // Показываем диалог множественного выбора
-    Set<String> res = ModalDispatcher.showMultiSelectListPicker(context: bc, items: c, initialSelections: initialSelections) as Set<String>;
+    Set<String> res = ModalDispatcher.showMultiSelectListPicker(context: bc, items: c, initialSelections: initialSelections);
     
     // Проверяем, соответствует ли количество выбранных навыков требуемому
     if (res.length != howmany) {
       // Если не соответствует, показываем ошибку и запрашиваем повторный выбор
-      while (opt.length != howmany) {
         PopUpDispatcher.showErrorDialog(bc, "Select $howmany");  // Показываем ошибку
-        opt = ModalDispatcher.showMultiSelectListPicker(context: bc, items: c, initialSelections: res.toList()) as Set<String>;
-      }
+        pickmany(bc);
       return opt;
     }
     return res;
