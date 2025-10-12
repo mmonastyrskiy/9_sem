@@ -168,6 +168,28 @@ class Character {
 
   // Конструктор персонажа
   // Принимает UIContext для взаимодействия с UI
+String currentclass(){
+  return class_!.classname;
+}
+void HandleClassChange(String new_){
+  if (class_ !=null){
+    class_?.delete(health, getbasicstats(), getskills(), CanUseArmor, canUseWeapon, tools);
+  }
+  class_ = CharClass(new_, this);
+
+}
+
+
+String currentbg(){
+  return class_!.classname;
+}
+void HandleBgChange(String new_){
+  if (bg !=null){
+    bg?.delete(getskills(), tools, langs);
+  }
+  bg =Background(new_, this);
+
+}
   Character(this.UIContext) {
   STR = BasicStat().generate();
   DEX = BasicStat().generate();
@@ -176,5 +198,33 @@ class Character {
   WIS = BasicStat().generate();
   CHR = BasicStat().generate();
   name = "Безымянный";
+  Acrobatics = Skill("ловкость");
+  Animal_Handling = Skill("Мудрость");
+  Arcana = Skill("Интеллект");
+  Athletics = Skill("сила");
+  Deception = Skill("Харизма");
+  History = Skill("Интеллект");
+  Insight = Skill("Мудрость");
+  Intimidation = Skill("Харизма");
+  Investigation = Skill("интеллект");
+  Medicine = Skill("Мудрость");
+  Nature = Skill("Интеллект");
+  Perception = Skill("Мудрость");
+  Performance = Skill("Харизма");
+  Persuasion = Skill("Харизма");
+  Religion = Skill("Интеллект");
+  Sleight_of_Hand = Skill("Ловкость");
+  Stealth = Skill("Ловкость");
+  Survival = Skill("Мудрость");
+  bg = Background('', this);
+  class_ =CharClass("", this);
+  
+
+
+
+  }
+  void SetName (String new_){
+    name = new_;
+    print("Name is set to $new_");
   }
 }

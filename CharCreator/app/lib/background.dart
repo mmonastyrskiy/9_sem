@@ -31,6 +31,7 @@ enum BackgroundNames  {
 // Абстрактный класс Background, реализующий два интерфейса
 // Использует фабричный конструктор для создания конкретных предысторий
 abstract class Background implements AffectsStatBackground, Stat {
+  String BGName = "";
   // Фабричный конструктор для создания объектов предысторий по названию
   // Аргументы: chosen - название предыстории, char - объект персонажа
   factory Background(String chosen, Character char) {
@@ -61,8 +62,25 @@ abstract class Background implements AffectsStatBackground, Stat {
       case 'шарлатан': return Charlatan(stats, tools, langs, context); 
       
       // Если предыстория не найдена, выбрасываем исключение
-      default: throw ArgumentError('Unknown background name');
+      default: return Undefined(stats, tools, langs, context);
     }
+  }
+}
+
+final class Undefined implements Background {
+  @override
+  String BGName = "Не выбрано";
+
+  @override
+  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
+  }
+
+  @override
+  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
+  }
+
+  Undefined(Map<StatNames,ProfBonusStat> stats, Set<ToolSkill> tools,Set<Langs> langs,BuildContext context){
+    apply(stats, tools,langs,context);
   }
 }
 
@@ -96,6 +114,9 @@ final class Entertainer implements Background {
   Entertainer(Map<StatNames,ProfBonusStat> stats, Set<ToolSkill> tools,Set<Langs> langs,BuildContext context){
     apply(stats, tools,langs,context);
   }
+
+  @override
+  String BGName="Артист";
 }
 
 // Класс предыстории "Беспризорник"
@@ -128,6 +149,9 @@ final class Urchin implements Background {
   Urchin(Map<StatNames,ProfBonusStat> stats, Set<ToolSkill> tools,Set<Langs> langs,BuildContext context){
     apply(stats,tools,langs,context);
   }
+
+  @override
+  String BGName="Беспризорник";
 }
 
 // Класс предыстории "Благородный"
@@ -163,6 +187,9 @@ final class Noble implements Background {
     // Удаляем языки предыстории
     Langs.deletebyMeta(langs, MetaFlags.IS_PICKED_ON_BG);
   }
+
+  @override
+  String BGName="Благородный";
 }
 
 // Класс предыстории "Гильдейский ремесленник"
@@ -198,6 +225,9 @@ final class Guild_artisan implements Background{
     // Удаляем языки предыстории
     Langs.deletebyMeta(langs, MetaFlags.IS_PICKED_ON_BG);
   }
+
+  @override
+  String BGName="Гильдейский Ремесленник";
 }
 
 // Класс предыстории "Моряк"
@@ -230,6 +260,9 @@ final class Sailor implements Background{
     // Удаляем инструменты предыстории
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
   }
+
+  @override
+  String BGName = "Моряк";
 }
 
 // Класс предыстории "Мудрец"
@@ -265,6 +298,9 @@ final class Sage implements Background{
     // Удаляем языки предыстории
     Langs.deletebyMeta(langs, MetaFlags.IS_PICKED_ON_BG);
   }
+
+  @override
+  String BGName="Мудрец";
 }
 
 // Класс предыстории "Народный герой"
@@ -297,6 +333,9 @@ final class Folk_Hero  implements Background{
     // Удаляем инструменты предыстории
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
   }
+
+  @override
+  String BGName="Народный герой";
 }
 
 // Класс предыстории "Отшельник"
@@ -332,6 +371,9 @@ final class Hermit implements Background {
     // Удаляем языки предыстории
     Langs.deletebyMeta(langs, MetaFlags.IS_PICKED_ON_BG);
   }
+
+  @override
+  String BGName="Отшельник";
 }
 
 // Класс предыстории "Пират"
@@ -364,6 +406,9 @@ final class Pirate implements Background{
     // Удаляем инструменты предыстории
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
   }
+
+  @override
+  String BGName="Пират";
 }
 
 // Класс предыстории "Преступник"
@@ -396,6 +441,9 @@ final class Criminal implements Background{
     // Удаляем инструменты предыстории
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
   }
+
+  @override
+  String BGName="Преступник";
 }
 
 // Класс предыстории "Прислужник"
@@ -430,6 +478,9 @@ final class Acolyte implements Background{
     // Удаляем языки предыстории
     Langs.deletebyMeta(langs, MetaFlags.IS_PICKED_ON_BG);
   }
+
+  @override
+  String BGName="Прислужник";
 }
 
 // Класс предыстории "Солдат"
@@ -462,6 +513,9 @@ final class Soldier implements Background{
     // Удаляем инструменты предыстории
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
   }
+
+  @override
+  String BGName="Солдат";
 }
 
 // Класс предыстории "Чужеземец"
@@ -495,6 +549,9 @@ final class Outlander implements Background{
     // Удаляем языки предыстории
     Langs.deletebyMeta(langs, MetaFlags.IS_PICKED_ON_BG);
   }
+
+  @override
+  String BGName="Чужеземец";
 }
 
 // Класс предыстории "Шарлатан"
@@ -527,4 +584,7 @@ final class Charlatan implements Background{
     // Удаляем инструменты предыстории
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
   }
+
+  @override
+  String BGName="Шарлатан";
 }

@@ -31,6 +31,7 @@ enum CharClassNames {
 // Абстрактный интерфейс для классов персонажей, реализующий AffectsStatClass
 // Использует фабричный конструктор для создания конкретных классов
 abstract interface class CharClass implements AffectsStatClass {
+  String classname="";
   // Фабричный конструктор для создания объектов классов по названию
   // Аргументы: chosen - название класса, c - объект персонажа
   factory CharClass(String chosen, Character c) {
@@ -63,14 +64,31 @@ abstract interface class CharClass implements AffectsStatClass {
       case 'паладин': return Paladin(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
       case 'плут': return Rouge(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
       case 'следопыт': return Ranger(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
-      case 'чародей': return Sorcerer(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context); 
+      case 'чародей': return Sorcerer(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
 
       // Если класс не найден, выбрасываем исключение
-      default: throw ArgumentError("Not implemented class"); // TODO: нужен обработчик
+      default: return Undefined(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
     }
   }
 }
+final class Undefined implements CharClass{
+  @override
+  String classname= " Не выбрано";
 
+  @override
+  void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  }
+
+  @override
+  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools) {
+  }
+
+ Undefined(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+    apply(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
+  }
+
+
+}
 // Класс "Бард"
 final class Bard implements CharClass {
   // Конструктор - автоматически применяет бонусы класса при создании
@@ -151,6 +169,9 @@ final class Bard implements CharClass {
     // Удаляем все навыки, помеченные как выбранные на классе
     Skill.deletebyMeta(skills, MetaFlags.IS_PICKED_ON_CLASS);
   }
+
+  @override
+  String classname="Бард";
 }
 
 // Класс "Варвар"
@@ -222,6 +243,9 @@ final class Barbarian implements CharClass {
     // Удаляем навыки класса
     Skill.deletebyMeta(skills, MetaFlags.IS_PICKED_ON_CLASS);
   }
+
+  @override
+  String classname="Варвар";
 }
 
 // Класс "Воин"
@@ -283,6 +307,9 @@ final class Fighter implements CharClass {
     stats[BasicStatNames.STR]!.savingthrow = 0;
     stats[BasicStatNames.CON]!.savingthrow = 0;
   }
+
+  @override
+  String classname="Воин";
 }
 
 // Класс "Волшебник" (остальные классы имеют аналогичную структуру)
@@ -341,6 +368,9 @@ final class Wizzard implements CharClass {
     // Удаляем навыки класса
     Skill.deletebyMeta(skills, MetaFlags.IS_PICKED_ON_CLASS);
   }
+
+  @override
+  String classname="Волшебник";
 }
 
 // Остальные классы (Druid, Clerc, Artifier, Warlock, Monk, Paladin, Rouge, Ranger, Sorcerer)
@@ -414,6 +444,9 @@ final class Druid implements CharClass {
 
     Skill.deletebyMeta(skills, MetaFlags.IS_PICKED_ON_CLASS);
   }
+
+  @override
+  String classname="Друиид";
 }
 
 final class Clerc implements CharClass{
@@ -464,6 +497,9 @@ final class Clerc implements CharClass{
 
     Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
   }
+
+  @override
+  String classname="Жрец";
     
   }
 
@@ -525,6 +561,9 @@ final class Clerc implements CharClass{
     Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
 
   }
+
+  @override
+  String classname="Изобретатель";
   
 }
 final class Warlock implements CharClass{
@@ -575,6 +614,9 @@ final class Warlock implements CharClass{
 
     Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
   }
+
+  @override
+  String classname="Колдун";
 }
 final class Monk implements CharClass{
   Monk(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<Armor> CanUseArmor,Set<Weapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
@@ -626,6 +668,9 @@ final class Monk implements CharClass{
     Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
 
   }
+
+  @override
+  String classname="Монах";
 
   
 }
@@ -682,6 +727,9 @@ final class Paladin implements CharClass{
 
     Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
   }
+
+  @override
+  String classname="Паладин";
 }
 
 final class Rouge implements CharClass{
@@ -739,6 +787,9 @@ final class Rouge implements CharClass{
     Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
   }
 
+  @override
+  String classname="Плут";
+
 }
 
 final class Ranger implements CharClass{
@@ -794,6 +845,9 @@ final class Ranger implements CharClass{
 
      Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
   }
+
+  @override
+  String classname="Следопыт";
   
 }
 
@@ -844,4 +898,7 @@ final class Sorcerer implements CharClass{
 
     Skill.deletebyMeta(skills,MetaFlags.IS_PICKED_ON_CLASS);
   }
+
+  @override
+  String classname="Чародей";
 }

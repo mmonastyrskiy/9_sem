@@ -22,10 +22,10 @@ class CharacterSheetScreen extends StatefulWidget {
   const CharacterSheetScreen({super.key});
 
   @override
-  _CharacterSheetScreenState createState() => _CharacterSheetScreenState();
+  CharacterSheetScreenState createState() => CharacterSheetScreenState();
 }
 
-class _CharacterSheetScreenState extends State<CharacterSheetScreen> {
+class CharacterSheetScreenState extends State<CharacterSheetScreen> {
   late Character c;
 
   @override
@@ -33,19 +33,9 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen> {
     super.initState();
   }
 
-  void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.amber,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
   Color _getAbilityColor(int value) {
-    if (value >= 16) return Colors.green;
-    if (value >= 12) return Colors.blue;
+    if (value >= 16) return Colors.blue;
+    if (value >= 12) return Colors.green;
     if (value >= 8) return Colors.orange;
     return Colors.red;
   }
@@ -57,12 +47,12 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen> {
       length: 4,
       child: Scaffold(
         appBar: AppBar(
-          bottom: const TabBar(
+          bottom: TabBar(
             tabs: [
-              Tab(text: "Домой"),
-              Tab(text: "Инвентарь"),
-              Tab(text: "Заклинания"),
-              Tab(text: "О персонаже")
+              Tab(text: "🏰"),
+              Tab(text: "🎒"),
+              Tab(text: "🔥"),
+              Tab(text: "🧑")
             ],
           ),
           title: GestureDetector(
@@ -83,11 +73,11 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen> {
             onLongPress: () {
               showDialog(
                 context: context,
-                builder: (context) => EditCharacterNameDialog(
-                  currentName: c.name,
-                  onNameChanged: (newName) {
+                builder: (context) => EditCharacterDialog(
+                  character: c,
+                  onCharacterChanged: () {
                     setState(() {
-                      c.name = newName;
+                      print("SetState ran");
                     });
                   },
                 ),
@@ -101,9 +91,9 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen> {
             _buildStyledHomeTab(c),
             
             // Остальные вкладки без изменений
-            const Center(child: Text("Инвентарь - в разработке")),
-            const Center(child: Text("Заклинания - в разработке")),
-            const Center(child: Text("О персонаже - в разработке")),
+            const Center(child: Text("Инвентарь - в разработке",style: TextStyle(color: Colors.black),)),
+            const Center(child: Text("Заклинания - в разработке",style: TextStyle(color: Colors.black))),
+            const Center(child: Text("О персонаже - в разработке",style: TextStyle(color: Colors.black))),
           ],
         ),
       ),
@@ -161,9 +151,9 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
-                          'Искатель приключений • Уровень 1',
-                          style: TextStyle(color: Colors.grey),
+                        Text(
+                          '${c.currentclass()} • ${c.currentbg()} • Уровень ${c.lvl} ',
+                          style: const TextStyle(color: Colors.grey),
                         ),
                       ],
                     ),
@@ -173,11 +163,11 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen> {
                     onPressed: () {
                       showDialog(
                         context: context,
-                        builder: (context) => EditCharacterNameDialog(
-                          currentName: c.name,
-                          onNameChanged: (newName) {
+                        builder: (context) => EditCharacterDialog(
+                          character: c,
+                          onCharacterChanged: () {
                             setState(() {
-                              c.name = newName;
+                              print("SetState ran");
                             });
                           },
                         ),
@@ -219,96 +209,187 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen> {
 
           const SizedBox(height: 16),
 
-          // Список характеристик в стиле D&D
+          // Список характеристик в стиле D&D (оставляем как было)
           Expanded(
-            child: ListView.builder(
-              itemCount: 6,
-              itemBuilder: (context, index) {
-                String AbilityName = c.AbilityNames().elementAt(index);
-                int AbilityValue = c.getbasicstats().values.toList().elementAt(index).value;
-                int AbilityModifier = c.getbasicstats().values.toList().elementAt(index).mod;
-                
-                return Card(
+            child: ListView(
+              children: [
+                // Основные характеристики (как было)
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: 6,
+                  itemBuilder: (context, index) {
+                    String AbilityName = c.AbilityNames().elementAt(index);
+                    int AbilityValue = c.getbasicstats().values.toList().elementAt(index).value;
+                    int AbilityModifier = c.getbasicstats().values.toList().elementAt(index).mod;
+                    int HasSavingThrow = c.getbasicstats().values.toList().elementAt(index).savingthrow;
+                    int savingthrowvalue = 0;
+                    HasSavingThrow >= 0 ? savingthrowvalue = AbilityModifier + c.ProfBonus: savingthrowvalue = AbilityModifier;
+                    
+                    
+                    return Card(
+                      color: const Color(0xFF2d1b00),
+                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: const BorderSide(color: Colors.amber, width: 1),
+                      ),
+                      child: GestureDetector(
+                        onDoubleTap: () => setState(() {
+                          c.Reroll();
+                        }),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          leading: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: _getAbilityColor(AbilityValue),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.amber, width: 2),
+                            ),
+                            child: Center(
+                              child: Text(
+                                AbilityValue.toString(),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                          title: Row(
+                            children: [
+                              SizedBox(
+                                width: 120,
+                                child: Text(
+                                  AbilityName,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              const Spacer(),
+                              // Модификатор
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: AbilityModifier >= 0 
+                                      ? const Color(0xFF2d522d) 
+                                      : const Color(0xFF522d2d),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: AbilityModifier >= 0 
+                                        ? Colors.green 
+                                        : Colors.red,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Text(
+                                  AbilityModifier >= 0 ? '+$AbilityModifier' : '$AbilityModifier',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: AbilityModifier >= 0 ? Colors.green : Colors.red,
+                                  ),
+                                ),
+                              ),
+                              const Spacer(),
+                              // Спасбросок
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF522d2d),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: HasSavingThrow > 0 ? Colors.amber : const Color(0xFF522d2d),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Text(
+                                  savingthrowvalue.toString(),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.amber,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          trailing: const Icon(
+                            Icons.casino,
+                            color: Colors.amber,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 20),
+
+                // Новый ExpansionTile для навыков
+                Card(
                   color: const Color(0xFF2d1b00),
-                  margin: const EdgeInsets.symmetric(vertical: 6),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                     side: const BorderSide(color: Colors.amber, width: 1),
                   ),
-                  child: GestureDetector(
-                    onDoubleTap: () => setState(() {
-                      c.Reroll();
-                    }),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      leading: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: _getAbilityColor(AbilityValue),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.amber, width: 2),
-                        ),
-                        child: Center(
-                          child: Text(
-                            AbilityValue.toString(),
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                      title: Row(
-                        children: [
-                          Container(
-                            width: 120,
-                            child: Text(
-                              AbilityName,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                          const Spacer(),
-                          // Модификатор
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: AbilityModifier >= 0 
-                                  ? const Color(0xFF2d522d) 
-                                  : const Color(0xFF522d2d),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: AbilityModifier >= 0 
-                                    ? Colors.green 
-                                    : Colors.red,
-                                width: 2,
-                              ),
-                            ),
-                            child: Text(
-                              AbilityModifier >= 0 ? '+$AbilityModifier' : '$AbilityModifier',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: AbilityModifier >= 0 ? Colors.green : Colors.red,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      trailing: const Icon(
-                        Icons.casino,
-                        color: Colors.amber,
-                        size: 20,
+                  child: ExpansionTile(
+                    leading: const Icon(Icons.school, color: Colors.amber),
+                    title: const Text(
+                      'Навыки персонажа',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
+                    subtitle: const Text(
+                      'Нажмите для просмотра всех навыков',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    collapsedIconColor: Colors.amber,
+                    iconColor: Colors.amber,
+                    backgroundColor: const Color(0xFF2d1b00),
+                    collapsedBackgroundColor: const Color(0xFF2d1b00),
+                    children: [
+                      // Список навыков
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: [
+                            // Пример навыков - здесь можно добавить реальные данные
+                            _buildSkillItem("Акробатика", "+5", true),
+                            _buildSkillItem("Атлетика", "+3", false),
+                            _buildSkillItem("Внимание", "+7", true),
+                            _buildSkillItem("Выживание", "+2", false),
+                            _buildSkillItem("Запугивание", "+4", false),
+                            _buildSkillItem("Магия", "+8", true),
+                            _buildSkillItem("Медицина", "+3", false),
+                            _buildSkillItem("Обман", "+6", true),
+                            _buildSkillItem("Природа", "+4", false),
+                            _buildSkillItem("Проницательность", "+5", true),
+                            _buildSkillItem("Расследование", "+6", false),
+                            _buildSkillItem("Религия", "+7", true),
+                            _buildSkillItem("Скрытность", "+5", false),
+                            _buildSkillItem("Убеждение", "+4", true),
+                            _buildSkillItem("История", "+3", false),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                );
-              },
-            ),
+                ),
+              ],
+            ),  
           ),
 
           // Подсказка
@@ -340,31 +421,111 @@ class _CharacterSheetScreenState extends State<CharacterSheetScreen> {
       ),
     );
   }
+
+  // Вспомогательный метод для создания элементов навыков
+  Widget _buildSkillItem(String skillName, String bonus, bool isProficient) {
+    return Card(
+      color: const Color(0xFF1a1a1a),
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(color: Colors.amber.withOpacity(0.5), width: 1),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: isProficient ? Colors.amber : Colors.grey,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white, width: 1),
+          ),
+          child: Icon(
+            isProficient ? Icons.check : Icons.circle_outlined,
+            color: isProficient ? Colors.black : Colors.white,
+            size: 16,
+          ),
+        ),
+        title: Text(
+          skillName,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: const Color(0xFF2d522d),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: Colors.green, width: 1),
+          ),
+          child: Text(
+            bonus,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: Colors.green,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-// Диалог редактирования имени (оставляем как было)
-class EditCharacterNameDialog extends StatefulWidget {
-  final String currentName;
-  final Function(String) onNameChanged;
+// Обновленный диалог редактирования персонажа
 
-  const EditCharacterNameDialog({
-    Key? key,
-    required this.currentName,
-    required this.onNameChanged,
-  }) : super(key: key);
+
+// Обновленный диалог редактирования персонажа
+// Обновленный диалог редактирования персонажа
+class EditCharacterDialog extends StatefulWidget {
+  final Character character;
+  final Function() onCharacterChanged;
+
+  const EditCharacterDialog({
+    super.key,
+    required this.character,
+    required this.onCharacterChanged,
+  });
 
   @override
-  _EditCharacterNameDialogState createState() => _EditCharacterNameDialogState();
+  EditCharacterDialogState createState() => EditCharacterDialogState();
 }
 
-class _EditCharacterNameDialogState extends State<EditCharacterNameDialog> {
+class EditCharacterDialogState extends State<EditCharacterDialog> {
   late TextEditingController _nameController;
   final _formKey = GlobalKey<FormState>();
+
+  // Списки для выбора класса и предыстории с уникальными значениями
+  final List<String> classes = [
+    'Варвар', 'Бард', 'Жрец', 'Друид', 'Воин', 'Паладин', 
+    'Следопыт', 'Плут', 'Чародей', 'Колдун', 'Волшебник', 'Монах'
+  ];
+
+  final List<String> backgrounds = [
+    'Аристократ', 'Благородный', 'Горожанин', 'Криминальный авторитет',
+    'Моряк', 'Народный герой', 'Отшельник', 'Пират', 'Прислужник культа',
+    'Солдат', 'Чужеземец', 'Учёный', 'Шарлатан'
+  ];
+
+  String? selectedClass;
+  String? selectedBackground;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.currentName);
+    _nameController = TextEditingController(text: widget.character.name);
+    
+    // Получаем текущие значения через методы класса Character
+    final currentClass = widget.character.currentclass();
+    final currentBackground = widget.character.currentbg();
+    
+    // Устанавливаем значения, проверяя их наличие в списках
+    selectedClass = classes.contains(currentClass) ? currentClass : classes.first;
+    selectedBackground = backgrounds.contains(currentBackground) ? currentBackground : backgrounds.first;
   }
 
   @override
@@ -373,11 +534,26 @@ class _EditCharacterNameDialogState extends State<EditCharacterNameDialog> {
     super.dispose();
   }
 
-  void _saveName() {
+  void _saveChanges() {
     if (_formKey.currentState!.validate()) {
       final newName = _nameController.text.trim();
-      widget.onNameChanged(newName);
-      Navigator.of(context).pop(newName);
+      
+      // Сохраняем изменения через методы класса Character
+      widget.character.name = newName;
+      widget.character.SetName(newName);
+      
+      // Изменяем класс через специальный метод
+      if (selectedClass != null && selectedClass != widget.character.currentclass()) {
+        widget.character.HandleClassChange(selectedClass!);
+      }
+      
+      // Сохраняем предысторию
+      if (selectedBackground != null) {
+        widget.character.HandleBgChange(selectedBackground!);
+      }
+      
+      widget.onCharacterChanged();
+      Navigator.of(context).pop();
     }
   }
 
@@ -398,114 +574,220 @@ class _EditCharacterNameDialogState extends State<EditCharacterNameDialog> {
             colors: [Color(0xFF2d1b00), Color(0xFF1a1a1a)],
           ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.auto_stories, color: Colors.amber, size: 28),
-                const SizedBox(width: 12),
-                Text(
-                  'Имя персонажа',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.amber,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.auto_stories, color: Colors.amber, size: 28),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Редактирование персонажа',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Введите новое имя для вашего персонажа',
-              style: TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 24),
-            
-            Form(
-              key: _formKey,
-              child: TextFormField(
-                controller: _nameController,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
-                decoration: InputDecoration(
-                  labelText: 'Имя персонажа',
-                  labelStyle: const TextStyle(color: Colors.amber),
-                  hintText: 'Например: Арагорн, Гэндальф...',
-                  hintStyle: TextStyle(color: Colors.grey[500]),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Colors.amber),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Colors.amber),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Colors.amber, width: 2),
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey[800],
-                  prefixIcon: const Icon(Icons.person, color: Colors.amber),
-                ),
-                maxLength: 30,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Имя не может быть пустым';
-                  }
-                  if (value.trim().length < 2) {
-                    return 'Слишком короткое имя';
-                  }
-                  if (value.trim().length > 25) {
-                    return 'Слишком длинное имя';
-                  }
-                  return null;
-                },
-                textInputAction: TextInputAction.done,
-                onFieldSubmitted: (_) => _saveName(),
+                ],
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '${_nameController.text.length}/25 символов',
-              style: TextStyle(color: Colors.grey[500], fontSize: 12),
-            ),
-            const SizedBox(height: 24),
-            
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                OutlinedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.amber,
-                    side: const BorderSide(color: Colors.amber),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              const SizedBox(height: 8),
+              const Text(
+                'Измените основные параметры вашего персонажа',
+                style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 24),
+              
+              Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    // Поле ввода имени
+                    TextFormField(
+                      controller: _nameController,
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      decoration: InputDecoration(
+                        labelText: 'Имя персонажа',
+                        labelStyle: const TextStyle(color: Colors.amber),
+                        hintText: 'Например: Арагорн, Гэндальф...',
+                        hintStyle: TextStyle(color: Colors.grey[500]),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.amber),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.amber),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.amber, width: 2),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[800],
+                        prefixIcon: const Icon(Icons.person, color: Colors.amber),
+                      ),
+                      maxLength: 30,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Имя не может быть пустым';
+                        }
+                        if (value.trim().length < 2) {
+                          return 'Слишком короткое имя';
+                        }
+                        if (value.trim().length > 25) {
+                          return 'Слишком длинное имя';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${_nameController.text.trim().length}/25 символов',
+                      style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                    ),
+                    
+                    const SizedBox(height: 20),
+                    
+                    // Выбор класса
+                    DropdownButtonFormField<String>(
+                      value: selectedClass,
+                      decoration: InputDecoration(
+                        labelText: 'Класс персонажа',
+                        labelStyle: const TextStyle(color: Colors.amber),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.amber),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.amber),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.amber, width: 2),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[800],
+                        prefixIcon: const Icon(Icons.security, color: Colors.amber),
+                      ),
+                      dropdownColor: Colors.grey[800],
+                      style: const TextStyle(color: Colors.white),
+                      items: classes.map((String classItem) {
+                        return DropdownMenuItem<String>(
+                          value: classItem,
+                          child: Text(
+                            classItem,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            selectedClass = newValue;
+                          });
+                        }
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Выберите класс';
+                        }
+                        return null;
+                      },
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Выбор предыстории
+                    DropdownButtonFormField<String>(
+                      value: selectedBackground,
+                      decoration: InputDecoration(
+                        labelText: 'Предыстория',
+                        labelStyle: const TextStyle(color: Colors.amber),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.amber),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.amber),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.amber, width: 2),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[800],
+                        prefixIcon: const Icon(Icons.history, color: Colors.amber),
+                      ),
+                      dropdownColor: Colors.grey[800],
+                      style: const TextStyle(color: Colors.white),
+                      items: backgrounds.map((String backgroundItem) {
+                        return DropdownMenuItem<String>(
+                          value: backgroundItem,
+                          child: Text(
+                            backgroundItem,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            selectedBackground = newValue;
+                          });
+                        }
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Выберите предысторию';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.amber,
+                      side: const BorderSide(color: Colors.amber),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('Отмена'),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: _saveChanges,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                    child: const Text(
+                      'Сохранить',
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
-                  child: const Text('Отмена'),
-                ),
-                const SizedBox(width: 12),
-                ElevatedButton(
-                  onPressed: _saveName,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  ),
-                  child: const Text(
-                    'Сохранить имя',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

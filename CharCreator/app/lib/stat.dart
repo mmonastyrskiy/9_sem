@@ -128,7 +128,7 @@ class BasicStat implements Stat, Updateable,Pickable {
   late int value;        // Базовое значение характеристики (например, 15 для силы)
   int mod = 0;           // Модификатор характеристики (рассчитывается из value)
   int savingthrow = 0;   // Бонус спасброска (0 - нет, 1 - есть)
-  
+  int savingthrowvalue = 0;
   @override
   List<Modifier> affectedby = [];  // Список модификаторов, влияющих на эту характеристику
 
@@ -239,7 +239,9 @@ final class Skill implements ProfBonusStat, Pickable {
       case "мудрость": bs = BasicStatNames.WIS;
       default: bs = BasicStatNames.CHR; // TODO: тут плохо, надо исключение
     }
-    metadata.MetaFlags_ = flags!;  // Устанавливаем флаги метаданных
+    if(flags != null){
+      metadata.MetaFlags_ = flags;
+    } // Устанавливаем флаги метаданных
   }
   
   // Метод для добавления мета-флага к навыку
