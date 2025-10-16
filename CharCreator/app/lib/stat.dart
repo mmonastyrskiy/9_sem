@@ -48,7 +48,8 @@ enum BasicStatNames {
   CON,  // Телосложение
   INT,  // Интеллект
   WIS,  // Мудрость
-  CHR   // Харизма
+  CHR,   // Харизма
+  NULL
 }
 
 // Перечисление всех навыков персонажа
@@ -191,7 +192,7 @@ class BasicStat implements Stat, Updateable,Pickable {
   }
   
   @override
-  Set<String>? pickmany(BuildContext bc, [List<String>? initialSelections, int howmany = 2]) {
+  Future<Set<String>> pickmany(BuildContext bc, [List<String>? initialSelections, int howmany = 2]) {
     // TODO: implement pickmany
     throw UnimplementedError();
   }
@@ -237,7 +238,8 @@ final class Skill implements ProfBonusStat, Pickable {
       case "телосложение": bs = BasicStatNames.CON;
       case "интеллект": bs = BasicStatNames.INT;  
       case "мудрость": bs = BasicStatNames.WIS;
-      default: bs = BasicStatNames.CHR; // TODO: тут плохо, надо исключение
+      case "харизма": bs = BasicStatNames.CHR;
+      default: bs =BasicStatNames.NULL;
     }
     if(flags != null){
       metadata.MetaFlags_ = flags;
@@ -330,30 +332,37 @@ final class Skill implements ProfBonusStat, Pickable {
   }
   
   @override
-  Set<String>? pickmany(BuildContext bc, [List<String>? initialSelections, int? howmany = 2, Set? include]) {
-    // Создаем Map для связи русских названий с enum значениями
-    Map<String, dynamic> c = CoupleMaker.CMtoMap(menu, ret);
-    
-    // Если указан набор для включения, фильтруем только эти элементы
-    if (include != null) {
-      for (dynamic elem in include) {
-        c.removeWhere((key, value) => value != elem);  // Оставляем только элементы из include
-      }
+  @override
+@override
+@override
+@override
+@override
+Future<Set<String>> pickmany(BuildContext bc, [List<String>? initialSelections, int? howmany = 2, Set? include]) async {
+  Map<String, dynamic> c = CoupleMaker.CMtoMap(menu, ret);
+  print(c);
+  
+  // Если указан набор для включения, фильтруем только эти элементы
+  if (include != null) {
+    // Создаем копию для итерации
+    final includeCopy = include.toSet();
+    for (dynamic elem in includeCopy) {
+      c.removeWhere((key, value) => value != elem);
     }
-
-    Set<String> opt = {};
-    // Показываем диалог множественного выбора
-    Set<String> res = ModalDispatcher.showMultiSelectListPicker(context: bc, items: c, initialSelections: initialSelections);
-    
-    // Проверяем, соответствует ли количество выбранных навыков требуемому
-    if (res.length != howmany) {
-      // Если не соответствует, показываем ошибку и запрашиваем повторный выбор
-        PopUpDispatcher.showErrorDialog(bc, "Select $howmany");  // Показываем ошибку
-        pickmany(bc);
-      return opt;
-    }
-    return res;
   }
+  
+  Set<String> res = await ModalDispatcher.showMultiSelectListPicker(
+    context: bc, 
+    items: c, 
+    initialSelections: initialSelections
+  );
+  
+  if (res.length != howmany) {
+    PopUpDispatcher.showErrorDialog(bc, "Select $howmany");
+    return await pickmany(bc, initialSelections, howmany, include);
+  }
+  
+  return res;
+}
 }
 
 // Класс для представления здоровья персонажа

@@ -91,7 +91,7 @@ static Map<String,ToolsNames> str2toolskill(){
   
 
   @override
-    Set<String>? pickmany(BuildContext bc, [List<String>? initialSelections,int? howmany=2, Set? include]) {
+    Future<Set<String>>? pickmany(BuildContext bc, [List<String>? initialSelections,int? howmany=2, Set? include]) async {
 
 Map<String, dynamic> c =CoupleMaker.CMtoMap(menu, ret);
 if(include != null){

@@ -97,7 +97,7 @@ final class Bard implements CharClass {
   }
   
   @override
-  void apply(Health charHeath, Map<BasicStatNames, BasicStat> stat, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stat, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     // Устанавливаем тип кости хитов для Барда - D8
     charHeath.HitDice = DiceType.D8;
     // Создаем объект для бросков костей
@@ -134,9 +134,9 @@ final class Bard implements CharClass {
     stat[BasicStatNames.CHR]!.savingthrow = 1;
     
     // Позволяем игроку выбрать 3 навыка через UI
-    Set<String>? choise = Skill('').pickmany(context, null, 3);
+    Set<String>? choise = await Skill('').pickmany(context, null, 3);
     // Обрабатываем выбранные навыки
-    for (String s in choise!) {
+    for (String s in choise) {
       // Преобразуем строку в enum навыка
       Skills skilltoadd = Skill.string2skill()[s]!;
       // Добавляем метку выбора на классе к навыку
@@ -182,7 +182,7 @@ final class Barbarian implements CharClass {
   }
   
   @override
-  void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     // Устанавливаем кость хитов D12 для Варвара (самая большая)
     charHeath.HitDice = DiceType.D12;
     // Создаем объект для бросков
@@ -215,9 +215,9 @@ final class Barbarian implements CharClass {
     stats[BasicStatNames.CON]!.savingthrow = 1;
 
     // Позволяем выбрать навыки из ограниченного списка
-    Set<String>? choise = Skill('').pickmany(context, null, null, {Skills.Athletics, Skills.Perception, Skills.Survival, Skills.Intimidation, Skills.Animal_Handling});
+    Set<String>? choise = await Skill('').pickmany(context, null, null, {Skills.Athletics, Skills.Perception, Skills.Survival, Skills.Intimidation, Skills.Animal_Handling});
     // Обрабатываем выбранные навыки
-    for (String s in choise!) {
+    for (String s in choise) {
       Skills skilltoadd = Skill.string2skill()[s]!;
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED_ON_CLASS);
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED); 
@@ -256,7 +256,7 @@ final class Fighter implements CharClass {
   }
   
   @override
-  void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     // Устанавливаем кость хитов D10 для Воина
     charHeath.HitDice = DiceType.D10;
     ThrowObject tosser = ThrowObject();
@@ -280,11 +280,11 @@ final class Fighter implements CharClass {
     stats[BasicStatNames.CON]!.savingthrow = 1;
 
     // Позволяем выбрать навыки из широкого списка боевых и тактических навыков
-    Set<String>? choise = Skill('').pickmany(context, null, null,
+    Set<String>? choise = await Skill('').pickmany(context, null, null,
     {Skills.Acrobatics, Skills.Athletics, Skills.Perception, Skills.Survival, Skills.Intimidation, Skills.History, Skills.Insight, Skills.Animal_Handling});
     
     // Обрабатываем выбранные навыки
-    for (String s in choise!) {
+    for (String s in choise) {
       Skills skilltoadd = Skill.string2skill()[s]!;
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED_ON_CLASS);
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED); 
@@ -319,7 +319,7 @@ final class Wizzard implements CharClass {
   }
   
   @override
-  void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     // У Волшебника самая маленькая кость хитов - D6
     charHeath.HitDice = DiceType.D6;
     ThrowObject tosser = ThrowObject();
@@ -341,10 +341,10 @@ final class Wizzard implements CharClass {
     stats[BasicStatNames.WIS]!.savingthrow = 1;
 
     // Навыки связанные с знаниями и магией
-    Set<String>? choise = Skill('').pickmany(context, null, null,
+    Set<String>? choise = await Skill('').pickmany(context, null, null,
     {Skills.History, Skills.Arcana, Skills.Medicine, Skills.Perception, Skills.Investigation, Skills.Religion});
     
-    for (String s in choise!) {
+    for (String s in choise) {
       Skills skilltoadd = Skill.string2skill()[s]!;
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED_ON_CLASS);
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED); 
@@ -388,7 +388,7 @@ final class Druid implements CharClass {
   }
   
   @override
-  void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D8;
     ThrowObject tosser = ThrowObject();
     tosser.addDT(charHeath.HitDice!);
@@ -418,10 +418,10 @@ final class Druid implements CharClass {
     stats[BasicStatNames.WIS]!.savingthrow = 1;
 
     // Навыки связанные с природой и выживанием
-    Set<String>? choise = Skill('').pickmany(context, null, null,
+    Set<String>? choise = await Skill('').pickmany(context, null, null,
     {Skills.Perception, Skills.Survival, Skills.Arcana, Skills.Medicine, Skills.Animal_Handling, Skills.Nature, Skills.Insight, Skills.Religion});
     
-    for (String s in choise!) {
+    for (String s in choise) {
       Skills skilltoadd = Skill.string2skill()[s]!;
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED_ON_CLASS);
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED); 
@@ -455,7 +455,7 @@ final class Clerc implements CharClass{
   }
   
   @override
-  void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     
     charHeath.HitDice = DiceType.D8;
     ThrowObject tosser = ThrowObject();
@@ -472,9 +472,9 @@ final class Clerc implements CharClass{
     stats[BasicStatNames.CHR]!.savingthrow=1;
     stats[BasicStatNames.WIS]!.savingthrow=1;
 
-    Set<String>? choise = Skill('').pickmany(context, null, null,
+    Set<String>? choise = await Skill('').pickmany(context, null, null,
     {Skills.History,Skills.Medicine,Skills.Insight,Skills.Religion,Skills.Persuasion});
-    for(String s in choise!)
+    for(String s in choise)
     {
       Skills skilltoadd = Skill.string2skill()[s]!;
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED_ON_CLASS);
@@ -509,7 +509,7 @@ final class Clerc implements CharClass{
   }
   
   @override
-  void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D8;
     ThrowObject tosser = ThrowObject();
     tosser.addDT(charHeath.HitDice!);
@@ -532,9 +532,9 @@ final class Clerc implements CharClass{
 
 
   
-    Set<String>? choise = Skill('').pickmany(context, null, null,
+    Set<String>? choise = await Skill('').pickmany(context, null, null,
     {Skills.Perception,Skills.History,Skills.Sleight_of_Hand,Skills.Arcana,Skills.Medicine,Skills.Nature,Skills.Investigation});
-    for(String s in choise!)
+    for(String s in choise)
     {
       Skills skilltoadd = Skill.string2skill()[s]!;
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED_ON_CLASS);
@@ -572,7 +572,7 @@ final class Warlock implements CharClass{
   }
   
   @override
-  void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D8;
     ThrowObject tosser = ThrowObject();
     tosser.addDT(charHeath.HitDice!);
@@ -588,9 +588,9 @@ final class Warlock implements CharClass{
     stats[BasicStatNames.CHR]!.savingthrow=1;
 
 
-    Set<String>? choise = Skill('').pickmany(context, null, null,
+    Set<String>? choise = await Skill('').pickmany(context, null, null,
     {Skills.Intimidation,Skills.History,Skills.Arcana,Skills.Deception,Skills.Nature,Skills.Investigation,Skills.Religion});
-    for(String s in choise!)
+    for(String s in choise)
     {
       Skills skilltoadd = Skill.string2skill()[s]!;
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED_ON_CLASS);
@@ -624,7 +624,7 @@ final class Monk implements CharClass{
   }
   
   @override
-  void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D8;
     ThrowObject tosser = ThrowObject();
     tosser.addDT(charHeath.HitDice!);
@@ -643,9 +643,9 @@ final class Monk implements CharClass{
     stats[BasicStatNames.STR]!.savingthrow=1;
     stats[BasicStatNames.DEX]!.savingthrow=1;
 
-    Set<String>? choise = Skill('').pickmany(context, null, null,
+    Set<String>? choise = await Skill('').pickmany(context, null, null,
     {Skills.Acrobatics,Skills.Athletics,Skills.History,Skills.Insight,Skills.Religion,Skills.Stealth});
-    for(String s in choise!)
+    for(String s in choise)
     {
       Skills skilltoadd = Skill.string2skill()[s]!;
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED_ON_CLASS);
@@ -681,7 +681,7 @@ final class Paladin implements CharClass{
   }
   
   @override
-  void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D10;
     ThrowObject tosser = ThrowObject();
     tosser.addDT(charHeath.HitDice!);
@@ -703,9 +703,9 @@ final class Paladin implements CharClass{
     stats[BasicStatNames.CHR]!.savingthrow=1;
 
 
-    Set<String>? choise = Skill('').pickmany(context, null, null,
+    Set<String>? choise = await Skill('').pickmany(context, null, null,
     {Skills.Athletics,Skills.Intimidation,Skills.Medicine,Skills.Insight,Skills.Religion,Skills.Persuasion});
-    for(String s in choise!)
+    for(String s in choise)
     {
       Skills skilltoadd = Skill.string2skill()[s]!;
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED_ON_CLASS);
@@ -738,7 +738,7 @@ final class Rouge implements CharClass{
   }
   
   @override
-  void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D8;
     ThrowObject tosser = ThrowObject();
     tosser.addDT(charHeath.HitDice!);
@@ -759,10 +759,10 @@ final class Rouge implements CharClass{
   stats[BasicStatNames.INT]!.savingthrow=1;
 
 
-    Set<String>? choise = Skill('').pickmany(context, null, 4,
+    Set<String>? choise = await Skill('').pickmany(context, null, 4,
     {Skills.Athletics,Skills.Acrobatics,Skills.Perception,Skills.Performance,Skills.Intimidation,
     Skills.Sleight_of_Hand,Skills.Deception,Skills.Insight,Skills.Investigation,Skills.Stealth,Skills.Persuasion});
-    for(String s in choise!)
+    for(String s in choise)
     {
       Skills skilltoadd = Skill.string2skill()[s]!;
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED_ON_CLASS);
@@ -798,7 +798,7 @@ final class Ranger implements CharClass{
   }
   
   @override
-  void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D10;
     ThrowObject tosser = ThrowObject();
     tosser.addDT(charHeath.HitDice!);
@@ -818,10 +818,10 @@ final class Ranger implements CharClass{
     stats[BasicStatNames.STR]!.savingthrow=1;
 
 
-    Set<String>? choise = Skill('').pickmany(context, null, 3,
+    Set<String>? choise = await Skill('').pickmany(context, null, 3,
     {Skills.Athletics,Skills.Perception,Skills.Survival,Skills.Nature,Skills.
     Insight,Skills.Investigation,Skills.Stealth,Skills.Animal_Handling});
-    for(String s in choise!)
+    for(String s in choise)
     {
       Skills skilltoadd = Skill.string2skill()[s]!;
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED_ON_CLASS);
@@ -857,7 +857,7 @@ final class Sorcerer implements CharClass{
   }
   
   @override
-  void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D6;
     ThrowObject tosser = ThrowObject();
     tosser.addDT(charHeath.HitDice!);
@@ -875,16 +875,15 @@ final class Sorcerer implements CharClass{
     stats[BasicStatNames.CON]!.savingthrow=1;
     stats[BasicStatNames.CHR]!.savingthrow=1;
 
-    Set<String>? choise = Skill('').pickmany(context, null, null,
+    Set<String>? choise = await Skill('').pickmany(context, null, null,
     {Skills.Intimidation,Skills.Arcana,Skills.Deception,Skills.Insight,Skills.Religion,Skills.Persuasion});
-    for(String s in choise!)
+    for(String s in choise)
     {
       Skills skilltoadd = Skill.string2skill()[s]!;
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED_ON_CLASS);
       skills[skilltoadd]!.addMeta(MetaFlags.IS_PICKED); 
       skills[skilltoadd]!.hasprofbounus+=1;
   }
-  //FIXME: THIS IS A HACK UNCOMMENT AND FIX
   }
   
   @override

@@ -52,7 +52,9 @@ final class Langs implements Stat,Pickable {
   case "подземный": lang = LangsNames.Undercommon;
   default: lang = LangsNames.Common; // Значение по умолчанию
   }
-  this.metadata.MetaFlags_ = metadata!;
+  if(metadata != null){
+  this.metadata.MetaFlags_ = metadata;
+  }
   }
   static void deletebyMeta(Set<Langs>? langs,MetaFlags m){
     for(Langs l in langs!){
@@ -78,7 +80,7 @@ final class Langs implements Stat,Pickable {
     return chosen;
   }
     @override
-      Set<String>? pickmany (BuildContext context,[List<String>? initialSelections, int howmany=2]){
+      Future<Set<String>>? pickmany (BuildContext context,[List<String>? initialSelections, int howmany=2])async {
     Map<String, dynamic> c =CoupleMaker.CMtoMap(menu, ret);
     Set<String> res = ModalDispatcher.showMultiSelectListPicker(context: context, items: c,initialSelections: initialSelections) as Set<String>;
     if (res.length != howmany){
@@ -88,6 +90,8 @@ final class Langs implements Stat,Pickable {
     }
     return res;
     }
+    
+
     
 
 

@@ -172,7 +172,7 @@ String currentclass(){
   return class_!.classname;
 }
 void HandleClassChange(String new_){
-  if (class_ !=null){
+  if (class_ !=null && new_ != currentclass()){
     class_?.delete(health, getbasicstats(), getskills(), CanUseArmor, canUseWeapon, tools);
   }
   class_ = CharClass(new_, this);
@@ -181,10 +181,10 @@ void HandleClassChange(String new_){
 
 
 String currentbg(){
-  return class_!.classname;
+  return bg!.BGName;
 }
 void HandleBgChange(String new_){
-  if (bg !=null){
+  if (bg !=null && new_ != currentbg()){
     bg?.delete(getskills(), tools, langs);
   }
   
@@ -197,7 +197,7 @@ String currentRace(){
   return race!.racename;
 }
 void HandleRaceChange(String new_){
-  if (race !=null){
+  if (race !=null && new_ != currentRace()){
     race?.delete(getbasicstats(), size, speed, langs, tools, CanUseArmor, health, getskills(), canUseWeapon);
   }
   

@@ -1,4 +1,6 @@
 // Импорт необходимых библиотек Flutter
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 // Импорт библиотеки для работы с вибрацией
 
@@ -83,180 +85,153 @@ class ModalDispatcher{
 // - context: обязательный контекст BuildContext
 // - items: обязательный Map элементов для выбора
 // - initialSelections: необязательный список предварительно выбранных элементов
-static showMultiSelectListPicker({
+static Future<Set<String>> showMultiSelectListPicker({
   required BuildContext context,
   required Map<String, dynamic> items,
-  List<String>? initialSelections, // Новый опциональный аргумент
-}) async {
-  // Преобразуем ключи Map в List для удобного доступа по индексу
-  List<String> keys = items.keys.toList();
-  // Создаем список boolean значений для отслеживания состояния выбора каждого элемента
-  List<bool> selectionState = List.filled(items.length, false);
+  List<String>? initialSelections,
+}) {
+  final List<String> keys = items.keys.toList();
+  final List<bool> selectionState = List.generate(
+    items.length,
+    (index) => initialSelections?.contains(keys[index]) ?? false,
+  );
 
-  // Если переданы начальные выборы, устанавливаем соответствующие пункты как выбранные
-  if (initialSelections != null) {
-    // Проходим по всем элементам initialSelections
-    for (final key in initialSelections) {
-      // Находим индекс ключа в основном списке
-      final index = keys.indexOf(key);
-      // Если ключ найден в основном списке
-      if (index >= 0) {
-        // Устанавливаем состояние выбора в true
-        selectionState[index] = true;
-      }
-    }
-  }
+  Completer<Set<String>> completer = Completer<Set<String>>();
 
-  // Показываем модальное окно и ждем результат
-  final result = await showModalBottomSheet<List<String>>(
+  showDialog(
     context: context,
-    backgroundColor: const Color(0xFF2d1b00),
-    isScrollControlled: true, // Позволяет окну занимать большую часть экрана
-    // Настраиваем форму окна с закругленными углами сверху
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      side: BorderSide(color: Colors.amber, width: 2),
-    ),
-    builder: (context) => StatefulBuilder(builder: (context, setState) {
-      // Используем StatefulBuilder для управления состоянием внутри модального окна
-      return Container(
-        height: 400, // Фиксированная высота окна
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF2d1b00),
-              Color(0xFF1a1a1a),
+    barrierDismissible: false,
+    builder: (context) {
+      return Dialog(
+        backgroundColor: const Color(0xFF2d1b00),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Colors.amber, width: 2),
+        ),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          height: 500,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF2d1b00),
+                Color(0xFF1a1a1a),
+              ],
+            ),
+          ),
+          child: Column(
+            children: [
+              // Заголовок
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  border: Border(bottom: BorderSide(color: Colors.amber, width: 1)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.checklist, color: Colors.amber),
+                    SizedBox(width: 8),
+                    Text(
+                      'Множественный выбор',
+                      style: TextStyle(
+                        color: Colors.amber,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Список
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(8),
+                  itemCount: items.length,
+                  itemBuilder: (_, index) {
+                    return Card(
+                      color: const Color(0xFF1a1a1a),
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(
+                          color: selectionState[index] ? Colors.amber : Colors.grey,
+                          width: 1,
+                        ),
+                      ),
+                      child: CheckboxListTile(
+                        value: selectionState[index],
+                        controlAffinity: ListTileControlAffinity.leading,
+                        activeColor: Colors.amber,
+                        checkColor: Colors.black,
+                        title: Text(
+                          keys[index],
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        onChanged: (value) {
+                          // Обновляем состояние
+                          (context as Element).markNeedsBuild();
+                          selectionState[index] = value ?? false;
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+              // Кнопки
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  border: Border(top: BorderSide(color: Colors.amber, width: 1)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.amber,
+                        side: const BorderSide(color: Colors.amber),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        completer.complete({});
+                      },
+                      child: const Text('Отмена'),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber,
+                        foregroundColor: Colors.black,
+                      ),
+                      onPressed: () {
+                        final Set<String> selections = {};
+                        for (var i = 0; i < selectionState.length; i++) {
+                          if (selectionState[i]) {
+                            selections.add(keys[i]);
+                          }
+                        }
+                        Navigator.of(context).pop();
+                        completer.complete(selections);
+                      },
+                      child: const Text('Выбрать'),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
-        child: Column(
-          children: [
-            // Заголовок
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.amber, width: 1)),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.checklist, color: Colors.amber),
-                  SizedBox(width: 8),
-                  Text(
-                    'Множественный выбор',
-                    style: TextStyle(
-                      color: Colors.amber,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Растягиваемый контейнер для списка
-            Expanded(
-              child: ListView.builder(
-                shrinkWrap: true, // Позволяет ListView занимать только необходимое пространство
-                padding: const EdgeInsets.all(8), // Отступы вокруг списка
-                physics: const BouncingScrollPhysics(), // Эффект отскока при прокрутке
-                itemCount: items.length, // Количество элементов в списке
-                itemBuilder: (_, i) {
-                  // Создаем элемент списка с Checkbox
-                  return Card(
-                    color: const Color(0xFF1a1a1a),
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide(
-                        color: selectionState[i] ? Colors.amber : Colors.grey,
-                        width: 1,
-                      ),
-                    ),
-                    child: CheckboxListTile(
-                      value: selectionState[i], // Текущее состояние выбора
-                      controlAffinity: ListTileControlAffinity.leading, // Checkbox слева от текста
-                      activeColor: Colors.amber,
-                      checkColor: Colors.black,
-                      title: Text(
-                        keys[i],
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      onChanged: (value) {
-                        // При изменении состояния Checkbox обновляем состояние
-                        setState(() {
-                          selectionState[i] = !selectionState[i]; // Инвертируем текущее состояние
-                        });
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-            // Панель кнопок внизу окна
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: Colors.amber, width: 1)),
-              ),
-              child: OverflowBar(
-                alignment: MainAxisAlignment.spaceBetween, // Равномерное распределение кнопок
-                children: [
-                  // Кнопка отмены
-                  OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.amber,
-                      side: const BorderSide(color: Colors.amber),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text('Отмена'),
-                    onPressed: () => Navigator.of(context).pop(<String>[]), // Закрываем окно с пустым списком
-                  ),
-                  // Кнопка подтверждения выбора
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Выбрать',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    onPressed: () {
-                      // Собираем все выбранные элементы с правильным типом
-                      final List<String> selections = [];
-                      // Проходим по всем элементам состояния выбора
-                      for (var i = 0; i < selectionState.length; i++) {
-                        // Если элемент выбран, добавляем его ключ в результат
-                        if (selectionState[i]) {
-                          selections.add(keys[i]);
-                        }
-                      }
-                      // Закрываем окно и возвращаем выбранные элементы
-                      Navigator.of(context).pop(selections);
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       );
-    }),
+    },
   );
 
-  // Возвращаем результат или пустой список если результат null
-  return result ?? <String>[];
+  // Ждем завершения Completer
+  return completer.future.then((result) => result).catchError((_) => {});
 }
-
 }
 
 // Класс для управления всплывающими окнами и диалогами

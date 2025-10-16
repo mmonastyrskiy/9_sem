@@ -31,7 +31,7 @@ abstract interface class Pickable{
   // - howmany: количество элементов для выбора (по умолчанию 2)
   // Возвращает: Set<String>? - множество выбранных элементов или null, если выбор не сделан
   // Квадратные скобки обозначают необязательные параметры
-  Set<String>? pickmany(BuildContext bc,[ List<String>? initialSelections,int howmany=2]){
+  Future<Set<String>>? pickmany(BuildContext bc,[ List<String>? initialSelections,int howmany=2]){
     // Базовая реализация возвращает null
     // Конкретные классы должны предоставить свою реализацию
     return null;  

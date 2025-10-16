@@ -100,14 +100,454 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> {
             _buildStyledHomeTab(c),
             
             // Остальные вкладки без изменений
-            const Center(child: Text("Инвентарь - в разработке",style: TextStyle(color: Colors.black),)),
-            const Center(child: Text("Заклинания - в разработке",style: TextStyle(color: Colors.black))),
-            const Center(child: Text("О персонаже - в разработке",style: TextStyle(color: Colors.black))),
+            _buildStyledInventoryTab(),
+            _buildStyledSpellsTab(),
+            _buildStyledAboutTab(),
           ],
         ),
       ),
     );
   }
+
+
+Widget _buildStyledAboutTab() {
+  return Container(
+    decoration: const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color(0xFF1a1a1a),
+          Color(0xFF2d1b00),
+        ],
+      ),
+    ),
+    padding: const EdgeInsets.all(24),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Иконка персонажа
+        Container(
+          width: 120,
+          height: 120,
+          decoration: BoxDecoration(
+            color: const Color(0xFF2d1b00),
+            borderRadius: BorderRadius.circular(60),
+            border: Border.all(color: Colors.blue, width: 3),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blue.withOpacity(0.3),
+                blurRadius: 15,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.person,
+            color: Colors.blue,
+            size: 60,
+          ),
+        ),
+        
+        const SizedBox(height: 32),
+        
+        // Заголовок
+        const Text(
+          '🧑 О персонаже',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.blue,
+            fontFamily: 'Fantasy',
+          ),
+        ),
+        
+        const SizedBox(height: 16),
+        
+        // Описание
+        const Text(
+          'Детальная информация о вашем герое',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+        
+        const SizedBox(height: 24),
+        
+        // Карточка с информацией
+        Card(
+          color: const Color(0xFF2d1b00),
+          elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: Colors.blue, width: 2),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.history_edu,
+                  color: Colors.blue,
+                  size: 40,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Биография и история',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Скоро здесь появится:\n• Подробная биография\n• История приключений\n• Черты характера\n• Идеалы, узы и недостатки',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[400],
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        
+        const SizedBox(height: 20),
+        
+        // Статистика
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+          ],
+        ),
+        
+        const SizedBox(height: 20),
+        
+        // Кнопка редактирования
+        ElevatedButton.icon(
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) => EditCharacterDialog(
+                character: c,
+                onCharacterChanged: (newName, newClass, newRace, newBackground) {
+                  _updateCharacter(newName, newClass, newRace, newBackground);
+                },
+              ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          ),
+          icon: const Icon(Icons.edit_note),
+          label: const Text(
+            'Редактировать биографию',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+
+Widget _buildStyledSpellsTab() {
+  return Container(
+    decoration: const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color(0xFF1a1a1a),
+          Color(0xFF2d1b00),
+        ],
+      ),
+    ),
+    padding: const EdgeInsets.all(24),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Магическая иконка
+        Container(
+          width: 120,
+          height: 120,
+          decoration: BoxDecoration(
+            color: const Color(0xFF2d1b00),
+            borderRadius: BorderRadius.circular(60),
+            border: Border.all(color: Colors.purple, width: 3),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.purple.withOpacity(0.3),
+                blurRadius: 15,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.auto_awesome,
+            color: Colors.purple,
+            size: 60,
+          ),
+        ),
+        
+        const SizedBox(height: 32),
+        
+        // Заголовок
+        const Text(
+          '🔥 Заклинания',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.purple,
+            fontFamily: 'Fantasy',
+          ),
+        ),
+        
+        const SizedBox(height: 16),
+        
+        // Описание
+        const Text(
+          'Магическая система готовится к запуску',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+        
+        const SizedBox(height: 24),
+        
+        // Карточка с информацией о заклинаниях
+        Card(
+          color: const Color(0xFF2d1b00),
+          elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: Colors.purple, width: 2),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Книга заклинаний',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.purple,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Скоро здесь появится:\n• Список известных заклинаний\n• Ячейки заклинаний\n• Описания и компоненты\n• Боевое применение',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[400],
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        
+        const SizedBox(height: 20),
+        
+        // Кнопка "Изучить заклинания"
+        OutlinedButton.icon(
+          onPressed: () {
+            // TODO: Добавить функционал
+          },
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Colors.purple,
+            side: const BorderSide(color: Colors.purple),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          ),
+          icon: const Icon(Icons.menu_book),
+          label: const Text(
+            'Изучить заклинания',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+
+
+Widget _buildStyledInventoryTab() {
+  return Container(
+    decoration: const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color(0xFF1a1a1a),
+          Color(0xFF2d1b00),
+        ],
+      ),
+    ),
+    padding: const EdgeInsets.all(24),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Иконка инвентаря
+        Container(
+          width: 120,
+          height: 120,
+          decoration: BoxDecoration(
+            color: const Color(0xFF2d1b00),
+            borderRadius: BorderRadius.circular(60),
+            border: Border.all(color: Colors.amber, width: 3),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.amber.withOpacity(0.3),
+                blurRadius: 15,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.backpack,
+            color: Colors.amber,
+            size: 60,
+          ),
+        ),
+        
+        const SizedBox(height: 32),
+        
+        // Заголовок
+        const Text(
+          '🎒 Инвентарь',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.amber,
+            fontFamily: 'Fantasy',
+          ),
+        ),
+        
+        const SizedBox(height: 16),
+        
+        // Описание
+        const Text(
+          'Система инвентаря находится в разработке',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+        
+        const SizedBox(height: 24),
+        
+        // Карточка с информацией
+        Card(
+          color: const Color(0xFF2d1b00),
+          elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: Colors.amber, width: 2),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.construction,
+                  color: Colors.amber,
+                  size: 40,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'В разработке',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.amber,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Скоро здесь появится:\n• Управление предметами\n• Экипировка\n• Вес и ёмкость\n• Быстрый доступ',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[400],
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        
+        const SizedBox(height: 20),
+        
+        // Прогресс бар
+        Container(
+          width: 200,
+          height: 6,
+          decoration: BoxDecoration(
+            color: Colors.grey[800],
+            borderRadius: BorderRadius.circular(3),
+          ),
+          child: Stack(
+            children: [
+              Container(
+                width: 120,
+                height: 6,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.amber, Colors.orange],
+                  ),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+            ],
+          ),
+        ),
+        
+        const SizedBox(height: 8),
+        
+        Text(
+          '45% завершено',
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[500],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+
 
   Widget _buildStyledHomeTab(Character c) {
     return Container(
@@ -721,7 +1161,7 @@ class EditCharacterDialogState extends State<EditCharacterDialog> {
                     
                     // Выбор расы
                     DropdownButtonFormField<String>(
-                      value: selectedRace,
+                      initialValue: selectedRace,
                       decoration: InputDecoration(
                         labelText: 'Раса персонажа',
                         labelStyle: const TextStyle(color: Colors.amber),
@@ -771,7 +1211,7 @@ class EditCharacterDialogState extends State<EditCharacterDialog> {
                     
                     // Выбор класса
                     DropdownButtonFormField<String>(
-                      value: selectedClass,
+                      initialValue: selectedClass,
                       decoration: InputDecoration(
                         labelText: 'Класс персонажа',
                         labelStyle: const TextStyle(color: Colors.amber),
@@ -821,7 +1261,7 @@ class EditCharacterDialogState extends State<EditCharacterDialog> {
                     
                     // Выбор предыстории
                     DropdownButtonFormField<String>(
-                      value: selectedBackground,
+                      initialValue: selectedBackground,
                       decoration: InputDecoration(
                         labelText: 'Предыстория',
                         labelStyle: const TextStyle(color: Colors.amber),

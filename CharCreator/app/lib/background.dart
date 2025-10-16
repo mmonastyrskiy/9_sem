@@ -274,14 +274,14 @@ final class Sage implements Background{
 
   // Применяет бонусы предыстории
   @override
-  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
+  Future<void> apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) async {
     // Добавляем бонус к навыку Истории
     stats[StatNames.History]?.hasprofbounus +=1;
     // Добавляем бонус к навыку Магии
     stats[StatNames.Arcana]?.hasprofbounus +=1;
     
     // Позволяем выбрать несколько дополнительных языков
-    Set<String>? r = Langs('').pickmany(context);
+    Set<String>? r = await Langs('').pickmany(context);
     // Добавляем выбранные языки в список персонажа
     for (String s in r!){
       langs.add(Langs(s,{MetaFlags.IS_PICKED_ON_BG}));
@@ -455,13 +455,13 @@ final class Acolyte implements Background{
 
   // Применяет бонусы предыстории
   @override
-  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
+  Future<void> apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) async {
     // Добавляем бонус к навыку Проницательности
     stats[StatNames.Insight]?.hasprofbounus +=1;
     // Добавляем бонус к навыку Религии
     stats[StatNames.Religion]?.hasprofbounus +=1;
     // Позволяем выбрать несколько дополнительных языков
-    Set<String>? r = Langs('').pickmany(context);
+    Set<String>? r = await Langs('').pickmany(context);
     // Добавляем выбранные языки
     for (String s in r!){
       langs.add(Langs(s,{MetaFlags.IS_PICKED_ON_BG}));

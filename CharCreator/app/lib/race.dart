@@ -278,18 +278,18 @@ final class HalfElf implements Race{
   }
 
   @override
-  void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health, Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) {
+  Future<void> apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health, Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon) async {
     stats[BasicStatNames.STR]?.update(2, {MetaFlags.AFFECTED_BY_RACE});
     traits.add(Trait(TraitNames.DarkVision, {MetaFlags.AFFECTED_BY_RACE}));
     traits.add(Trait(TraitNames.FaerieLegacy, {MetaFlags.AFFECTED_BY_RACE}));
-    Set<String>? chosen = BasicStat().pickmany(context);
-    for(String s in chosen!){
+    Set<String>? chosen = await BasicStat().pickmany(context);
+    for(String s in chosen){
       BasicStatNames? t = BasicStat.str2BasicStat()[s];
       stats[t]?.update(1, {MetaFlags.AFFECTED_BY_RACE,MetaFlags.IS_PICKED,MetaFlags.IS_PICKED_ON_RACE});
     }
     size = Size.MEDIUM;
     speed = 30;
-    Set<String>? choise = Skill('').pickmany(context, null, null, {Skills.Athletics, Skills.Perception, Skills.Survival, Skills.Intimidation, Skills.Animal_Handling});
+    Set<String>? choise = Skill('').pickmany(context, null, null, {Skills.Athletics, Skills.Perception, Skills.Survival, Skills.Intimidation, Skills.Animal_Handling}) as Set<String>?;
     // Обрабатываем выбранные навыки
     for (String s in choise!) {
       Skills skilltoadd = Skill.string2skill()[s]!;
