@@ -74,15 +74,12 @@ class Armor implements Item {
   // Аргументы:
   // - armor: набор брони для фильтрации (может быть null)
   // - m: флаг метаданных для поиска и удаления
-  static void deletebyMeta(Set<Armor>? armor, MetaFlags m) {
+  static void deletebyMeta(Set<Armor> armor, MetaFlags m) {
     // Проходим по всем элементам брони в наборе
-    for (Armor l in armor!) {
-      // Проверяем, содержит ли текущий элемент брони указанный мета-флаг
-      if (l.metadata.MetaFlags_.contains(m)) {
-        // Если содержит - удаляем этот элемент из набора
-        armor.remove(l);
-      }
+    if(armor.isEmpty){
+      return;
     }
+    armor.removeWhere((val)=>  val.metadata.MetaFlags_.contains(m));
   }
 }
 
@@ -108,14 +105,11 @@ class Weapon implements Item {
   // Аргументы:
   // - weapon: набор оружия для фильтрации (может быть null)
   // - m: флаг метаданных для поиска и удаления
-  static void deletebyMeta(Set<Weapon>? weapon, MetaFlags m) {
-    // Проходим по всем элементам оружия в наборе
-    for (Weapon l in weapon!) {
-      // Проверяем, содержит ли текущий элемент оружия указанный мета-флаг
-      if (l.metadata.MetaFlags_.contains(m)) {
-        // Если содержит - удаляем этот элемент из набора
-        weapon.remove(l);
-      }
+  static void deletebyMeta(Set<Weapon> weapon, MetaFlags m) {
+    if(weapon.isEmpty){
+      return;
     }
+    // Проходим по всем элементам оружия в наборе
+    weapon.removeWhere((val)=> val.metadata.MetaFlags_.contains(m));
   }
 }

@@ -165,13 +165,17 @@ class BasicStat implements Stat, Updateable,Pickable {
   
   @override
   void deletebyMeta(MetaFlags m) {
+    print(affectedby.length);
+    if(affectedby.isEmpty){
+      return;
+    }
     // Проходим по всем модификаторам
     for (Modifier l in affectedby) {
       // Если модификатор имеет указанный мета-флаг
       if (l.metadata.MetaFlags_.contains(m)) {
-        affectedby.remove(l);           // Удаляем модификатор из списка
         value -= l.value;          // Отменяем эффект модификатора 
         mod = Stat2Modifier();          // Пересчитываем модификатор
+        affectedby.remove(l);           // Удаляем модификатор из списка
         // TODO: Надо еще пересчитывать статы зависимые от базовых статов
       }
     }
@@ -331,36 +335,23 @@ final class Skill implements ProfBonusStat, Pickable {
     throw UnimplementedError();
   }
   
-  @override
-  @override
-@override
-@override
-@override
-@override
+
 Future<Set<String>> pickmany(BuildContext bc, [List<String>? initialSelections, int? howmany = 2, Set? include]) async {
-  Map<String, dynamic> c = CoupleMaker.CMtoMap(menu, ret);
-  print(c);
-  
+  print("RAN pickmany");
+  Set<String> menu = string2skill().keys.toSet();
   // Если указан набор для включения, фильтруем только эти элементы
-  if (include != null) {
-    // Создаем копию для итерации
-    final includeCopy = include.toSet();
-    for (dynamic elem in includeCopy) {
-      c.removeWhere((key, value) => value != elem);
-    }
-  }
+if (include != null) {
+  print("Removed");
+  menu.removeWhere((val) => !include.contains(val));
+}
   
   Set<String> res = await ModalDispatcher.showMultiSelectListPicker(
     context: bc, 
-    items: c, 
+    items: string2skill().keys.toSet(), // TODO фильтр по данным не будет работать т к в include не строки, а Skill
     initialSelections: initialSelections
   );
   
-  if (res.length != howmany) {
-    PopUpDispatcher.showErrorDialog(bc, "Select $howmany");
-    return await pickmany(bc, initialSelections, howmany, include);
-  }
-  
+
   return res;
 }
 }

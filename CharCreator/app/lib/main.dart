@@ -48,7 +48,7 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> {
       c.SetName(name);
       c.HandleClassChange(characterClass);
       c.HandleRaceChange(race);
-      c.HandleBgChange(background);
+      //c.HandleBgChange(background);
     });
   }
 
@@ -601,7 +601,7 @@ Widget _buildStyledInventoryTab() {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${c.currentclass()} • ${c.currentbg()} • Уровень ${c.lvl} ',
+                          '${c.currentclass()} • ${c.currentRace()} • Уровень ${c.lvl} ',
                           style: const TextStyle(color: Colors.grey),
                         ),
                       ],

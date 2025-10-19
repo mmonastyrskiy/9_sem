@@ -4,6 +4,158 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 // Импорт библиотеки для работы с вибрацией
 
+
+
+class _MultiSelectDialog extends StatefulWidget {
+  final List<String> items;
+  final List<String>? initialSelections;
+
+  const _MultiSelectDialog({
+    required this.items,
+    this.initialSelections,
+  });
+
+  @override
+  State<_MultiSelectDialog> createState() => _MultiSelectDialogState();
+}
+
+class _MultiSelectDialogState extends State<_MultiSelectDialog> {
+  late List<bool> _selectionState;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectionState = List.generate(
+      widget.items.length,
+      (index) => widget.initialSelections?.contains(widget.items[index]) ?? false,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: const Color(0xFF2d1b00),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: Colors.amber, width: 2),
+      ),
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.9,
+        height: 500,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF2d1b00),
+              Color(0xFF1a1a1a),
+            ],
+          ),
+        ),
+        child: Column(
+          children: [
+            // Заголовок
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.amber, width: 1)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.checklist, color: Colors.amber),
+                  SizedBox(width: 8),
+                  Text(
+                    'Множественный выбор',
+                    style: TextStyle(
+                      color: Colors.amber,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Список
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(8),
+                itemCount: widget.items.length,
+                itemBuilder: (_, index) {
+                  return Card(
+                    color: const Color(0xFF1a1a1a),
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(
+                        color: _selectionState[index] ? Colors.amber : Colors.grey,
+                        width: 1,
+                      ),
+                    ),
+                    child: CheckboxListTile(
+                      value: _selectionState[index],
+                      controlAffinity: ListTileControlAffinity.leading,
+                      activeColor: Colors.amber,
+                      checkColor: Colors.black,
+                      title: Text(
+                        widget.items[index],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectionState[index] = value ?? false;
+                        });
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+            
+            // Кнопки
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: Colors.amber, width: 1)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.amber,
+                      side: const BorderSide(color: Colors.amber),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop(null);
+                    },
+                    child: const Text('Отмена'),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                      foregroundColor: Colors.black,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context,rootNavigator: true).pop(_selectionState);
+                    },
+                    child: const Text('Выбрать'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+
 // Класс для управления модальными окнами выбора
 class ModalDispatcher{
   // Статический метод для показа модального окна с выбором одного элемента из списка
@@ -87,150 +239,34 @@ class ModalDispatcher{
 // - initialSelections: необязательный список предварительно выбранных элементов
 static Future<Set<String>> showMultiSelectListPicker({
   required BuildContext context,
-  required Map<String, dynamic> items,
+  required Set<String> items,
   List<String>? initialSelections,
-}) {
-  final List<String> keys = items.keys.toList();
-  final List<bool> selectionState = List.generate(
-    items.length,
-    (index) => initialSelections?.contains(keys[index]) ?? false,
-  );
-
-  Completer<Set<String>> completer = Completer<Set<String>>();
-
-  showDialog(
+}) async {
+  final List<String> keys = items.toList();
+  
+  print("✅ Context is valid, items: ${items.length}");
+  
+await Future.delayed(Duration(milliseconds: 100));
+  final List<bool>? result = await showDialog<List<bool>>(
     context: context,
     barrierDismissible: false,
     builder: (context) {
-      return Dialog(
-        backgroundColor: const Color(0xFF2d1b00),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Colors.amber, width: 2),
-        ),
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          height: 500,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF2d1b00),
-                Color(0xFF1a1a1a),
-              ],
-            ),
-          ),
-          child: Column(
-            children: [
-              // Заголовок
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  border: Border(bottom: BorderSide(color: Colors.amber, width: 1)),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.checklist, color: Colors.amber),
-                    SizedBox(width: 8),
-                    Text(
-                      'Множественный выбор',
-                      style: TextStyle(
-                        color: Colors.amber,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Список
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(8),
-                  itemCount: items.length,
-                  itemBuilder: (_, index) {
-                    return Card(
-                      color: const Color(0xFF1a1a1a),
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(
-                          color: selectionState[index] ? Colors.amber : Colors.grey,
-                          width: 1,
-                        ),
-                      ),
-                      child: CheckboxListTile(
-                        value: selectionState[index],
-                        controlAffinity: ListTileControlAffinity.leading,
-                        activeColor: Colors.amber,
-                        checkColor: Colors.black,
-                        title: Text(
-                          keys[index],
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        onChanged: (value) {
-                          // Обновляем состояние
-                          (context as Element).markNeedsBuild();
-                          selectionState[index] = value ?? false;
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ),
-              // Кнопки
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  border: Border(top: BorderSide(color: Colors.amber, width: 1)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.amber,
-                        side: const BorderSide(color: Colors.amber),
-                      ),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        completer.complete({});
-                      },
-                      child: const Text('Отмена'),
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
-                        foregroundColor: Colors.black,
-                      ),
-                      onPressed: () {
-                        final Set<String> selections = {};
-                        for (var i = 0; i < selectionState.length; i++) {
-                          if (selectionState[i]) {
-                            selections.add(keys[i]);
-                          }
-                        }
-                        Navigator.of(context).pop();
-                        completer.complete(selections);
-                      },
-                      child: const Text('Выбрать'),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+      return _MultiSelectDialog(
+        items: keys,
+        initialSelections: initialSelections,
       );
     },
   );
 
-  // Ждем завершения Completer
-  return completer.future.then((result) => result).catchError((_) => {});
+  print("🟢 Диалог результат: $result");
+  
+  if (result == null) return {};
+
+  final Set<String> selections = {};
+  for (var i = 0; i < result.length; i++) {
+    if (result[i]) selections.add(keys[i]);
+  }
+  return selections;
 }
 }
 

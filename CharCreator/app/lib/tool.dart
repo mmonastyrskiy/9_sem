@@ -93,14 +93,11 @@ static Map<String,ToolsNames> str2toolskill(){
   @override
     Future<Set<String>>? pickmany(BuildContext bc, [List<String>? initialSelections,int? howmany=2, Set? include]) async {
 
-Map<String, dynamic> c =CoupleMaker.CMtoMap(menu, ret);
-if(include != null){
-  for (dynamic elem in include){
-    c.removeWhere((key, value) => value != elem);
-  }
+if (include != null) {
+  menu.removeWhere((val) => !include.contains(val));
 }
 
-    Set<String> res = ModalDispatcher.showMultiSelectListPicker(context: bc, items: c,initialSelections: initialSelections) as Set<String>;
+    Set<String> res = ModalDispatcher.showMultiSelectListPicker(context: bc, items: menu,initialSelections: initialSelections) as Set<String>;
     if (res.length != howmany){
 
     PopUpDispatcher.showErrorDialog(bc,"Select $howmany");

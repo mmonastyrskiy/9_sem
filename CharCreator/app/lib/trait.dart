@@ -57,6 +57,7 @@ class Trait {
   // - traits: набор черт для фильтрации
   // - flag: флаг метаданных для поиска и удаления
   static void deletebyMeta(Set<Trait> traits, MetaFlags flag) {
+    if(traits.isEmpty){return;}
     // Проходим по всем чертам в наборе
     for (Trait s in traits) {
       // Проверяем, содержит ли текущая черта указанный мета-флаг
