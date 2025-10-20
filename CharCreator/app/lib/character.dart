@@ -157,6 +157,13 @@ class Character {
   @HiveField(43)
   int? speed;
 
+  @HiveField(44)
+  String PortraitURL = "";
+
+
+  void setImageUrl(String url) {
+    PortraitURL = url;
+  }
   List<String> AbilityNames() => ["Сила", "Ловкость", "Телосложение", "Интеллект", "Мудрость", "Харизма"];
 
   void Reroll() {

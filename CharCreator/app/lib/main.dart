@@ -5,9 +5,9 @@ import 'character.dart';
 import 'sys/db.dart';
 import 'package:hive/hive.dart';
 import 'sys/config.dart';
-void main() async{
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await HiveService.init();
+  HiveService.init();
   
   runApp(const MyApp());
 }
@@ -23,6 +23,258 @@ class MyApp extends StatelessWidget {
   }
 }
 
+class ImageEditDialog extends StatefulWidget {
+  final Character character;
+  final Function(String) onImageChanged;
+
+  const ImageEditDialog({
+    super.key,
+    required this.character,
+    required this.onImageChanged,
+  });
+
+  @override
+  ImageEditDialogState createState() => ImageEditDialogState();
+}
+
+class ImageEditDialogState extends State<ImageEditDialog> {
+  late TextEditingController _urlController;
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _urlController = TextEditingController(text: widget.character.PortraitURL);
+  }
+
+  @override
+  void dispose() {
+    _urlController.dispose();
+    super.dispose();
+  }
+
+  void _saveImage() {
+    if (_formKey.currentState!.validate()) {
+      String newUrl = _urlController.text.trim();
+      widget.onImageChanged(newUrl);
+      Navigator.of(context).pop();
+    }
+  }
+
+  void _clearImage() {
+    setState(() {
+      _urlController.text = '';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.grey[900],
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Colors.blue, width: 2),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1a1a1a), Color(0xFF003366)],
+          ),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.image, color: Colors.blue, size: 28),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Изображение персонажа',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Введите URL изображения или оставьте пустым для стандартного',
+                style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 24),
+              
+              // Предпросмотр изображения
+              Center(
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(60),
+                    border: Border.all(color: Colors.blue, width: 3),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue.withOpacity(0.3),
+                        blurRadius: 15,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: _buildImagePreview(_urlController.text),
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 20),
+              
+              Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _urlController,
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      decoration: InputDecoration(
+                        labelText: 'URL изображения',
+                        labelStyle: const TextStyle(color: Colors.blue),
+                        hintText: 'https://example.com/image.jpg',
+                        hintStyle: TextStyle(color: Colors.grey[500]),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.blue),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.blue),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.blue, width: 2),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[800],
+                        prefixIcon: const Icon(Icons.link, color: Colors.blue),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.clear, color: Colors.red),
+                          onPressed: _clearImage,
+                        ),
+                      ),
+                      onChanged: (value) {
+                        setState(() {}); // Обновляем предпросмотр
+                      },
+                      validator: (value) {
+                        if (value != null && value.isNotEmpty) {
+                          if (!Uri.tryParse(value)!.hasScheme) {
+                            return 'Введите корректный URL';
+                          }
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Оставьте поле пустым для стандартного изображения',
+                      style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.blue,
+                      side: const BorderSide(color: Colors.blue),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('Отмена'),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: _saveImage,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                    child: const Text(
+                      'Сохранить',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImagePreview(String url) {
+    if (url.isEmpty) {
+      return Container(
+        color: const Color(0xFF2d1b00),
+        child: const Icon(
+          Icons.person,
+          color: Colors.blue,
+          size: 50,
+        ),
+      );
+    } else {
+      return Image.network(
+        url,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            color: const Color(0xFF2d1b00),
+            child: const Center(
+              child: CircularProgressIndicator(color: Colors.blue),
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: const Color(0xFF2d1b00),
+            child: const Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error, color: Colors.red, size: 40),
+                SizedBox(height: 8),
+                Text(
+                  'Ошибка',
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    }
+  }
+}
+
+
+
+
 class CharacterSheetScreen extends StatefulWidget {
   const CharacterSheetScreen({super.key});
   @override
@@ -34,11 +286,12 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> {
   late CharacterRepository characterRepository;
 
   @override
-  void initState() async{
+  void initState() {
     super.initState();
     c = Character(context);
-  final characterBox = await Hive.openBox<Character>('characters');
-  characterRepository = CharacterRepository(characterBox);
+  //final characterBox = Hive.openBox<Character>('characters');
+  // characterRepository = CharacterRepository(characterBox as Box<Character>);
+  // FIXME: Hive does not build
   }
 
   Color _getAbilityColor(int value) {
@@ -61,6 +314,16 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> {
       }
     });
   }
+  void _updateCharacterImage(String imageUrl) {
+  setState(() {
+    c.setImageUrl(imageUrl); // Используем новый метод setImageUrl
+    
+    // Сохраняем изменения в Hive если включено
+    if(FLAG_ENABLE_HIVE){
+      characterRepository.safeUpdate(c.name, c);
+    }
+  });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -118,158 +381,6 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> {
       ),
     );
   }
-
-
-Widget _buildStyledAboutTab() {
-  return Container(
-    decoration: const BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Color(0xFF1a1a1a),
-          Color(0xFF2d1b00),
-        ],
-      ),
-    ),
-    padding: const EdgeInsets.all(24),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Иконка персонажа
-        Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            color: const Color(0xFF2d1b00),
-            borderRadius: BorderRadius.circular(60),
-            border: Border.all(color: Colors.blue, width: 3),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.blue.withOpacity(0.3),
-                blurRadius: 15,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
-          child: const Icon(
-            Icons.person,
-            color: Colors.blue,
-            size: 60,
-          ),
-        ),
-        
-        const SizedBox(height: 32),
-        
-        // Заголовок
-        const Text(
-          '🧑 О персонаже',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.blue,
-            fontFamily: 'Fantasy',
-          ),
-        ),
-        
-        const SizedBox(height: 16),
-        
-        // Описание
-        const Text(
-          'Детальная информация о вашем герое',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey,
-            fontStyle: FontStyle.italic,
-          ),
-        ),
-        
-        const SizedBox(height: 24),
-        
-        // Карточка с информацией
-        Card(
-          color: const Color(0xFF2d1b00),
-          elevation: 8,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: Colors.blue, width: 2),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                const Icon(
-                  Icons.history_edu,
-                  color: Colors.blue,
-                  size: 40,
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Биография и история',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Скоро здесь появится:\n• Подробная биография\n• История приключений\n• Черты характера\n• Идеалы, узы и недостатки',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[400],
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        
-        const SizedBox(height: 20),
-        
-        // Статистика
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-          ],
-        ),
-        
-        const SizedBox(height: 20),
-        
-        // Кнопка редактирования
-        ElevatedButton.icon(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) => EditCharacterDialog(
-                character: c,
-                onCharacterChanged: (newName, newClass, newRace, newBackground) {
-                  _updateCharacter(newName, newClass, newRace, newBackground);
-                },
-              ),
-            );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          ),
-          icon: const Icon(Icons.edit_note),
-          label: const Text(
-            'Редактировать биографию',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-      ],
-    ),
-  );
-}
 
 
 Widget _buildStyledSpellsTab() {
@@ -557,6 +668,229 @@ Widget _buildStyledInventoryTab() {
   );
 }
 
+
+Widget _buildStyledAboutTab() {
+  return Container(
+    decoration: const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color(0xFF1a1a1a),
+          Color(0xFF2d1b00),
+        ],
+      ),
+    ),
+    padding: const EdgeInsets.all(24),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Кликабельная иконка персонажа
+        GestureDetector(
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (context) => ImageEditDialog(
+                character: c,
+                onImageChanged: (newUrl) {
+                  setState(() {
+                    c.setImageUrl(newUrl);
+                    _updateCharacterImage(newUrl);
+                    if (FLAG_ENABLE_HIVE) {
+                      characterRepository.safeUpdate(c.name, c);
+                    }
+                  });
+                },
+              ),
+            );
+          },
+          child: Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(60),
+              border: Border.all(color: Colors.blue, width: 3),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.blue.withOpacity(0.3),
+                  blurRadius: 15,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: _buildCharacterImage(c.PortraitURL),
+            ),
+          ),
+        ),
+        
+        const SizedBox(height: 16),
+        
+        // Подсказка под изображением
+        Text(
+          'Нажмите на изображение для изменения',
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[500],
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+        
+        const SizedBox(height: 32),
+        
+        // Заголовок
+        const Text(
+          '🧑 О персонаже',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.blue,
+            fontFamily: 'Fantasy',
+          ),
+        ),
+        
+        const SizedBox(height: 16),
+        
+        // Описание
+        const Text(
+          'Детальная информация о вашем герое',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+        
+        const SizedBox(height: 24),
+        
+        // Карточка с информацией
+        Card(
+          color: const Color(0xFF2d1b00),
+          elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: Colors.blue, width: 2),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.history_edu,
+                  color: Colors.blue,
+                  size: 40,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Биография и история',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Скоро здесь появится:\n• Подробная биография\n• История приключений\n• Черты характера\n• Идеалы, узы и недостатки',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[400],
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        
+        const SizedBox(height: 20),
+        
+        // Кнопка редактирования
+        ElevatedButton.icon(
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) => EditCharacterDialog(
+                character: c,
+                onCharacterChanged: (newName, newClass, newRace, newBackground) {
+                  _updateCharacter(newName, newClass, newRace, newBackground);
+                },
+              ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          ),
+          icon: const Icon(Icons.edit_note),
+          label: const Text(
+            'Редактировать биографию',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// Вспомогательный метод для отображения изображения
+Widget _buildCharacterImage(String imageUrl) {
+  if (imageUrl.isEmpty) {
+    // Локальное изображение по умолчанию
+    return Container(
+      color: const Color(0xFF2d1b00),
+      child: const Icon(
+        Icons.person,
+        color: Colors.blue,
+        size: 60,
+      ),
+    );
+  } else {
+    // Загрузка изображения по URL
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          color: const Color(0xFF2d1b00),
+          child: Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                  : null,
+              color: Colors.blue,
+            ),
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        // В случае ошибки загрузки показываем стандартное изображение
+        return Container(
+          color: const Color(0xFF2d1b00),
+          child: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error, color: Colors.red, size: 40),
+              SizedBox(height: 8),
+              Text(
+                'Ошибка\nзагрузки',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.red, fontSize: 10),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
 
 
   Widget _buildStyledHomeTab(Character c) {
