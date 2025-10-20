@@ -9,7 +9,6 @@ import 'dice.dart';
 import 'items.dart';
 import 'meta.dart';
 import 'ui/uisnippets.dart';
-import 'snippets.dart';
 
 // Перечисление всех имен статистик в системе (базовые характеристики + навыки + прочее)
 enum StatNames {

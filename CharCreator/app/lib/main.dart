@@ -2,8 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'character.dart';
+import 'sys/db.dart';
+import 'package:hive/hive.dart';
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await HiveService.init();
+  
   runApp(const MyApp());
 }
 
@@ -20,18 +25,20 @@ class MyApp extends StatelessWidget {
 
 class CharacterSheetScreen extends StatefulWidget {
   const CharacterSheetScreen({super.key});
-
   @override
   CharacterSheetScreenState createState() => CharacterSheetScreenState();
 }
 
 class CharacterSheetScreenState extends State<CharacterSheetScreen> {
   late Character c;
+  late CharacterRepository characterRepository;
 
   @override
-  void initState() {
+  void initState() async{
     super.initState();
     c = Character(context);
+  final characterBox = await Hive.openBox<Character>('characters');
+  characterRepository = CharacterRepository(characterBox);
   }
 
   Color _getAbilityColor(int value) {
@@ -49,6 +56,7 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> {
       c.HandleClassChange(characterClass);
       c.HandleRaceChange(race);
       //c.HandleBgChange(background);
+      characterRepository.safeUpdate(c.name,c);
     });
   }
 
@@ -633,6 +641,7 @@ Widget _buildStyledInventoryTab() {
             onRerollAll: () {
               setState(() {
                 c.Reroll();
+                characterRepository.safeUpdate(c.name, c);
               });
             },
           ),
