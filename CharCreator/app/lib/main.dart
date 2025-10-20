@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'character.dart';
 import 'sys/db.dart';
-import 'package:hive/hive.dart';
+//import 'package:hive/hive.dart';
 import 'sys/config.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -120,7 +120,7 @@ class ImageEditDialogState extends State<ImageEditDialog> {
                     border: Border.all(color: Colors.blue, width: 3),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue.withOpacity(0.3),
+                        color: Colors.blue.withValues(alpha: 0.3),
                         blurRadius: 15,
                         spreadRadius: 2,
                       ),
@@ -409,7 +409,7 @@ Widget _buildStyledSpellsTab() {
             border: Border.all(color: Colors.purple, width: 3),
             boxShadow: [
               BoxShadow(
-                color: Colors.purple.withOpacity(0.3),
+                color: Colors.purple.withValues(alpha: 0.3),
                 blurRadius: 15,
                 spreadRadius: 2,
               ),
@@ -546,7 +546,7 @@ Widget _buildStyledInventoryTab() {
             border: Border.all(color: Colors.amber, width: 3),
             boxShadow: [
               BoxShadow(
-                color: Colors.amber.withOpacity(0.3),
+                color: Colors.amber.withValues(alpha: 0.3),
                 blurRadius: 15,
                 spreadRadius: 2,
               ),
@@ -712,7 +712,7 @@ Widget _buildStyledAboutTab() {
               border: Border.all(color: Colors.blue, width: 3),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.blue.withOpacity(0.3),
+                  color: Colors.blue.withValues(alpha: 0.3),
                   blurRadius: 15,
                   spreadRadius: 2,
                 ),
@@ -1175,9 +1175,9 @@ Widget _buildCharacterImage(String imageUrl) {
             margin: const EdgeInsets.only(top: 16),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.amber.withOpacity(0.5)),
+              border: Border.all(color: Colors.amber.withValues(alpha: 0.5)),
             ),
             child: const Row(
               children: [
@@ -1207,7 +1207,7 @@ Widget _buildCharacterImage(String imageUrl) {
       margin: const EdgeInsets.symmetric(vertical: 4),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
-        side: BorderSide(color: Colors.amber.withOpacity(0.5), width: 1),
+        side: BorderSide(color: Colors.amber.withValues(alpha: 0.5), width: 1),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -1295,7 +1295,7 @@ class CharacteristicsHeaderState extends State<CharacteristicsHeader> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: _isHighlighted ? Colors.amber.withOpacity(0.2) : Colors.transparent,
+          color: _isHighlighted ? Colors.amber.withValues(alpha: 0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: _isHighlighted 
               ? Border.all(color: Colors.amber, width: 2)

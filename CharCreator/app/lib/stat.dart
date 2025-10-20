@@ -335,7 +335,8 @@ final class Skill implements ProfBonusStat, Pickable {
   }
   
 
-Future<Set<String>> pickmany(BuildContext bc, [List<String>? initialSelections, int? howmany = 2, Set? include]) async {
+@override
+  Future<Set<String>> pickmany(BuildContext bc, [List<String>? initialSelections, int? howmany = 2, Set? include]) async {
   print("RAN pickmany");
   Set<String> menu = string2skill().keys.toSet();
   // Если указан набор для включения, фильтруем только эти элементы
