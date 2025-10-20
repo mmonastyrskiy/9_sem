@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'character.dart';
 import 'sys/db.dart';
 import 'package:hive/hive.dart';
-
+import 'sys/config.dart';
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await HiveService.init();
@@ -56,7 +56,9 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> {
       c.HandleClassChange(characterClass);
       c.HandleRaceChange(race);
       //c.HandleBgChange(background);
+      if(FLAG_ENABLE_HIVE){
       characterRepository.safeUpdate(c.name,c);
+      }
     });
   }
 
@@ -641,7 +643,9 @@ Widget _buildStyledInventoryTab() {
             onRerollAll: () {
               setState(() {
                 c.Reroll();
-                characterRepository.safeUpdate(c.name, c);
+                if (FLAG_ENABLE_HIVE){
+                characterRepository.safeUpdate(c.name, c); // TODO: This is a hack if this shit is not working
+                }
               });
             },
           ),
