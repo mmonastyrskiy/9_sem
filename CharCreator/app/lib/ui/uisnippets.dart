@@ -163,6 +163,7 @@ class ModalDispatcher{
   // - context: контекст BuildContext для навигации
   // - items: Map где ключи - отображаемые строки, значения - связанные данные
   // Возвращает: Future<String?> - выбранный ключ или null
+  // ignore: strict_top_level_inference
   static  showListPicker(BuildContext context, Map<String, dynamic> items) async {
   // Преобразуем ключи Map в List для доступа по индексу
   List<String> keys = items.keys.toList();
@@ -244,10 +245,11 @@ static Future<Set<String>> showMultiSelectListPicker({
 }) async {
   final List<String> keys = items.toList();
   
-  print("✅ Context is valid, items: ${items.length}");
+  //print("✅ Context is valid, items: ${items.length}");
   
 await Future.delayed(Duration(milliseconds: 100));
   final List<bool>? result = await showDialog<List<bool>>(
+    // ignore: use_build_context_synchronously
     context: context,
     barrierDismissible: false,
     builder: (context) {
@@ -258,7 +260,7 @@ await Future.delayed(Duration(milliseconds: 100));
     },
   );
 
-  print("🟢 Диалог результат: $result");
+ //print("🟢 Диалог результат: $result");
   
   if (result == null) return {};
 

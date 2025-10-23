@@ -322,6 +322,23 @@ class Character {
 
   void SetName(String new_) {
     name = new_;
-    print("Name is set to $new_");
+    //print("Name is set to $new_");
   }
+  String Skill2modstr(Skill s){
+  bool hasprofbounus = s.hasprofbounus > 0 ? true:false;
+  BasicStat? bst;
+  switch(s.bs){
+    case BasicStatNames.STR: bst = STR;
+    case BasicStatNames.DEX: bst = DEX;
+    case BasicStatNames.CON: bst = CON;
+    case BasicStatNames.INT: bst = INT;
+    case BasicStatNames.WIS: bst = WIS;
+    case BasicStatNames.CHR: bst = CHR;
+    default: bst = null;
+
+  }
+  int mod =bst!.mod;
+  hasprofbounus ? mod += ProfBonus: mod;
+  return mod > 0 ? "+$mod" : "$mod"; 
+}
 }

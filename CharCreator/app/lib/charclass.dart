@@ -51,7 +51,7 @@ abstract interface class CharClass implements AffectsStatClass {
     Map<BasicStatNames, BasicStat> stats = c.getbasicstats();
     
     // Создаем конкретный класс based на переданном названии
-    switch (chosen.toLowerCase()) { // TODO: возможно фабрики стоит переделать именно на аргументы из enum а не на строки
+    switch (chosen.toLowerCase()) { 
       case 'бард': return Bard(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
       case 'варвар': return Barbarian(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
       case 'воин': return Fighter(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
@@ -100,12 +100,7 @@ final class Bard implements CharClass {
   Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stat, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     // Устанавливаем тип кости хитов для Барда - D8
     charHeath.HitDice = DiceType.D8;
-    // Создаем объект для бросков костей
-    ThrowObject tosser = ThrowObject();
-    // Добавляем кость хитов для броска
-    tosser.addDT(charHeath.HitDice!);
-    // Выполняем бросок кости
-    tosser.DoRoll();
+
     // Добавляем легкую броню в доступные типы
     CanUseArmor.add(Armor(ArmorType.Light, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
     // Добавляем простое оружие в доступные типы
@@ -124,7 +119,7 @@ final class Bard implements CharClass {
     // Получаем модификатор телосложения
     int CONmodifier = stat[BasicStatNames.CON]!.mod;
     // Устанавливаем максимальное здоровье как результат броска + модификатор телосложения
-    charHeath.max_health = tosser.total() + CONmodifier;
+    charHeath.max_health = 8 + CONmodifier;
     // Устанавливаем текущее здоровье равным максимальному
     charHeath.current_health = charHeath.max_health;
 
@@ -186,15 +181,11 @@ final class Barbarian implements CharClass {
     // Устанавливаем кость хитов D12 для Варвара (самая большая)
     charHeath.HitDice = DiceType.D12;
     // Создаем объект для бросков
-    ThrowObject tosser = ThrowObject();
-    // Добавляем кость хитов
-    tosser.addDT(charHeath.HitDice!);
-    // Выполняем бросок
-    tosser.DoRoll();
+
     // Получаем модификатор телосложения
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
     // Устанавливаем максимальное здоровье
-    charHeath.max_health = tosser.total() + CONmodifier;
+    charHeath.max_health = 12 + CONmodifier;
     // Устанавливаем текущее здоровье
     charHeath.current_health = charHeath.max_health;
 
@@ -259,11 +250,9 @@ final class Fighter implements CharClass {
   Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     // Устанавливаем кость хитов D10 для Воина
     charHeath.HitDice = DiceType.D10;
-    ThrowObject tosser = ThrowObject();
-    tosser.addDT(charHeath.HitDice!);
-    tosser.DoRoll();
+
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
-    charHeath.max_health = tosser.total() + CONmodifier;
+    charHeath.max_health = 10 + CONmodifier;
     charHeath.current_health = charHeath.max_health;
 
     // Добавляем все типы брони (легкую, среднюю, тяжелую и щиты)
@@ -322,11 +311,8 @@ final class Wizzard implements CharClass {
   Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     // У Волшебника самая маленькая кость хитов - D6
     charHeath.HitDice = DiceType.D6;
-    ThrowObject tosser = ThrowObject();
-    tosser.addDT(charHeath.HitDice!);
-    tosser.DoRoll();
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
-    charHeath.max_health = tosser.total() + CONmodifier;
+    charHeath.max_health = 6 + CONmodifier;
     charHeath.current_health = charHeath.max_health;
 
     // Волшебник может использовать только простое оружие
@@ -390,11 +376,9 @@ final class Druid implements CharClass {
   @override
   Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D8;
-    ThrowObject tosser = ThrowObject();
-    tosser.addDT(charHeath.HitDice!);
-    tosser.DoRoll();
+
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
-    charHeath.max_health = tosser.total() + CONmodifier; //TODO: Есть вариант альтернативно выбрать серидину
+    charHeath.max_health = 8 + CONmodifier;
     charHeath.current_health = charHeath.max_health;
 
     // Друид может использовать легкую, среднюю броню и щиты (но не металлические)
@@ -458,11 +442,8 @@ final class Clerc implements CharClass{
   Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     
     charHeath.HitDice = DiceType.D8;
-    ThrowObject tosser = ThrowObject();
-    tosser.addDT(charHeath.HitDice!);
-    tosser.DoRoll();
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
-    charHeath.max_health = tosser.total()+CONmodifier; //TODO: Есть вариант альтернативно выбрать серидину
+    charHeath.max_health = 8 +CONmodifier; 
     charHeath.current_health = charHeath.max_health;
 
     canUseArmor.add(Armor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
@@ -511,11 +492,8 @@ final class Clerc implements CharClass{
   @override
   Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D8;
-    ThrowObject tosser = ThrowObject();
-    tosser.addDT(charHeath.HitDice!);
-    tosser.DoRoll();
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
-    charHeath.max_health = tosser.total()+CONmodifier; //TODO: Есть вариант альтернативно выбрать серидину
+    charHeath.max_health = 8 +CONmodifier; 
     charHeath.current_health = charHeath.max_health;
 
     canUseArmor.add(Armor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
@@ -574,11 +552,8 @@ final class Warlock implements CharClass{
   @override
   Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D8;
-    ThrowObject tosser = ThrowObject();
-    tosser.addDT(charHeath.HitDice!);
-    tosser.DoRoll();
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
-    charHeath.max_health = tosser.total()+CONmodifier; //TODO: Есть вариант альтернативно выбрать серидину
+    charHeath.max_health = 8 +CONmodifier;
     charHeath.current_health = charHeath.max_health;
 
     canUseArmor.add(Armor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
@@ -626,11 +601,8 @@ final class Monk implements CharClass{
   @override
   Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D8;
-    ThrowObject tosser = ThrowObject();
-    tosser.addDT(charHeath.HitDice!);
-    tosser.DoRoll();
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
-    charHeath.max_health = tosser.total()+CONmodifier; //TODO: Есть вариант альтернативно выбрать серидину
+    charHeath.max_health = 8 +CONmodifier;
     charHeath.current_health = charHeath.max_health;
 
     canUseWeapon.add(Weapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
@@ -683,11 +655,9 @@ final class Paladin implements CharClass{
   @override
   Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D10;
-    ThrowObject tosser = ThrowObject();
-    tosser.addDT(charHeath.HitDice!);
-    tosser.DoRoll();
+
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
-    charHeath.max_health = tosser.total()+CONmodifier; //TODO: Есть вариант альтернативно выбрать серидину
+    charHeath.max_health = 10 +CONmodifier; 
     charHeath.current_health = charHeath.max_health;
 
     canUseWeapon.add(Weapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
@@ -740,11 +710,8 @@ final class Rouge implements CharClass{
   @override
   Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D8;
-    ThrowObject tosser = ThrowObject();
-    tosser.addDT(charHeath.HitDice!);
-    tosser.DoRoll();
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
-    charHeath.max_health = tosser.total()+CONmodifier; //TODO: Есть вариант альтернативно выбрать серидину
+    charHeath.max_health = 8 +CONmodifier; 
     charHeath.current_health = charHeath.max_health;
 
     canUseWeapon.add(Weapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
@@ -800,11 +767,8 @@ final class Ranger implements CharClass{
   @override
   Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D10;
-    ThrowObject tosser = ThrowObject();
-    tosser.addDT(charHeath.HitDice!);
-    tosser.DoRoll();
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
-    charHeath.max_health = tosser.total()+CONmodifier; //TODO: Есть вариант альтернативно выбрать серидину
+    charHeath.max_health = 10 +CONmodifier; 
     charHeath.current_health = charHeath.max_health;
 
 
@@ -859,11 +823,8 @@ final class Sorcerer implements CharClass{
   @override
   Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D6;
-    ThrowObject tosser = ThrowObject();
-    tosser.addDT(charHeath.HitDice!);
-    tosser.DoRoll();
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
-    charHeath.max_health = tosser.total()+CONmodifier; //TODO: Есть вариант альтернативно выбрать серидину
+    charHeath.max_health = 6 +CONmodifier; 
     charHeath.current_health = charHeath.max_health;
 
     canUseWeapon.add(Weapon(WeaponType.CombatStaff,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));

@@ -289,6 +289,7 @@ final class HalfElf implements Race{
     }
     size = Size.MEDIUM;
     speed = 30;
+    // ignore: use_build_context_synchronously
     Set<String>? choise = Skill('').pickmany(context, null, null, {Skills.Athletics, Skills.Perception, Skills.Survival, Skills.Intimidation, Skills.Animal_Handling}) as Set<String>?;
     // Обрабатываем выбранные навыки
     for (String s in choise!) {
@@ -296,7 +297,8 @@ final class HalfElf implements Race{
       StatNames? SN2add = Skill.S2SN()[skilltoadd];
       skills[SN2add]!.addMeta(MetaFlags.IS_PICKED_ON_RACE);
       skills[SN2add]!.addMeta(MetaFlags.IS_PICKED); 
-      skills[SN2add]!.hasprofbounus += 1; //  TODO: Какой-то колхоз, в классе это работало без обертки S2SN, надо разобраться
+      skills[SN2add]!.hasprofbounus += 1;
+      // ignore: use_build_context_synchronously
       Langs ch = Langs(Langs('').pick(context) ?? '',{MetaFlags.IS_PICKED,MetaFlags.IS_PICKED_ON_RACE,MetaFlags.AFFECTED_BY_RACE});
     langs.add(ch);
     langs.add(Langs('общий',{MetaFlags.AFFECTED_BY_RACE,MetaFlags.IS_PICKED}));

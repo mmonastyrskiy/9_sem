@@ -101,7 +101,7 @@ abstract interface class AffectsStatRace implements AffectsStat {
              Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon);
   // Удаляет эффекты расы
   void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, 
-              Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,Set<Weapon> canUseWeapon); // TODO: унификация?
+              Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,Set<Weapon> canUseWeapon); 
 }
 
 // Базовый интерфейс для всех статистик
@@ -138,11 +138,11 @@ class BasicStat implements Stat, Updateable,Pickable {
     ThrowObject tosser = ThrowObject();
     tosser.add(6,ammount: 4);
     tosser.DoRoll();
-    print(tosser.tostr());
-    print("------------------------------");
+    //print(tosser.tostr());
+    //print("------------------------------");
     tosser.strip(1);
-    print(tosser.tostr());
-    print("------------------------------");
+    //print(tosser.tostr());
+    //print("------------------------------");
     value = tosser.total();
     Stat2Modifier();
     return this;
@@ -164,7 +164,7 @@ class BasicStat implements Stat, Updateable,Pickable {
   
   @override
   void deletebyMeta(MetaFlags m) {
-    print(affectedby.length);
+    //print(affectedby.length);
     if(affectedby.isEmpty){
       return;
     }
@@ -190,13 +190,12 @@ class BasicStat implements Stat, Updateable,Pickable {
   
   @override
   String? pick(BuildContext bc) {
-    // TODO: implement pick
+
     throw UnimplementedError();
   }
   
   @override
   Future<Set<String>> pickmany(BuildContext bc, [List<String>? initialSelections, int howmany = 2]) {
-    // TODO: implement pickmany
     throw UnimplementedError();
   }
  static Map<String,BasicStatNames> str2BasicStat(){
@@ -330,24 +329,25 @@ final class Skill implements ProfBonusStat, Pickable {
   
   @override
   String? pick(BuildContext bc) {
-    // TODO: implement pick - должен быть реализован для одиночного выбора
     throw UnimplementedError();
   }
   
 
 @override
   Future<Set<String>> pickmany(BuildContext bc, [List<String>? initialSelections, int? howmany = 2, Set? include]) async {
-  print("RAN pickmany");
-  Set<String> menu = string2skill().keys.toSet();
+  //print("RAN pickmany");
+  Map<String,Skills> t = string2skill();
+  
   // Если указан набор для включения, фильтруем только эти элементы
 if (include != null) {
-  print("Removed");
-  menu.removeWhere((val) => !include.contains(val));
+  //print("Removed");
+  t.removeWhere((key, value) => !include.contains(value));
+  menu = t.keys.toSet();
 }
   
   Set<String> res = await ModalDispatcher.showMultiSelectListPicker(
     context: bc, 
-    items: string2skill().keys.toSet(), // TODO фильтр по данным не будет работать т к в include не строки, а Skill
+    items: menu, 
     initialSelections: initialSelections
   );
   
