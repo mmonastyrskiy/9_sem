@@ -5,6 +5,7 @@ import 'character.dart';
 import 'sys/db.dart';
 //import 'package:hive/hive.dart';
 import 'sys/config.dart';
+import 'etc/pinterest.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   HiveService.init();
@@ -308,7 +309,7 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> {
       c.SetName(name);
       c.HandleClassChange(characterClass);
       c.HandleRaceChange(race);
-      //c.HandleBgChange(background);
+      //c.HandleBgChange(background); // FIXME: Баг с ассинхронностью удаления 
       if(FLAG_ENABLE_HIVE){
       characterRepository.safeUpdate(c.name,c);
       }
@@ -842,7 +843,6 @@ Widget _buildStyledAboutTab() {
 // Вспомогательный метод для отображения изображения
 Widget _buildCharacterImage(String imageUrl) {
   if (imageUrl.isEmpty) {
-    // Локальное изображение по умолчанию
     return Container(
       color: const Color(0xFF2d1b00),
       child: const Icon(
@@ -852,43 +852,41 @@ Widget _buildCharacterImage(String imageUrl) {
       ),
     );
   } else {
-    // Загрузка изображения по URL
-    return Image.network(
-      imageUrl,
-      fit: BoxFit.cover,
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-        return Container(
-          color: const Color(0xFF2d1b00),
-          child: Center(
-            child: CircularProgressIndicator(
-              value: loadingProgress.expectedTotalBytes != null
-                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                  : null,
-              color: Colors.blue,
-            ),
-          ),
-        );
-      },
-      errorBuilder: (context, error, stackTrace) {
-        // В случае ошибки загрузки показываем стандартное изображение
-        return Container(
-          color: const Color(0xFF2d1b00),
-          child: const Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error, color: Colors.red, size: 40),
-              SizedBox(height: 8),
-              Text(
-                'Ошибка\nзагрузки',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.red, fontSize: 10),
+    if (imageUrl.contains("pin.it")) {
+      return FutureBuilder<String>(
+        future: Pinterest().parse(imageUrl),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Container(
+              color: const Color(0xFF2d1b00),
+              child: const CircularProgressIndicator(),
+            );
+          } else if (snapshot.hasError) {
+            return Container(
+              color: const Color(0xFF2d1b00),
+              child: const Icon(
+                Icons.error,
+                color: Colors.red,
+                size: 60,
               ),
-            ],
-          ),
-        );
-      },
-    );
+            );
+          } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+            return Image.network(snapshot.data!);
+          } else {
+            return Container(
+              color: const Color(0xFF2d1b00),
+              child: const Icon(
+                Icons.person,
+                color: Colors.blue,
+                size: 60,
+              ),
+            );
+          }
+        },
+      );
+    } else {
+      return Image.network(imageUrl);
+    }
   }
 }
 
