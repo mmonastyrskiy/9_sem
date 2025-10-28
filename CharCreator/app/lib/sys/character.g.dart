@@ -56,10 +56,10 @@ class CharacterAdapter extends TypeAdapter<Character> {
       ..tools = (fields[35] as Set).cast<ToolSkill>()
       ..langs = (fields[36] as Set).cast<Langs>()
       ..health = fields[37] as Health
-      ..CanUseArmor = (fields[38] as Set).cast<Armor>()
-      ..canUseWeapon = (fields[39] as Set).cast<Weapon>()
+      ..CanUseArmor = (fields[38] as Set).cast<AbstractArmor>()
+      ..canUseWeapon = (fields[39] as Set).cast<AbstractWeapon>()
       ..wallet = fields[40] as Money
-      ..inventory = (fields[41] as List).cast<Item>()
+      ..inventory = (fields[41] as List).cast<SellableItem>()
       ..size = fields[42] as Size?
       ..speed = fields[43] as int?;
   }

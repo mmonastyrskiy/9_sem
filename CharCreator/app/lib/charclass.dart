@@ -5,7 +5,9 @@ import 'meta.dart';
 import 'stat.dart';
 import 'dice.dart';
 import 'character.dart';
-import 'items.dart';
+import 'items/item.dart';
+import 'items/weapon.dart';
+import 'items/armor.dart';
 import 'tool.dart';
 import 'package:flutter/material.dart';
 
@@ -38,9 +40,9 @@ abstract interface class CharClass implements AffectsStatClass {
     // Получаем здоровье персонажа
     Health charHeath = c.health;
     // Получаем доступные типы брони
-    Set<Armor> CanUseArmor = c.CanUseArmor;
+    Set<AbstractArmor> CanUseArmor = c.CanUseArmor;
     // Получаем доступные типы оружия
-    Set<Weapon> canUseWeapon = c.canUseWeapon;
+    Set<AbstractWeapon> canUseWeapon = c.canUseWeapon;
     // Получаем контекст UI
     BuildContext context = c.UIContext;
     // Получаем навыки персонажа
@@ -76,14 +78,14 @@ final class Undefined implements CharClass{
   String classname= " Не выбрано";
 
   @override
-  void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
   }
 
   @override
-  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools) {
+  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools) {
   }
 
- Undefined(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+ Undefined(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> CanUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
     apply(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
   }
 
@@ -92,27 +94,27 @@ final class Undefined implements CharClass{
 // Класс "Бард"
 final class Bard implements CharClass {
   // Конструктор - автоматически применяет бонусы класса при создании
-  Bard(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  Bard(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> CanUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
     apply(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
   }
   
   @override
-  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stat, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stat, Map<StatNames, Skill> skills, Set<AbstractArmor> CanUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     // Устанавливаем тип кости хитов для Барда - D8
     charHeath.HitDice = DiceType.D8;
 
     // Добавляем легкую броню в доступные типы
-    CanUseArmor.add(Armor(ArmorType.Light, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    CanUseArmor.add(AbstractArmor(ArmorType.Light, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
     // Добавляем простое оружие в доступные типы
-    canUseWeapon.add(Weapon(WeaponType.SimpleWeapon, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.SimpleWeapon, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
     // Добавляем короткий меч в доступные типы
-    canUseWeapon.add(Weapon(WeaponType.ShortSword, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.ShortSword, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
     // Добавляем длинный меч в доступные типы
-    canUseWeapon.add(Weapon(WeaponType.LongSword, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.LongSword, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
     // Добавляем рапиру в доступные типы
-    canUseWeapon.add(Weapon(WeaponType.Rapier, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.Rapier, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
     // Добавляем ручной арбалет в доступные типы
-    canUseWeapon.add(Weapon(WeaponType.HandCrossBow, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.HandCrossBow, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
     // Добавляем музыкальные инструменты в доступные инструменты
     tools.add(ToolSkill("музыкальные инструменты", {MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_CLASS}));
     
@@ -144,7 +146,7 @@ final class Bard implements CharClass {
   }
 
   @override
-  void delete(Health charHeath, stat, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools) {
+  void delete(Health charHeath, stat, Map<StatNames, Skill> skills, Set<AbstractArmor> CanUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools) {
     // Сбрасываем кость хитов
     charHeath.HitDice = null;
     // Сбрасываем максимальное здоровье
@@ -152,9 +154,9 @@ final class Bard implements CharClass {
     // Сбрасываем текущее здоровье
     charHeath.current_health = 0;
     // Удаляем всю броню, помеченную как выбранная на классе
-    Armor.deletebyMeta(CanUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractArmor.deletebyMeta(CanUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
     // Удаляем все оружие, помеченное как выбранное на классе
-    Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractWeapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
     // Удаляем все инструменты, помеченные как выбранные на классе
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_CLASS);
     // Сбрасываем бонус спасброска для ловкости
@@ -172,12 +174,12 @@ final class Bard implements CharClass {
 // Класс "Варвар"
 final class Barbarian implements CharClass {
   // Конструктор
-  Barbarian(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  Barbarian(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> CanUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
     apply(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
   }
   
   @override
-  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     // Устанавливаем кость хитов D12 для Варвара (самая большая)
     charHeath.HitDice = DiceType.D12;
     // Создаем объект для бросков
@@ -190,15 +192,15 @@ final class Barbarian implements CharClass {
     charHeath.current_health = charHeath.max_health;
 
     // Добавляем легкую броню
-    canUseArmor.add(Armor(ArmorType.Light, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Light, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
     // Добавляем среднюю броню
-    canUseArmor.add(Armor(ArmorType.Medium, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Medium, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
     // Добавляем щиты
-    canUseArmor.add(Armor(ArmorType.Shield, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Shield, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
     // Добавляем простое оружие
-    canUseWeapon.add(Weapon(WeaponType.SimpleWeapon, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.SimpleWeapon, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
     // Добавляем воинское оружие
-    canUseWeapon.add(Weapon(WeaponType.MartialWearpon, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.MartialWearpon, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
 
     // Устанавливаем бонус спасброска для силы
     stats[BasicStatNames.STR]!.savingthrow = 1;
@@ -217,7 +219,7 @@ final class Barbarian implements CharClass {
   }
   
   @override
-  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools) {
+  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools) {
     // Сбрасываем кость хитов
     charHeath.HitDice = null;
     // Сбрасываем максимальное здоровье
@@ -225,9 +227,9 @@ final class Barbarian implements CharClass {
     // Сбрасываем текущее здоровье
     charHeath.current_health = 0;
     // Удаляем броню класса
-    Armor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractArmor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
     // Удаляем оружие класса
-    Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractWeapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
     // Сбрасываем бонусы спасбросков
     stats[BasicStatNames.STR]!.savingthrow = 0;
     stats[BasicStatNames.CON]!.savingthrow = 0;
@@ -242,12 +244,12 @@ final class Barbarian implements CharClass {
 // Класс "Воин"
 final class Fighter implements CharClass {
   // Конструктор
-  Fighter(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  Fighter(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> CanUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
     apply(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
   }
   
   @override
-  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     // Устанавливаем кость хитов D10 для Воина
     charHeath.HitDice = DiceType.D10;
 
@@ -256,13 +258,13 @@ final class Fighter implements CharClass {
     charHeath.current_health = charHeath.max_health;
 
     // Добавляем все типы брони (легкую, среднюю, тяжелую и щиты)
-    canUseArmor.add(Armor(ArmorType.Light, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Medium, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Heavy, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Shield, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Light, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Medium, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Heavy, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Shield, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
     // Добавляем все типы оружия (простое и воинское)
-    canUseWeapon.add(Weapon(WeaponType.SimpleWeapon, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.MartialWearpon, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.SimpleWeapon, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.MartialWearpon, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
     
     // Устанавливаем бонусы спасбросков
     stats[BasicStatNames.STR]!.savingthrow = 1;
@@ -282,14 +284,14 @@ final class Fighter implements CharClass {
   }
   
   @override
-  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools) {
+  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools) {
     // Сбрасываем здоровье
     charHeath.HitDice = null;
     charHeath.max_health = 0;
     charHeath.current_health = 0;
     // Удаляем броню и оружие класса
-    Armor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
-    Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractArmor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractWeapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
     // Удаляем навыки класса
     Skill.deletebyMeta(skills, MetaFlags.IS_PICKED_ON_CLASS);
     // Сбрасываем бонусы спасбросков
@@ -303,12 +305,12 @@ final class Fighter implements CharClass {
 
 // Класс "Волшебник" (остальные классы имеют аналогичную структуру)
 final class Wizzard implements CharClass {
-  Wizzard(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  Wizzard(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> CanUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
     apply(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
   }
   
   @override
-  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     // У Волшебника самая маленькая кость хитов - D6
     charHeath.HitDice = DiceType.D6;
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
@@ -316,11 +318,11 @@ final class Wizzard implements CharClass {
     charHeath.current_health = charHeath.max_health;
 
     // Волшебник может использовать только простое оружие
-    canUseWeapon.add(Weapon(WeaponType.Dagger, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Dart, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Sling, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.CombatStaff, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.LightCrossBow, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.Dagger, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.Dart, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.Sling, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.CombatStaff, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.LightCrossBow, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
 
     // Бонусы спасбросков для интеллекта и мудрости
     stats[BasicStatNames.INT]!.savingthrow = 1;
@@ -339,13 +341,13 @@ final class Wizzard implements CharClass {
   }
   
   @override
-  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools) {
+  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools) {
     charHeath.HitDice = null;
     charHeath.max_health = 0;
     charHeath.current_health = 0;
 
     // Удаляем оружие класса
-    Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractWeapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
 
     // Сбрасываем бонусы спасбросков
     stats[BasicStatNames.INT]!.savingthrow = 0;
@@ -369,12 +371,12 @@ final class Wizzard implements CharClass {
 
 // Класс "Друид"
 final class Druid implements CharClass {
-  Druid(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> CanUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
+  Druid(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> CanUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) {
     apply(charHeath, stats, skills, CanUseArmor, canUseWeapon, tools, context);
   }
   
   @override
-  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D8;
 
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
@@ -382,18 +384,18 @@ final class Druid implements CharClass {
     charHeath.current_health = charHeath.max_health;
 
     // Друид может использовать легкую, среднюю броню и щиты (но не металлические)
-    canUseArmor.add(Armor(ArmorType.Light, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Medium, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Shield, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Light, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Medium, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Shield, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
 
     // Характерное для друида оружие
-    canUseWeapon.add(Weapon(WeaponType.CombatStaff, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Mace, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Dart, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Club, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Javeline, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Scimitar, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Sickle, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.CombatStaff, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.Mace, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.Dart, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.Club, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.Javeline, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.Scimitar, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.Sickle, {MetaFlags.IS_PICKED_ON_CLASS, MetaFlags.IS_PICKED}));
 
     // Набор травника - характерный инструмент друида
     tools.add(ToolSkill("набор травника", {MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_CLASS}));
@@ -414,13 +416,13 @@ final class Druid implements CharClass {
   }
   
   @override
-  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools) {
+  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools) {
     charHeath.HitDice = null;
     charHeath.max_health = 0;
     charHeath.current_health = 0;
     
-    Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
-    Armor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractWeapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractArmor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_CLASS);
 
     stats[BasicStatNames.INT]!.savingthrow = 0;
@@ -434,22 +436,22 @@ final class Druid implements CharClass {
 }
 
 final class Clerc implements CharClass{
-  Clerc(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<Armor> CanUseArmor,Set<Weapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
+  Clerc(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<AbstractArmor> CanUseArmor,Set<AbstractWeapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
     apply(charHeath,stats,skills,CanUseArmor,canUseWeapon, tools, context);
   }
   
   @override
-  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     
     charHeath.HitDice = DiceType.D8;
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
     charHeath.max_health = 8 +CONmodifier; 
     charHeath.current_health = charHeath.max_health;
 
-    canUseArmor.add(Armor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Medium,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Shield,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Medium,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Shield,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
     stats[BasicStatNames.CHR]!.savingthrow=1;
     stats[BasicStatNames.WIS]!.savingthrow=1;
 
@@ -467,12 +469,12 @@ final class Clerc implements CharClass{
   
   
   @override
-  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools) {
+  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools) {
     charHeath.HitDice = null;
     charHeath.max_health = 0;
     charHeath.current_health = 0;
-    Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
-    Armor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractWeapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractArmor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
     stats[BasicStatNames.CHR]!.savingthrow=0;
     stats[BasicStatNames.WIS]!.savingthrow=0;
 
@@ -485,21 +487,21 @@ final class Clerc implements CharClass{
   }
 
   final class Artifier implements CharClass{
-  Artifier(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<Armor> CanUseArmor,Set<Weapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
+  Artifier(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<AbstractArmor> CanUseArmor,Set<AbstractWeapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
     apply(charHeath,stats,skills,CanUseArmor,canUseWeapon, tools, context);
   }
   
   @override
-  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D8;
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
     charHeath.max_health = 8 +CONmodifier; 
     charHeath.current_health = charHeath.max_health;
 
-    canUseArmor.add(Armor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Medium,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Shield,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Medium,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Shield,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
 
     tools.add(ToolSkill("воровские инструменты",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_CLASS}));
     tools.add(ToolSkill("инструменты ремонтника",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_CLASS}));
@@ -523,13 +525,13 @@ final class Clerc implements CharClass{
   }
   
   @override
-  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools) {
+  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools) {
     charHeath.HitDice = null;
     charHeath.max_health = 0;
     charHeath.current_health = 0;
 
-    Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
-    Armor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractWeapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractArmor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_CLASS);
 
     stats[BasicStatNames.CON]!.savingthrow=0;
@@ -545,19 +547,19 @@ final class Clerc implements CharClass{
   
 }
 final class Warlock implements CharClass{
-  Warlock(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<Armor> CanUseArmor,Set<Weapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
+  Warlock(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<AbstractArmor> CanUseArmor,Set<AbstractWeapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
     apply(charHeath,stats,skills,CanUseArmor,canUseWeapon, tools, context);
   }
   
   @override
-  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D8;
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
     charHeath.max_health = 8 +CONmodifier;
     charHeath.current_health = charHeath.max_health;
 
-    canUseArmor.add(Armor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
 
     stats[BasicStatNames.WIS]!.savingthrow=1;
     stats[BasicStatNames.CHR]!.savingthrow=1;
@@ -576,13 +578,13 @@ final class Warlock implements CharClass{
   }
   
   @override
-  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools) {
+  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools) {
      charHeath.HitDice = null;
     charHeath.max_health = 0;
     charHeath.current_health = 0;
 
-    Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
-    Armor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractWeapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractArmor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
 
     stats[BasicStatNames.CON]!.savingthrow=0;
     stats[BasicStatNames.INT]!.savingthrow=0;
@@ -594,19 +596,19 @@ final class Warlock implements CharClass{
   String classname="Колдун";
 }
 final class Monk implements CharClass{
-  Monk(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<Armor> CanUseArmor,Set<Weapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
+  Monk(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<AbstractArmor> CanUseArmor,Set<AbstractWeapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
     apply(charHeath,stats,skills,CanUseArmor,canUseWeapon, tools, context);
   }
   
   @override
-  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D8;
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
     charHeath.max_health = 8 +CONmodifier;
     charHeath.current_health = charHeath.max_health;
 
-    canUseWeapon.add(Weapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.ShortSword,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.ShortSword,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
 
 
     String? chosen =ToolSkill('').pick(context,{ToolsNames.Artisans_Tools,ToolsNames.Musical_Instruments});
@@ -628,11 +630,11 @@ final class Monk implements CharClass{
   }
   
   @override
-  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools) {
+  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools) {
     charHeath.HitDice = null;
     charHeath.max_health = 0;
     charHeath.current_health = 0;
-    Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractWeapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_CLASS);
     stats[BasicStatNames.STR]!.savingthrow=0;
     stats[BasicStatNames.DEX]!.savingthrow=0;
@@ -648,24 +650,24 @@ final class Monk implements CharClass{
 }
 
 final class Paladin implements CharClass{
-  Paladin(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<Armor> CanUseArmor,Set<Weapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
+  Paladin(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<AbstractArmor> CanUseArmor,Set<AbstractWeapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
     apply(charHeath,stats,skills,CanUseArmor,canUseWeapon, tools, context);
   }
   
   @override
-  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D10;
 
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
     charHeath.max_health = 10 +CONmodifier; 
     charHeath.current_health = charHeath.max_health;
 
-    canUseWeapon.add(Weapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.MartialWearpon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Medium,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Heavy,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Shield,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.MartialWearpon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Medium,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Heavy,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Shield,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
 
 
 
@@ -685,12 +687,12 @@ final class Paladin implements CharClass{
   }
   
   @override
-  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools) {
+  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools) {
     charHeath.HitDice = null;
     charHeath.max_health = 0;
     charHeath.current_health = 0;
-    Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
-    Armor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractWeapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractArmor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
 
     stats[BasicStatNames.WIS]!.savingthrow=0;
     stats[BasicStatNames.CHR]!.savingthrow=0;
@@ -703,23 +705,23 @@ final class Paladin implements CharClass{
 }
 
 final class Rouge implements CharClass{
-  Rouge(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<Armor> CanUseArmor,Set<Weapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
+  Rouge(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<AbstractArmor> CanUseArmor,Set<AbstractWeapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
     apply(charHeath,stats,skills,CanUseArmor,canUseWeapon, tools, context);
   }
   
   @override
-  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D8;
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
     charHeath.max_health = 8 +CONmodifier; 
     charHeath.current_health = charHeath.max_health;
 
-    canUseWeapon.add(Weapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.HandCrossBow,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.LongSword,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.ShortSword,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Rapier,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.HandCrossBow,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.LongSword,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.ShortSword,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.Rapier,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
     tools.add(ToolSkill("воровские инструменты",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_CLASS}));
   
   stats[BasicStatNames.DEX]!.savingthrow=1;
@@ -739,13 +741,13 @@ final class Rouge implements CharClass{
   }
   
   @override
-  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools) {
+  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools) {
     charHeath.HitDice = null;
     charHeath.max_health = 0;
     charHeath.current_health = 0;
 
-    Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
-    Armor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractWeapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractArmor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
     ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_CLASS);
 
     stats[BasicStatNames.DEX]!.savingthrow=0;
@@ -760,23 +762,23 @@ final class Rouge implements CharClass{
 }
 
 final class Ranger implements CharClass{
-  Ranger(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<Armor> CanUseArmor,Set<Weapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
+  Ranger(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<AbstractArmor> CanUseArmor,Set<AbstractWeapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
     apply(charHeath,stats,skills,CanUseArmor,canUseWeapon, tools, context);
   }
   
   @override
-  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D10;
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
     charHeath.max_health = 10 +CONmodifier; 
     charHeath.current_health = charHeath.max_health;
 
 
-    canUseWeapon.add(Weapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.MartialWearpon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Medium,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseArmor.add(Armor(ArmorType.Shield,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.SimpleWeapon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.MartialWearpon,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Light,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Medium,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseArmor.add(AbstractArmor(ArmorType.Shield,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
 
     stats[BasicStatNames.DEX]!.savingthrow=1;
     stats[BasicStatNames.STR]!.savingthrow=1;
@@ -796,13 +798,13 @@ final class Ranger implements CharClass{
   }
   
   @override
-  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools) {
+  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools) {
     charHeath.HitDice = null;
     charHeath.max_health = 0;
     charHeath.current_health = 0;
 
-    Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
-    Armor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractWeapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractArmor.deletebyMeta(canUseArmor, MetaFlags.IS_PICKED_ON_CLASS);
 
     stats[BasicStatNames.DEX]!.savingthrow=0;
     stats[BasicStatNames.STR]!.savingthrow=0;
@@ -816,22 +818,22 @@ final class Ranger implements CharClass{
 }
 
 final class Sorcerer implements CharClass{
-  Sorcerer(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<Armor> CanUseArmor,Set<Weapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
+  Sorcerer(Health charHeath,Map<BasicStatNames,BasicStat> stats,Map<StatNames,Skill> skills,Set<AbstractArmor> CanUseArmor,Set<AbstractWeapon> canUseWeapon,Set<ToolSkill> tools,BuildContext context){
     apply(charHeath,stats,skills,CanUseArmor,canUseWeapon, tools, context);
   }
   
   @override
-  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
+  Future<void> apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context) async {
     charHeath.HitDice = DiceType.D6;
     int CONmodifier = stats[BasicStatNames.CON]!.mod;
     charHeath.max_health = 6 +CONmodifier; 
     charHeath.current_health = charHeath.max_health;
 
-    canUseWeapon.add(Weapon(WeaponType.CombatStaff,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Dart,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Dagger,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.LightCrossBow,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
-    canUseWeapon.add(Weapon(WeaponType.Sling,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.CombatStaff,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.Dart,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.Dagger,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.LightCrossBow,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
+    canUseWeapon.add(AbstractWeapon(WeaponType.Sling,{MetaFlags.IS_PICKED_ON_CLASS,MetaFlags.IS_PICKED}));
 
     stats[BasicStatNames.CON]!.savingthrow=1;
     stats[BasicStatNames.CHR]!.savingthrow=1;
@@ -848,11 +850,11 @@ final class Sorcerer implements CharClass{
   }
   
   @override
-  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools) {
+  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools) {
     charHeath.HitDice = null;
     charHeath.max_health = 0;
     charHeath.current_health = 0;
-    Weapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
+    AbstractWeapon.deletebyMeta(canUseWeapon, MetaFlags.IS_PICKED_ON_CLASS);
 
     stats[BasicStatNames.CON]!.savingthrow=0;
     stats[BasicStatNames.CHR]!.savingthrow=0;

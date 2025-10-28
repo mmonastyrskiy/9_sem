@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'tool.dart';
 import 'langs.dart';
 import 'dice.dart';
-import 'items.dart';
+import 'items/item.dart';
 import 'meta.dart';
 import 'ui/uisnippets.dart';
 
@@ -88,21 +88,25 @@ abstract interface class AffectsStatBackground implements AffectsStat {
 abstract interface class AffectsStatClass implements AffectsStat {
   // Применяет эффекты класса к здоровью, характеристикам, навыкам, броне, оружию и инструментам
   void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, 
-             Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context);
+             Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context);
   // Удаляет эффекты класса
   void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills,
-              Set<Armor> canUseArmor, Set<Weapon> canUseWeapon, Set<ToolSkill> tools);
+              Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools);
 }
 
 // Интерфейс для объектов, влияющих на статистики через расу (Race)
 abstract interface class AffectsStatRace implements AffectsStat {
   // Применяет эффекты расы к характеристикам, размеру, скорости, языкам, инструментам, броне и здоровью
   void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, 
-             Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<Weapon> canUseWeapon);
+             Set<ToolSkill> tools, Set<AbstractArmor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<AbstractWeapon> canUseWeapon);
   // Удаляет эффекты расы
   void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, 
-              Set<ToolSkill> tools, Set<Armor> canUseArmor, Health health,Map<StatNames, Skill> skills,Set<Weapon> canUseWeapon); 
+              Set<ToolSkill> tools, Set<AbstractArmor> canUseArmor, Health health,Map<StatNames, Skill> skills,Set<AbstractWeapon> canUseWeapon); 
 }
+
+
+
+
 
 // Базовый интерфейс для всех статистик
 abstract interface class Stat {}

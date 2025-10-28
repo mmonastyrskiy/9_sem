@@ -21,11 +21,11 @@ class Money {
   // Количество серебряных монет
   int silver = 0;
   // Количество медных монет
-  int coper = 0;
+  int copper = 0;
 
   // Конструктор денег с значениями по умолчанию 0
   // Позволяет создать объект с начальным количеством монет разных типов
-  Money([this.platinum = 0, this.gold = 0, this.elec = 0, this.silver = 0, this.coper = 0]);
+  Money({this.platinum = 0, this.gold = 0, this.elec = 0, this.silver = 0, this.copper = 0});
   
   // Метод для добавления денег разных типов
   // Аргументы имеют значения по умолчанию 0, можно добавлять только нужные типы
@@ -34,7 +34,7 @@ class Money {
     this.gold += gold;
     this.elec += elec;
     this.silver += silver;
-    this.coper += coper;
+    copper += coper;
   }
  
   // Методы для добавления конкретных типов монет (удобные обертки)
@@ -42,12 +42,12 @@ class Money {
   void add_plat(int a) => platinum += a;    // Добавить платиновые монеты
   void add_elec(int a) => elec += a;        // Добавить электрумовые монеты
   void add_silver(int a) => silver += a;    // Добавить серебряные монеты
-  void add_coper(int a) => coper += a;       // добавить медные монеты
+  void add_coper(int a) => copper += a;       // добавить медные монеты
 
   // Приватный метод для конвертации всех денег в медные монеты (базовая единица)
   // Используется для сравнения и вычислений
   // Курс обмена: 1 платина = 1000 меди, 1 золото = 100 меди, 1 электрум = 50 меди, 1 серебро = 10 меди
-  int _to_coper() => platinum * 1000 + gold * 100 + elec * 50 + silver * 10 + coper;
+  int _to_coper() => platinum * 1000 + gold * 100 + elec * 50 + silver * 10 + copper;
 
   // Приватный метод для оптимизации денег - конвертирует общее количество меди обратно в монеты разных типов
   // Использует целочисленное деление для распределения по типам монет
@@ -69,7 +69,7 @@ class Money {
     t -= silver * 10;      // Вычитаем учтенное количество меди
     
     // Остаток - медные монеты
-    coper = t;
+    copper = t;
   }
 
   // Метод для покупки предмета по указанной цене
@@ -100,4 +100,6 @@ class Money {
 
 // Класс для представления цены предмета
 // Наследуется от Money, так как цена использует ту же систему денежных единиц
-class Price extends Money {}
+class Price extends Money {
+  Price({super.platinum, super.gold, super.elec, super.silver, super.copper});
+}

@@ -5,7 +5,7 @@ import 'stat.dart';
 import 'tool.dart';
 import 'langs.dart';
 import 'package:flutter/material.dart';
-import 'items.dart';
+import 'items/item.dart';
 import 'money.dart';
 import 'race.dart';
 import 'charclass.dart';
@@ -138,17 +138,17 @@ class Character {
   
   // Боевые характеристики
   @HiveField(38)
-  Set<Armor> CanUseArmor = {};
+  Set<AbstractArmor> CanUseArmor = {};
   
   @HiveField(39)
-  Set<Weapon> canUseWeapon = {};
+  Set<AbstractWeapon> canUseWeapon = {};
   
   // Финансы и инвентарь
   @HiveField(40)
   Money wallet = Money();
   
   @HiveField(41)
-  List<Item> inventory = [];
+  List<SellableItem> inventory = [];
   
   // Физические характеристики
   @HiveField(42)

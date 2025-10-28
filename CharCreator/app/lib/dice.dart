@@ -15,11 +15,7 @@ class DieResult
   
   // Преобразует количество граней в тип кости
   DiceType dim2type (int dt){
-    // Проверка на валидность количества граней
-    if(dt <= 1){
-      return DiceType.None;
-    }
-    // Выбор соответствующего типа кости based на количестве граней
+
     switch(dt){
       case 4: return DiceType.D4;   // 4-гранная кость
       case 6: return DiceType.D6;   // 6-гранная кость (кубик)

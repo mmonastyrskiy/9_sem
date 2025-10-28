@@ -1,8 +1,12 @@
 // ignore_for_file: constant_identifier_names
 
 // Импорт необходимых модулей
-import 'meta.dart';
-import 'money.dart';
+import '../meta.dart';
+import '../money.dart';
+import 'weapon.dart';
+import 'armor.dart';
+
+
 
 // Абстрактный интерфейс для представления любого предмета в игре
 abstract interface class Item {
@@ -14,37 +18,15 @@ abstract interface class Item {
 abstract interface class SellableItem {
   // Цена предмета - используется для торговли и экономики
   Price price = Price();
+  double weight = 0;
 }
+
 
 // Перечисление типов брони в игре
-enum ArmorType {
-  Light,    // Легкая броня - обеспечивает базовую защиту, не ограничивает движения
-  Medium,   // Средняя броня - баланс между защитой и подвижностью
-  Heavy,    // Тяжелая броня - максимальная защита, но ограничивает подвижность
-  Shield    // Щит - дополнительная защита, обычно используется в одной руке
-}
+
 
 // Перечисление типов оружия в игре
-enum WeaponType {
-  SimpleWeapon,    // Простое оружие - базовое оружие, доступное всем классам
-  MartialWearpon,  // Воинское оружие - специализированное оружие для военных классов
-  LongSword,       // Длинный меч - двуручное рубящее/колющее оружие
-  ShortSword,      // Короткий меч - одноручное легкое оружие
-  Rapier,          // Рапира - изящное колющее оружие для фехтования
-  HandCrossBow,    // Ручной арбалет - небольшое метательное оружие
-  Dagger,          // Кинжал - маленькое скрытое оружие
-  Dart,            // Дротик - метательное оружие для ближней дистанции
-  Sling,           // Праща - простое метательное оружие
-  CombatStaff,     // Боевой посох - простое двуручное оружие
-  LightCrossBow,   // Легкий арбалет - метательное оружие средней мощности
-  Mace,            // Булава - дробящее оружие
-  Club,            // Дубина - простое дробящее оружие
-  Javeline,        // Метательное копье - оружие для бросков
-  Sickle,          // Серп - легкое режущее оружие
-  Scimitar,         // Скимитар - изогнутый меч для режущих ударов
-  ShortBow,
-  LongBow
-}
+
 
 // Перечисление общих категорий оружия (для группировки)
 enum OverallWeaponType {
@@ -53,7 +35,7 @@ enum OverallWeaponType {
 }
 
 // Класс, представляющий броню в игре
-class Armor implements Item {
+class AbstractArmor implements Item {
   // Тип брони (легкая, средняя, тяжелая, щит)
   ArmorType? type; 
   // Метаданные брони - флаги, указывающие на происхождение, статус и т.д.
@@ -63,7 +45,7 @@ class Armor implements Item {
   // Аргументы:
   // - armor: тип создаваемой брони
   // - metadata: необязательный набор флагов метаданных
-  Armor(ArmorType armor, [Set<MetaFlags>? metadata]) {
+  AbstractArmor(ArmorType armor, [Set<MetaFlags>? metadata]) {
     // Устанавливаем тип брони
     type = armor;
     // Устанавливаем метаданные (если переданы) или оставляем пустыми
@@ -74,7 +56,7 @@ class Armor implements Item {
   // Аргументы:
   // - armor: набор брони для фильтрации (может быть null)
   // - m: флаг метаданных для поиска и удаления
-  static void deletebyMeta(Set<Armor> armor, MetaFlags m) {
+  static void deletebyMeta(Set<AbstractArmor> armor, MetaFlags m) {
     // Проходим по всем элементам брони в наборе
     if(armor.isEmpty){
       return;
@@ -84,7 +66,7 @@ class Armor implements Item {
 }
 
 // Класс, представляющий оружие в игре
-class Weapon implements Item {
+class AbstractWeapon implements Item {
   // Тип оружия (меч, лук, посох и т.д.)
   WeaponType? type;
   // Метаданные оружия - флаги для отслеживания статуса и происхождения
@@ -94,7 +76,7 @@ class Weapon implements Item {
   // Аргументы:
   // - weapon: тип создаваемого оружия
   // - metadata: необязательный набор флагов метаданных
-  Weapon(WeaponType weapon, [Set<MetaFlags>? metadata]) {
+  AbstractWeapon(WeaponType weapon, [Set<MetaFlags>? metadata]) {
     // Устанавливаем метаданные (если переданы)
     this.metadata.MetaFlags_ = metadata!;
     // Устанавливаем тип оружия
@@ -105,7 +87,7 @@ class Weapon implements Item {
   // Аргументы:
   // - weapon: набор оружия для фильтрации (может быть null)
   // - m: флаг метаданных для поиска и удаления
-  static void deletebyMeta(Set<Weapon> weapon, MetaFlags m) {
+  static void deletebyMeta(Set<AbstractWeapon> weapon, MetaFlags m) {
     if(weapon.isEmpty){
       return;
     }
