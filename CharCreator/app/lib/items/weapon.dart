@@ -109,7 +109,8 @@ int mod = n;
 abstract interface class Weapon implements SellableItem {
 Set<WeaponType> type= {};
 Set<WearponProperty> props={};
-String name ="";
+@override
+  String name ="";
 Damage? dmg;
 int? distance = 0;
 Meta meta =Meta();
@@ -170,7 +171,7 @@ static List<Weapon> getAllWeapons() {
 
 
 
-final class Rapier implements Weapon{
+final class Rapier with DefaultQty implements Weapon{
   @override
   Price price = Price(gold: 25);
 
@@ -204,7 +205,7 @@ final class Rapier implements Weapon{
 
 
 
-final class Quarterstaff implements Weapon,Universal{
+final class Quarterstaff with DefaultQty implements Weapon,Universal{
   @override
   Price price = Price(silver: 2);
 
@@ -241,7 +242,7 @@ final class Quarterstaff implements Weapon,Universal{
 
 
 
-final class Mace implements Weapon{
+final class Mace with DefaultQty implements Weapon{
   @override
   Price price = Price(gold: 5);
 
@@ -278,7 +279,7 @@ final class Mace implements Weapon{
 
 
 
-final class Club implements Weapon{
+final class Club with DefaultQty implements Weapon{
   @override
   Price price = Price(silver: 1);
 
@@ -313,7 +314,7 @@ final class Club implements Weapon{
 }
 
 
-final class Dagger implements Weapon,Thrown{
+final class Dagger with DefaultQty implements Weapon,Thrown{
   @override
   Price price = Price(gold: 2);
 
@@ -349,7 +350,7 @@ final class Dagger implements Weapon,Thrown{
 
 
 
-final class Spear implements Weapon,Thrown,Universal{
+final class Spear with DefaultQty implements Weapon,Thrown,Universal{
   @override
   Price price = Price(gold: 1);
 
@@ -388,7 +389,7 @@ final class Spear implements Weapon,Thrown,Universal{
 
 
 
-final class LightHammer implements Weapon,Thrown{
+final class LightHammer with DefaultQty implements Weapon,Thrown{
   @override
   Price price = Price(gold: 2);
 
@@ -422,7 +423,7 @@ final class LightHammer implements Weapon,Thrown{
 }
 
 
-final class Javeline implements Weapon,Thrown{
+final class Javeline with DefaultQty implements Weapon,Thrown{
   @override
   Price price = Price(silver: 5);
 
@@ -455,7 +456,7 @@ final class Javeline implements Weapon,Thrown{
 
 }
 
-final class Greatclub implements Weapon{
+final class Greatclub with DefaultQty implements Weapon{
   @override
   Price price = Price(silver: 2);
 
@@ -488,7 +489,7 @@ final class Greatclub implements Weapon{
 
 }
 
-final class Handaxe implements Weapon,Thrown{
+final class Handaxe with DefaultQty implements Weapon,Thrown{
   @override
   Price price = Price(gold: 5);
 
@@ -521,7 +522,7 @@ final class Handaxe implements Weapon,Thrown{
 
 }
 
-final class Sickle implements Weapon{
+final class Sickle with DefaultQty implements Weapon{
   @override
   Price price = Price(gold: 1);
 
@@ -554,7 +555,7 @@ final class Sickle implements Weapon{
 
 }
 
-final class LightCrossBow implements Weapon,Ammo{
+final class LightCrossBow with DefaultQty implements Weapon,Ammo{
   @override
   Price price = Price(gold: 25);
 
@@ -591,7 +592,7 @@ final class LightCrossBow implements Weapon,Ammo{
 }
 
 
-final class Dart implements Weapon,Thrown{
+final class Dart with DefaultQty implements Weapon,Thrown{
   @override
   Price price = Price(copper: 5);
 
@@ -627,7 +628,7 @@ final class Dart implements Weapon,Thrown{
 
 
 
-final class Shortbow implements Weapon,Ammo{
+final class Shortbow with DefaultQty implements Weapon,Ammo{
   @override
   Price price = Price(gold: 25);
 
@@ -665,7 +666,7 @@ final class Shortbow implements Weapon,Ammo{
 
 
 
-final class Sling implements Weapon,Ammo{
+final class Sling with DefaultQty implements Weapon,Ammo{
   @override
   Price price = Price(silver: 1);
 
@@ -702,7 +703,7 @@ final class Sling implements Weapon,Ammo{
 }
 
 
-final class Halberd implements Weapon{
+final class Halberd with DefaultQty implements Weapon{
   @override
   Price price = Price(gold: 5);
 
@@ -735,7 +736,7 @@ final class Halberd implements Weapon{
 
 }
 
-final class WarPick implements Weapon{
+final class WarPick with DefaultQty implements Weapon{
   @override
   Price price = Price(gold: 5);
 
@@ -768,7 +769,7 @@ final class WarPick implements Weapon{
 
 }
 
-final class Warhammer implements Weapon,Universal{
+final class Warhammer with DefaultQty implements Weapon,Universal{
   @override
   Price price = Price(gold: 15);
 
@@ -804,7 +805,7 @@ final class Warhammer implements Weapon,Universal{
 
 }
 
-final class Battleaxe implements Weapon,Universal{
+final class Battleaxe with DefaultQty implements Weapon,Universal{
   @override
   Price price = Price(gold: 10);
 
@@ -840,7 +841,7 @@ final class Battleaxe implements Weapon,Universal{
 
 
 
-final class Glaive implements Weapon{
+final class Glaive with DefaultQty implements Weapon{
   @override
   Price price = Price(gold: 20);
 
@@ -874,7 +875,7 @@ final class Glaive implements Weapon{
 }
 
 
-final class Greatsword implements Weapon{
+final class Greatsword with DefaultQty implements Weapon{
   @override
   Price price = Price(gold: 50);
 
@@ -910,7 +911,7 @@ final class Greatsword implements Weapon{
 
 
 
-final class Lance implements Weapon,Special{
+final class Lance with DefaultQty implements Weapon,Special{
   @override
   Price price = Price(gold: 10);
 
@@ -945,7 +946,7 @@ final class Lance implements Weapon,Special{
 
 
 
-final class Longsword implements Weapon,Universal{
+final class Longsword with DefaultQty implements Weapon,Universal{
   @override
   Price price = Price(gold: 15);
 
@@ -982,7 +983,7 @@ final class Longsword implements Weapon,Universal{
 }
 
 
-final class Whip implements Weapon{
+final class Whip with DefaultQty implements Weapon{
   @override
   Price price = Price(gold: 2);
 
@@ -1013,7 +1014,7 @@ final class Whip implements Weapon{
   bool isEquiped=false;
 }
 
-final class Shortsword implements Weapon{
+final class Shortsword with DefaultQty implements Weapon{
   @override
   Price price = Price(gold: 10);
 
@@ -1047,7 +1048,7 @@ final class Shortsword implements Weapon{
 
 }
 
-final class Maul implements Weapon{
+final class Maul with DefaultQty implements Weapon{
   @override
   Price price = Price(gold: 10);
 
@@ -1081,7 +1082,7 @@ final class Maul implements Weapon{
 
 }
 
-final class Morningstar implements Weapon{
+final class Morningstar with DefaultQty implements Weapon{
   @override
   Price price = Price(gold: 15);
 
@@ -1116,7 +1117,7 @@ final class Morningstar implements Weapon{
 }
 
 
-final class Pike implements Weapon{
+final class Pike with DefaultQty implements Weapon{
   @override
   Price price = Price(gold: 5);
 
@@ -1150,7 +1151,7 @@ final class Pike implements Weapon{
 
 }
 
-final class Greataxe implements Weapon{
+final class Greataxe with DefaultQty implements Weapon{
   @override
   Price price = Price(gold: 5);
 
@@ -1184,7 +1185,7 @@ final class Greataxe implements Weapon{
 
 }
 
-final class Scimitar implements Weapon{
+final class Scimitar with DefaultQty implements Weapon{
   @override
   Price price = Price(gold: 25);
 
@@ -1219,7 +1220,7 @@ final class Scimitar implements Weapon{
 }
 
 
-final class Trident implements Weapon,Thrown,Universal{
+final class Trident with DefaultQty implements Weapon,Thrown,Universal{
   @override
   Price price = Price(gold: 5);
 
@@ -1257,7 +1258,7 @@ final class Trident implements Weapon,Thrown,Universal{
 }
 
 
-final class Flail implements Weapon{
+final class Flail with DefaultQty implements Weapon{
   @override
   Price price = Price(gold: 10);
 
@@ -1290,7 +1291,7 @@ final class Flail implements Weapon{
 }
 
 
-final class HandCrossBow implements Weapon,Ammo{
+final class HandCrossBow with DefaultQty implements Weapon,Ammo{
   @override
   Price price = Price(gold: 75);
 
@@ -1326,7 +1327,7 @@ final class HandCrossBow implements Weapon,Ammo{
 }
 
 
-final class HeavyCrossBow implements Weapon,Ammo{
+final class HeavyCrossBow with DefaultQty implements Weapon,Ammo{
   @override
   Price price = Price(gold: 50);
 
@@ -1361,7 +1362,7 @@ final class HeavyCrossBow implements Weapon,Ammo{
 
 }
 
-final class LongBow implements Weapon,Ammo{
+final class LongBow with DefaultQty implements Weapon,Ammo{
   @override
   Price price = Price(gold: 50);
 
@@ -1397,7 +1398,7 @@ final class LongBow implements Weapon,Ammo{
 }
 
 
-final class Blowgun implements Weapon,Ammo{
+final class Blowgun with DefaultQty implements Weapon,Ammo{
   @override
   Price price = Price(gold: 10);
 
@@ -1432,7 +1433,7 @@ final class Blowgun implements Weapon,Ammo{
 
 }
 
-final class Musket implements Weapon,Ammo{
+final class Musket with DefaultQty implements Weapon,Ammo{
   @override
   Price price = Price(gold: 500);
 
@@ -1469,7 +1470,7 @@ final class Musket implements Weapon,Ammo{
 
 
 
-final class AutoPistol implements Weapon,Ammo,Multishot{
+final class AutoPistol with DefaultQty implements Weapon,Ammo,Multishot{
   @override
   Price price = Price(gold: 0);
 
@@ -1507,7 +1508,7 @@ final class AutoPistol implements Weapon,Ammo,Multishot{
 
 }
 
-final class Pistol implements Weapon,Ammo{
+final class Pistol with DefaultQty implements Weapon,Ammo{
   @override
   Price price = Price(gold: 250);
 
@@ -1542,7 +1543,7 @@ final class Pistol implements Weapon,Ammo{
 
 }
 
-final class Net implements Weapon,Special,Thrown{
+final class Net with DefaultQty implements Weapon,Special,Thrown{
   @override
   Price price = Price(gold: 1);
 
@@ -1572,5 +1573,35 @@ final class Net implements Weapon,Special,Thrown{
   @override
   bool isEquiped=false;
 
+
+}
+final class Arrow  implements SellableItem {
+  @override
+  String name = "стрела";
+
+  @override
+  Price price=Price(gold: 1);
+
+  @override
+  double weight=1;
+
+  @override
+  int qty=20;
+
+}
+
+
+final class CrossBowBolt  implements SellableItem {
+  @override
+  String name = "Болт";
+
+  @override
+  Price price=Price(gold: 1);
+
+  @override
+  double weight=1.5;
+
+  @override
+  int qty=20;
 
 }

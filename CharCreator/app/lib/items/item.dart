@@ -19,6 +19,8 @@ abstract interface class SellableItem {
   // Цена предмета - используется для торговли и экономики
   Price price = Price();
   double weight = 0;
+  String name = "";
+  int qty=1;
 }
 
 
@@ -93,5 +95,14 @@ class AbstractWeapon implements Item {
     }
     // Проходим по всем элементам оружия в наборе
     weapon.removeWhere((val)=> val.metadata.MetaFlags_.contains(m));
+  }
+}
+
+mixin DefaultQty implements SellableItem{
+  @override
+  int qty = 1;
+  SellableItem setqty(int i){
+    qty = i;
+    return this;
   }
 }

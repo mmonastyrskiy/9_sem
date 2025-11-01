@@ -41,6 +41,7 @@ abstract interface class RequireStrength {
 abstract interface class Armor implements SellableItem {
   List<ArmorType> type= [];
   int? ArmorModifier;
+  @override
   String name ="";
   Meta meta =Meta();
   bool isEquiped = false;
@@ -56,7 +57,7 @@ abstract interface class Armor implements SellableItem {
     int STR = c.getbasicstats()[BasicStatNames.STR]!.value;
   }
 }
-final class PaddedArmor implements Armor{
+final class PaddedArmor with DefaultQty implements Armor{
   PaddedArmor(int DEXmod){
     ArmorModifier = DEXmod +11;
   }
@@ -88,7 +89,7 @@ final class PaddedArmor implements Armor{
 
 }
 
-final class LeatherArmor implements Armor{
+final class LeatherArmor with DefaultQty implements Armor{
   LeatherArmor(int DEXmod){
     ArmorModifier = DEXmod +11;
   }
@@ -120,7 +121,7 @@ final class LeatherArmor implements Armor{
 
 }
 
-final class StuddedLeatherArmor implements Armor{
+final class StuddedLeatherArmor with DefaultQty implements Armor{
   StuddedLeatherArmor(int DEXmod){
     ArmorModifier = DEXmod +12;
   }
@@ -153,7 +154,7 @@ final class StuddedLeatherArmor implements Armor{
 
 
 
-final class HideArmor implements Armor{
+final class HideArmor with DefaultQty implements Armor{
   HideArmor(int DEXmod){
     DEXmod <= 2 ? ArmorModifier = DEXmod +12 :  ArmorModifier = 2 +12;
   }
@@ -185,7 +186,7 @@ final class HideArmor implements Armor{
 }
 
 
-final class ChainShirt implements Armor{
+final class ChainShirt with DefaultQty implements Armor{
   ChainShirt(int DEXmod){
     DEXmod <= 2 ? ArmorModifier = DEXmod +13 :  ArmorModifier = 2 +13;
   }
@@ -216,7 +217,7 @@ final class ChainShirt implements Armor{
 
 }
 
-final class ScaleMailArmor implements Armor{
+final class ScaleMailArmor with DefaultQty implements Armor{
   ScaleMailArmor (int DEXmod){
     DEXmod <= 2 ? ArmorModifier = DEXmod +14 :  ArmorModifier = 2 +14;
   }
@@ -248,7 +249,7 @@ final class ScaleMailArmor implements Armor{
 }
 
 
-final class Breastplate implements Armor{
+final class Breastplate with DefaultQty implements Armor{
   Breastplate (int DEXmod){
     DEXmod <= 2 ? ArmorModifier = DEXmod +14 :  ArmorModifier = 2 +14;
   }
@@ -279,7 +280,7 @@ final class Breastplate implements Armor{
 
 }
 
-final class HalfPlateArmor implements Armor{
+final class HalfPlateArmor with DefaultQty implements Armor{
   HalfPlateArmor (int DEXmod){
     DEXmod <= 2 ? ArmorModifier = DEXmod +15 :  ArmorModifier = 2 +15;
   }
@@ -310,7 +311,7 @@ final class HalfPlateArmor implements Armor{
 
 }
 
-final class RingMailArmor implements Armor{
+final class RingMailArmor with DefaultQty implements Armor{
   RingMailArmor (){
     ArmorModifier = 14;
   }
@@ -341,7 +342,7 @@ final class RingMailArmor implements Armor{
 
 }
 
-final class ChainMail implements Armor,RequireStrength{
+final class ChainMail with DefaultQty implements Armor,RequireStrength{
   ChainMail (int STR){
     ArmorModifier = 16;
   }
@@ -379,7 +380,7 @@ final class ChainMail implements Armor,RequireStrength{
 }
 
 
-final class SplintArmor implements Armor,RequireStrength{
+final class SplintArmor with DefaultQty implements Armor,RequireStrength{
   SplintArmor (int STR){
     ArmorModifier = 17;
   }
@@ -417,7 +418,7 @@ final class SplintArmor implements Armor,RequireStrength{
 }
 
 
-final class PlateArmor implements Armor,RequireStrength{
+final class PlateArmor with DefaultQty implements Armor,RequireStrength{
   PlateArmor (int STR){
     ArmorModifier = 18;
   }
@@ -454,7 +455,7 @@ final class PlateArmor implements Armor,RequireStrength{
 
 }
 
-final class Shield implements Armor{
+final class Shield with DefaultQty implements Armor{
   Shield(){
     ArmorModifier = 2;
   }

@@ -24,3 +24,6 @@ class Meta {
   // - hasFlag(MetaFlags flag) - проверка наличия флага
   // - clearFlags() - очистка всех флагов
 }
+abstract interface class HasMeta{
+  Meta meta = Meta();
+}
