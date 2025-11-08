@@ -23,7 +23,18 @@ enum RaceName {
   HalfElf,      // Полуэльф
   Elf,          // Эльф
   Tiefling,      // Тифлинг
-  Human          // Человек
+  Human,          // Человек
+
+
+
+  ForestGnome,    // Лесной гном
+  RockGnome,      // Скальный гном
+  MountainDwarf,  // Горный дварф
+  HillDwarf,       // Холмовой дварф
+  StockyHalfling,      // Коренастый полурослик
+  LighFootedHalfling,        // легконогий полурослик
+  HighElf,                   // Высший эльф
+  ForestElf   
 }
 
 // Перечисление подрас в игре
