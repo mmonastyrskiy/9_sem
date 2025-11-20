@@ -1,6 +1,5 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, camel_case_types
 
-// Импорт необходимых библиотек Flutter и пользовательских модулей
 import 'package:flutter/material.dart';
 import 'stat.dart';
 import 'tool.dart';
@@ -8,8 +7,7 @@ import 'langs.dart';
 import 'meta.dart';
 import 'character.dart';
 
-// Перечисление названий предысторий на английском языке
-enum BackgroundNames  {
+enum BackgroundNames {
   Entertainer,
   Urchin,
   Noble,
@@ -26,564 +24,496 @@ enum BackgroundNames  {
   Charlatan
 }
 
+// Конфигурация для предысторий
+class BackgroundConfig {
+  final String name;
+  final Set<StatNames> skillProficiencies;
+  final Set<String> toolProficiencies;
+  final int extraLanguages;
 
-// Абстрактный класс Background, реализующий два интерфейса
-// Использует фабричный конструктор для создания конкретных предысторий
-abstract class Background implements AffectsStatBackground, Stat {
-  String BGName = "";
-  // Фабричный конструктор для создания объектов предысторий по названию
-  // Аргументы: chosen - название предыстории, char - объект персонажа
+  const BackgroundConfig({
+    required this.name,
+    required this.skillProficiencies,
+    required this.toolProficiencies,
+    this.extraLanguages = 0,
+  });
+}
+
+// Базовый класс для всех предысторий
+abstract base class BaseBackground implements Background {
+  final BackgroundConfig config;
+
+  @override
+  String get BGName => config.name;
+
+  BaseBackground(this.config);
+
+  @override
+  Future<void> apply(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+    BuildContext context,
+  ) async {
+    // Применяем бонусы к навыкам
+    for (final skill in config.skillProficiencies) {
+      stats[skill]?.hasprofbounus += 1;
+    }
+
+    // Добавляем инструменты
+    for (final tool in config.toolProficiencies) {
+      tools.add(ToolSkill(tool, {
+        MetaFlags.IS_PICKED,
+        MetaFlags.IS_PICKED_ON_BG
+      }));
+    }
+
+    // Добавляем языки, если есть
+    if (config.extraLanguages > 0) {
+      await _addLanguages(langs, context, config.extraLanguages);
+    }
+  }
+
+  @override
+  void delete(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+  ) {
+    // Убираем бонусы навыков
+    for (final skill in config.skillProficiencies) {
+      stats[skill]?.hasprofbounus -= 1;
+    }
+
+    // Удаляем инструменты
+    ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
+    
+    // Удаляем языки
+    Langs.deletebyMeta(langs, MetaFlags.IS_PICKED_ON_BG);
+  }
+
+  Future<void> _addLanguages(
+    Set<Langs> langs,
+    BuildContext context,
+    int count,
+  ) async {
+    if (count == 1) {
+      // Один язык
+      final chosen = Langs('').pick(context);
+      if (chosen != null) {
+        langs.add(Langs(chosen, {
+          MetaFlags.IS_PICKED,
+          MetaFlags.IS_PICKED_ON_BG
+        }));
+      }
+    } else {
+      // Несколько языков
+      final chosen = await Langs('').pickmany(context);
+      if (chosen != null) {
+        for (final language in chosen) {
+          langs.add(Langs(language, {
+            MetaFlags.IS_PICKED,
+            MetaFlags.IS_PICKED_ON_BG
+          }));
+        }
+      }
+    }
+  }
+}
+// Абстрактный интерфейс для предысторий
+abstract interface class Background implements AffectsStatBackground, Stat {
+  String get BGName;
+  
   factory Background(String chosen, Character char) {
-    // Получаем навыки персонажа
-    Map<StatNames,ProfBonusStat> stats = char.getskills(); 
-    // Получаем инструменты персонажа
-    Set<ToolSkill> tools = char.getToolingskills();
-    // Получаем языки персонажа
-    Set<Langs> langs = char.getLangs();
-    // Получаем контекст UI из персонажа
-    BuildContext context = char.UIContext;
-    
-    // Создаем конкретную предысторию based на переданном названии
-    switch (chosen.toLowerCase()) {
-      case 'артист': return Entertainer(stats, tools, langs, context);
-      case 'беспризорник': return Urchin(stats, tools, langs, context); 
-      case 'благородный': return Noble(stats, tools, langs, context); 
-      case 'гильдейский ремесленник': return Guild_artisan(stats, tools, langs, context); 
-      case 'моряк': return Sailor(stats, tools, langs, context); 
-      case 'мудрец': return Sage(stats, tools, langs, context);
-      case 'народный герой': return Folk_Hero(stats, tools, langs, context); 
-      case 'отшельник': return Hermit(stats, tools, langs, context); 
-      case 'пират': return Pirate(stats, tools, langs, context); 
-      case 'преступник': return Criminal(stats, tools, langs, context); 
-      case 'прислужник': return Acolyte(stats, tools, langs, context); 
-      case 'солдат': return Soldier(stats, tools, langs, context); 
-      case 'чужеземец': return Outlander(stats, tools, langs, context); 
-      case 'шарлатан': return Charlatan(stats, tools, langs, context); 
-      
-      // Если предыстория не найдена, выбрасываем исключение
-      default: return Undefined(stats, tools, langs, context);
+    final constructor = _backgroundConstructors[chosen.toLowerCase()];
+    if (constructor != null) {
+      return constructor(
+        char.getskills(),
+        char.getToolingskills(),
+        char.getLangs(),
+        char.UIContext,
+      );
     }
-  }
-}
-
-final class Undefined implements Background {
-  @override
-  String BGName = "Не выбрано";
-
-  @override
-  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
-  }
-
-  @override
-  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
-  }
-
-  Undefined(Map<StatNames,ProfBonusStat> stats, Set<ToolSkill> tools,Set<Langs> langs,BuildContext context){
-    apply(stats, tools,langs,context);
-  }
-}
-
-// Класс предыстории "Артист"
-final class Entertainer implements Background {
-  // Применяет бонусы предыстории к персонажу
-  @override
-  void apply(Map<StatNames,ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs,BuildContext context) {
-    // Добавляем бонус к навыку Акробатики
-    stats[StatNames.Acrobatics]?.hasprofbounus += 1;
-    // Добавляем бонус к навыку Выступления
-    stats[StatNames.Performance]?.hasprofbounus += 1;
-    // Добавляем набор для грима с меткой выбора на предыстории
-    tools.add(ToolSkill("Набор для грима",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-    // Добавляем музыкальные инструменты с меткой выбора на предыстории
-    tools.add(ToolSkill("музыкальные инструменты",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-  }
-
-  // Удаляет бонусы предыстории у персонажа
-  @override
-  void delete(Map<StatNames,ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
-    // Убираем бонус от навыка Акробатики
-    stats[StatNames.Acrobatics]?.hasprofbounus -= 1;
-    // Убираем бонус от навыка Выступления
-    stats[StatNames.Performance]?.hasprofbounus -= 1;
-    // Удаляем все инструменты, помеченные как выбранные на предыстории
-    ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
+    return Undefined(
+      char.getskills(),
+      char.getToolingskills(),
+      char.getLangs(),
+      char.UIContext,
+    );
   }
   
-  // Конструктор - автоматически применяет бонусы при создании
-  Entertainer(Map<StatNames,ProfBonusStat> stats, Set<ToolSkill> tools,Set<Langs> langs,BuildContext context){
-    apply(stats, tools,langs,context);
-  }
-
-  @override
-  String BGName="Артист";
+  static final _backgroundConstructors = <String, Background Function(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+    BuildContext context,
+  )>{
+    'артист': (stats, tools, langs, context) => 
+      Entertainer(stats, tools, langs, context),
+    'беспризорник': (stats, tools, langs, context) => 
+      Urchin(stats, tools, langs, context),
+    'благородный': (stats, tools, langs, context) => 
+      Noble(stats, tools, langs, context),
+    'гильдейский ремесленник': (stats, tools, langs, context) => 
+      GuildArtisan(stats, tools, langs, context),
+    'моряк': (stats, tools, langs, context) => 
+      Sailor(stats, tools, langs, context),
+    'мудрец': (stats, tools, langs, context) => 
+      Sage(stats, tools, langs, context),
+    'народный герой': (stats, tools, langs, context) => 
+      FolkHero(stats, tools, langs, context),
+    'отшельник': (stats, tools, langs, context) => 
+      Hermit(stats, tools, langs, context),
+    'пират': (stats, tools, langs, context) => 
+      Pirate(stats, tools, langs, context),
+    'преступник': (stats, tools, langs, context) => 
+      Criminal(stats, tools, langs, context),
+    'прислужник': (stats, tools, langs, context) => 
+      Acolyte(stats, tools, langs, context),
+    'солдат': (stats, tools, langs, context) => 
+      Soldier(stats, tools, langs, context),
+    'чужеземец': (stats, tools, langs, context) => 
+      Outlander(stats, tools, langs, context),
+    'шарлатан': (stats, tools, langs, context) => 
+      Charlatan(stats, tools, langs, context),
+  };
 }
 
-// Класс предыстории "Беспризорник"
-final class Urchin implements Background {
-  // Применяет бонусы предыстории
-  @override
-  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools,Set<Langs> langs, BuildContext context) {
-    // Добавляем бонус к навыку Ловкости рук
-    stats[StatNames.Sleight_of_Hand]?.hasprofbounus +=1;
-    // Добавляем бонус к навыку Скрытности
-    stats[StatNames.Stealth]?.hasprofbounus +=1;
-    // Добавляем набор для грима
-    tools.add(ToolSkill("Набор для грима",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-    // Добавляем воровские инструменты
-    tools.add(ToolSkill("воровские инструменты",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-  }
+// Конфигурации для всех предысторий
+class BackgroundConfigs {
+  static const entertainer = BackgroundConfig(
+    name: "Артист",
+    skillProficiencies: {
+      StatNames.Acrobatics,
+      StatNames.Performance,
+    },
+    toolProficiencies: {
+      "Набор для грима",
+      "музыкальные инструменты",
+    },
+  );
 
-  // Удаляет бонусы предыстории
-  @override
-  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools,Set<Langs> langs) {
-    // Убираем бонус от навыка Ловкости рук
-    stats[StatNames.Sleight_of_Hand]?.hasprofbounus -=1;
-    // Убираем бонус от навыка Скрытности
-    stats[StatNames.Stealth]?.hasprofbounus -=1;
-    // Удаляем инструменты, помеченные для этой предыстории
-    ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
-  }
-  
-  // Конструктор
-  Urchin(Map<StatNames,ProfBonusStat> stats, Set<ToolSkill> tools,Set<Langs> langs,BuildContext context){
-    apply(stats,tools,langs,context);
-  }
+  static const urchin = BackgroundConfig(
+    name: "Беспризорник",
+    skillProficiencies: {
+      StatNames.Sleight_of_Hand,
+      StatNames.Stealth,
+    },
+    toolProficiencies: {
+      "Набор для грима",
+      "воровские инструменты",
+    },
+  );
 
-  @override
-  String BGName="Беспризорник";
+  static const noble = BackgroundConfig(
+    name: "Благородный",
+    skillProficiencies: {
+      StatNames.History,
+      StatNames.Persuasion,
+    },
+    toolProficiencies: {"игровой набор"},
+    extraLanguages: 1,
+  );
+
+  static const guildArtisan = BackgroundConfig(
+    name: "Гильдейский Ремесленник",
+    skillProficiencies: {
+      StatNames.Persuasion,
+      StatNames.Insight,
+    },
+    toolProficiencies: {"инструменты ремесленников"},
+    extraLanguages: 1,
+  );
+
+  static const sailor = BackgroundConfig(
+    name: "Моряк",
+    skillProficiencies: {
+      StatNames.Athletics,
+      StatNames.Perception,
+    },
+    toolProficiencies: {
+      "инструменты навигатора",
+      "водный транспорт",
+    },
+  );
+
+  static const sage = BackgroundConfig(
+    name: "Мудрец",
+    skillProficiencies: {
+      StatNames.History,
+      StatNames.Arcana,
+    },
+    toolProficiencies: {},
+    extraLanguages: 2,
+  );
+
+  static const folkHero = BackgroundConfig(
+    name: "Народный герой",
+    skillProficiencies: {
+      StatNames.Survival,
+      StatNames.Animal_Handling,
+    },
+    toolProficiencies: {
+      "инструменты ремесленников",
+      "наземный транспорт",
+    },
+  );
+
+  static const hermit = BackgroundConfig(
+    name: "Отшельник",
+    skillProficiencies: {
+      StatNames.Medicine,
+      StatNames.Religion,
+    },
+    toolProficiencies: {"Набор травника"},
+    extraLanguages: 1,
+  );
+
+  static const pirate = BackgroundConfig(
+    name: "Пират",
+    skillProficiencies: {
+      StatNames.Athletics,
+      StatNames.Perception,
+    },
+    toolProficiencies: {
+      "инструменты навигатора",
+      "водный транспорт",
+    },
+  );
+
+  static const criminal = BackgroundConfig(
+    name: "Преступник",
+    skillProficiencies: {
+      StatNames.Stealth,
+      StatNames.Deception,
+    },
+    toolProficiencies: {
+      "воровские инструменты",
+      "игровой набор",
+    },
+  );
+
+  static const acolyte = BackgroundConfig(
+    name: "Прислужник",
+    skillProficiencies: {
+      StatNames.Insight,
+      StatNames.Religion,
+    },
+    toolProficiencies: {},
+    extraLanguages: 2,
+  );
+
+  static const soldier = BackgroundConfig(
+    name: "Солдат",
+    skillProficiencies: {
+      StatNames.Athletics,
+      StatNames.Intimidation,
+    },
+    toolProficiencies: {
+      "наземный транспорт",
+      "игровой набор",
+    },
+  );
+
+  static const outlander = BackgroundConfig(
+    name: "Чужеземец",
+    skillProficiencies: {
+      StatNames.Athletics,
+      StatNames.Survival,
+    },
+    toolProficiencies: {"музыкальные инструменты"},
+    extraLanguages: 1,
+  );
+
+  static const charlatan = BackgroundConfig(
+    name: "Шарлатан",
+    skillProficiencies: {
+      StatNames.Sleight_of_Hand,
+      StatNames.Deception,
+    },
+    toolProficiencies: {
+      "набор для грима",
+      "набор для фальсификации",
+    },
+  );
 }
-
-// Класс предыстории "Благородный"
-final class Noble implements Background {
-  // Конструктор
-  Noble(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+// Класс для неопределенной предыстории
+final class Undefined extends BaseBackground {
+  Undefined(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+    BuildContext context,
+  ) : super(const BackgroundConfig(
+    name: "Не выбрано",
+    skillProficiencies: {},
+    toolProficiencies: {},
+  )) {
     apply(stats, tools, langs, context);
   }
 
-  // Применяет бонусы предыстории
   @override
-  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools,Set<Langs> langs, BuildContext context) {
-    // Добавляем бонус к навыку Истории
-    stats[StatNames.History]?.hasprofbounus +=1;
-    // Добавляем бонус к навыку Убеждения
-    stats[StatNames.Persuasion]?.hasprofbounus +=1;
-    // Добавляем игровой набор
-    tools.add(ToolSkill("игровой набор",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-    // Позволяем выбрать дополнительный язык через UI
-    Langs ch = Langs(Langs('').pick(context) ?? '',{MetaFlags.IS_PICKED,MetaFlags.IS_PICKED_ON_BG});
-    langs.add(ch);
+  Future<void> apply(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+    BuildContext context,
+  ) async {
+    // Не применяем никаких изменений
   }
-
-  // Удаляет бонусы предыстории
-  @override
-  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools,Set<Langs> langs) {
-    // Убираем бонус от навыка Истории
-    stats[StatNames.History]?.hasprofbounus -=1;
-    // Убираем бонус от навыка Убеждения
-    stats[StatNames.Persuasion]?.hasprofbounus -=1;
-    // Удаляем инструменты предыстории
-    ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
-    // Удаляем языки предыстории
-    Langs.deletebyMeta(langs, MetaFlags.IS_PICKED_ON_BG);
-  }
-
-  @override
-  String BGName="Благородный";
 }
 
-// Класс предыстории "Гильдейский ремесленник"
-final class Guild_artisan implements Background{
-  // Конструктор
-  Guild_artisan(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+// Конкретные классы предысторий
+final class Entertainer extends BaseBackground {
+  Entertainer(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+    BuildContext context,
+  ) : super(BackgroundConfigs.entertainer) {
     apply(stats, tools, langs, context);
   }
-
-  // Применяет бонусы предыстории
-  @override
-  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
-    // Добавляем бонус к навыку Убеждения
-    stats[StatNames.Persuasion]?.hasprofbounus +=1;
-    // Добавляем бонус к навыку Проницательности
-    stats[StatNames.Insight]?.hasprofbounus +=1;
-    // Добавляем инструменты ремесленников
-    tools.add(ToolSkill("инструменты ремесленников",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-    // Позволяем выбрать дополнительный язык
-    Langs ch = Langs(Langs('').pick(context) ?? '',{MetaFlags.IS_PICKED,MetaFlags.IS_PICKED_ON_BG});
-    langs.add(ch);
-  }
-  
-  // Удаляет бонусы предыстории
-  @override
-  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
-    // Убираем бонус от навыка Убеждения
-    stats[StatNames.Persuasion]?.hasprofbounus -=1;
-    // Убираем бонус от навыка Проницательности
-    stats[StatNames.Insight]?.hasprofbounus -=1;
-    // Удаляем инструменты предыстории
-    ToolSkill.deletebyMeta(tools,MetaFlags.IS_PICKED_ON_BG);
-    // Удаляем языки предыстории
-    Langs.deletebyMeta(langs, MetaFlags.IS_PICKED_ON_BG);
-  }
-
-  @override
-  String BGName="Гильдейский Ремесленник";
 }
 
-// Класс предыстории "Моряк"
-final class Sailor implements Background{
-  // Конструктор
-  Sailor(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+final class Urchin extends BaseBackground {
+  Urchin(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+    BuildContext context,
+  ) : super(BackgroundConfigs.urchin) {
     apply(stats, tools, langs, context);
   }
-
-  // Применяет бонусы предыстории
-  @override
-  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
-    // Добавляем бонус к навыку Атлетики
-    stats[StatNames.Athletics]?.hasprofbounus +=1;
-    // Добавляем бонус к навыку Внимательности
-    stats[StatNames.Perception]?.hasprofbounus +=1;
-    // Добавляем инструменты навигатора
-    tools.add(ToolSkill('инструменты навигатора',{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-    // Добавляем умение управлять водным транспортом
-    tools.add(ToolSkill('водный транспорт',{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-  }
-
-  // Удаляет бонусы предыстории
-  @override
-  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
-    // Убираем бонус от навыка Атлетики
-    stats[StatNames.Athletics]?.hasprofbounus -=1;
-    // Убираем бонус от навыка Внимательности
-    stats[StatNames.Perception]?.hasprofbounus -=1;
-    // Удаляем инструменты предыстории
-    ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
-  }
-
-  @override
-  String BGName = "Моряк";
 }
 
-// Класс предыстории "Мудрец"
-final class Sage implements Background{
-  // Конструктор
-  Sage(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+final class Noble extends BaseBackground {
+  Noble(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+    BuildContext context,
+  ) : super(BackgroundConfigs.noble) {
     apply(stats, tools, langs, context);
   }
-
-  // Применяет бонусы предыстории
-  @override
-  Future<void> apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) async {
-    // Добавляем бонус к навыку Истории
-    stats[StatNames.History]?.hasprofbounus +=1;
-    // Добавляем бонус к навыку Магии
-    stats[StatNames.Arcana]?.hasprofbounus +=1;
-    
-    // Позволяем выбрать несколько дополнительных языков
-    Set<String>? r = await Langs('').pickmany(context);
-    // Добавляем выбранные языки в список персонажа
-    for (String s in r!){
-      langs.add(Langs(s,{MetaFlags.IS_PICKED_ON_BG}));
-    }
-  }
-
-  // Удаляет бонусы предыстории
-  @override
-  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
-    // Убираем бонус от навыка Истории
-    stats[StatNames.History]?.hasprofbounus -=1;
-    // Убираем бонус от навыка Магии
-    stats[StatNames.Arcana]?.hasprofbounus -=1;
-    // Удаляем языки предыстории
-    Langs.deletebyMeta(langs, MetaFlags.IS_PICKED_ON_BG);
-  }
-
-  @override
-  String BGName="Мудрец";
 }
 
-// Класс предыстории "Народный герой"
-final class Folk_Hero  implements Background{
-  // Конструктор
-  Folk_Hero(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+final class GuildArtisan extends BaseBackground {
+  GuildArtisan(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+    BuildContext context,
+  ) : super(BackgroundConfigs.guildArtisan) {
     apply(stats, tools, langs, context);
   }
-
-  // Применяет бонусы предыстории
-  @override
-  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
-    // Добавляем бонус к навыку Выживания
-    stats[StatNames.Survival]?.hasprofbounus +=1;
-    // Добавляем бонус к навыку Ухода за животными
-    stats[StatNames.Animal_Handling]?.hasprofbounus +=1;
-    // Добавляем инструменты ремесленников
-    tools.add(ToolSkill("инструменты ремесленников",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-    // Добавляем умение управлять наземным транспортом
-    tools.add(ToolSkill("наземный транспорт",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-  }
-
-  // Удаляет бонусы предыстории
-  @override
-  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
-    // Убираем бонус от навыка Выживания
-    stats[StatNames.Survival]?.hasprofbounus -=1;
-    // Убираем бонус от навыка Ухода за животными
-    stats[StatNames.Animal_Handling]?.hasprofbounus -=1;
-    // Удаляем инструменты предыстории
-    ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
-  }
-
-  @override
-  String BGName="Народный герой";
 }
 
-// Класс предыстории "Отшельник"
-final class Hermit implements Background {
-  // Конструктор
-  Hermit(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+final class Sailor extends BaseBackground {
+  Sailor(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+    BuildContext context,
+  ) : super(BackgroundConfigs.sailor) {
     apply(stats, tools, langs, context);
   }
-
-  // Применяет бонусы предыстории
-  @override
-  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
-    // Добавляем бонус к навыку Медицины
-    stats[StatNames.Medicine]?.hasprofbounus+=1;
-    // Добавляем бонус к навыку Религии
-    stats[StatNames.Religion]?.hasprofbounus+=1;
-    // Добавляем набор травника
-    tools.add(ToolSkill("Набор травника",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-    // Позволяем выбрать дополнительный язык
-    Langs ch = Langs(Langs('').pick(context) ?? '',{MetaFlags.IS_PICKED,MetaFlags.IS_PICKED_ON_BG});
-    langs.add(ch);
-  }
-
-  // Удаляет бонусы предыстории
-  @override
-  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
-    // Убираем бонус от навыка Медицины
-    stats[StatNames.Medicine]?.hasprofbounus-=1;
-    // Убираем бонус от навыка Религии
-    stats[StatNames.Religion]?.hasprofbounus-=1;
-    // Удаляем инструменты предыстории
-    ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
-    // Удаляем языки предыстории
-    Langs.deletebyMeta(langs, MetaFlags.IS_PICKED_ON_BG);
-  }
-
-  @override
-  String BGName="Отшельник";
 }
 
-// Класс предыстории "Пират"
-final class Pirate implements Background{
-  // Конструктор
-  Pirate(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+final class Sage extends BaseBackground {
+  Sage(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+    BuildContext context,
+  ) : super(BackgroundConfigs.sage) {
     apply(stats, tools, langs, context);
   }
-
-  // Применяет бонусы предыстории
-  @override
-  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
-    // Добавляем бонус к навыку Атлетики
-    stats[StatNames.Athletics]?.hasprofbounus+=1;
-    // Добавляем бонус к навыку Внимательности
-    stats[StatNames.Perception]?.hasprofbounus+=1;
-    // Добавляем инструменты навигатора
-    tools.add(ToolSkill("инструменты навигатора",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-    // Добавляем умение управлять водным транспортом
-    tools.add(ToolSkill("водный транспорт",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-  }
-
-  // Удаляет бонусы предыстории
-  @override
-  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
-    // Убираем бонус от навыка Атлетики
-    stats[StatNames.Athletics]?.hasprofbounus-=1;
-    // Убираем бонус от навыка Внимательности
-    stats[StatNames.Perception]?.hasprofbounus-=1;
-    // Удаляем инструменты предыстории
-    ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
-  }
-
-  @override
-  String BGName="Пират";
 }
 
-// Класс предыстории "Преступник"
-final class Criminal implements Background{
-  // Конструктор
-  Criminal(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+final class FolkHero extends BaseBackground {
+  FolkHero(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+    BuildContext context,
+  ) : super(BackgroundConfigs.folkHero) {
     apply(stats, tools, langs, context);
   }
-
-  // Применяет бонусы предыстории
-  @override
-  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
-    // Добавляем бонус к навыку Скрытности
-    stats[StatNames.Stealth]?.hasprofbounus+=1;
-    // Добавляем бонус к навыку Обмана
-    stats[StatNames.Deception]?.hasprofbounus+=1;
-    // Добавляем воровские инструменты
-    tools.add(ToolSkill("воровские инструменты",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-    // Добавляем игровой набор
-    tools.add(ToolSkill("игровой набор",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-  }
-
-  // Удаляет бонусы предыстории
-  @override
-  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
-    // Убираем бонус от навыка Скрытности
-    stats[StatNames.Stealth]?.hasprofbounus-=1;
-    // Убираем бонус от навыка Обмана
-    stats[StatNames.Deception]?.hasprofbounus-=1;
-    // Удаляем инструменты предыстории
-    ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
-  }
-
-  @override
-  String BGName="Преступник";
 }
 
-// Класс предыстории "Прислужник"
-final class Acolyte implements Background{
-  // Конструктор
-  Acolyte(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+final class Hermit extends BaseBackground {
+  Hermit(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+    BuildContext context,
+  ) : super(BackgroundConfigs.hermit) {
     apply(stats, tools, langs, context);
   }
-
-  // Применяет бонусы предыстории
-  @override
-  Future<void> apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) async {
-    // Добавляем бонус к навыку Проницательности
-    stats[StatNames.Insight]?.hasprofbounus +=1;
-    // Добавляем бонус к навыку Религии
-    stats[StatNames.Religion]?.hasprofbounus +=1;
-    // Позволяем выбрать несколько дополнительных языков
-    Set<String>? r = await Langs('').pickmany(context);
-    // Добавляем выбранные языки
-    for (String s in r!){
-      langs.add(Langs(s,{MetaFlags.IS_PICKED_ON_BG}));
-    }
-  }
-
-  // Удаляет бонусы предыстории
-  @override
-  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
-    // Убираем бонус от навыка Проницательности
-    stats[StatNames.Insight]?.hasprofbounus -=1;
-    // Убираем бонус от навыка Религии
-    stats[StatNames.Religion]?.hasprofbounus -=1;
-    // Удаляем языки предыстории
-    Langs.deletebyMeta(langs, MetaFlags.IS_PICKED_ON_BG);
-  }
-
-  @override
-  String BGName="Прислужник";
 }
 
-// Класс предыстории "Солдат"
-final class Soldier implements Background{
-  // Конструктор
-  Soldier(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+final class Pirate extends BaseBackground {
+  Pirate(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+    BuildContext context,
+  ) : super(BackgroundConfigs.pirate) {
     apply(stats, tools, langs, context);
   }
-
-  // Применяет бонусы предыстории
-  @override
-  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
-    // Добавляем бонус к навыку Атлетики
-    stats[StatNames.Athletics]?.hasprofbounus +=1;
-    // Добавляем бонус к навыку Запугивания
-    stats[StatNames.Intimidation]?.hasprofbounus +=1;
-    // Добавляем умение управлять наземным транспортом
-    tools.add(ToolSkill("наземный транспорт",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-    // Добавляем игровой набор
-    tools.add(ToolSkill("игровой набор",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-  }
-
-  // Удаляет бонусы предыстории
-  @override
-  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
-    // Убираем бонус от навыка Атлетики
-    stats[StatNames.Athletics]?.hasprofbounus -=1;
-    // Убираем бонус от навыка Запугивания
-    stats[StatNames.Intimidation]?.hasprofbounus -=1;
-    // Удаляем инструменты предыстории
-    ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
-  }
-
-  @override
-  String BGName="Солдат";
 }
 
-// Класс предыстории "Чужеземец"
-final class Outlander implements Background{
-  // Конструктор
-  Outlander(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+final class Criminal extends BaseBackground {
+  Criminal(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+    BuildContext context,
+  ) : super(BackgroundConfigs.criminal) {
     apply(stats, tools, langs, context);
   }
-
-  // Применяет бонусы предыстории
-  @override
-  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
-    // Добавляем бонус к навыку Атлетики
-    stats[StatNames.Athletics]?.hasprofbounus +=1;
-    // Добавляем бонус к навыку Выживания
-    stats[StatNames.Survival]?.hasprofbounus +=1;
-    // Добавляем музыкальные инструменты
-    tools.add(ToolSkill("музыкальные инструменты",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-    // Позволяем выбрать дополнительный язык
-    Langs ch = Langs(Langs('').pick(context) ?? '',{MetaFlags.IS_PICKED,MetaFlags.IS_PICKED_ON_BG});
-    langs.add(ch);
-  }
-  
-  // Удаляет бонусы предыстории
-  @override
-  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
-    // Убираем бонус от навыка Атлетики
-    stats[StatNames.Athletics]?.hasprofbounus -=1;
-    // Убираем бонус от навыка Выживания
-    stats[StatNames.Survival]?.hasprofbounus -=1;
-    // Удаляем языки предыстории
-    Langs.deletebyMeta(langs, MetaFlags.IS_PICKED_ON_BG);
-  }
-
-  @override
-  String BGName="Чужеземец";
 }
 
-// Класс предыстории "Шарлатан"
-final class Charlatan implements Background{
-  // Конструктор
-  Charlatan(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context){
+final class Acolyte extends BaseBackground {
+  Acolyte(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+    BuildContext context,
+  ) : super(BackgroundConfigs.acolyte) {
     apply(stats, tools, langs, context);
   }
+}
 
-  // Применяет бонусы предыстории
-  @override
-  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context) {
-    // Добавляем бонус к навыку Ловкости рук
-    stats[StatNames.Sleight_of_Hand]?.hasprofbounus +=1;
-    // Добавляем бонус к навыку Обмана
-    stats[StatNames.Deception]?.hasprofbounus +=1;
-    // Добавляем набор для грима
-    tools.add(ToolSkill("набор для грима",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
-    // Добавляем набор для фальсификации
-    tools.add(ToolSkill("набор для фальсификации",{MetaFlags.IS_PICKED, MetaFlags.IS_PICKED_ON_BG}));
+final class Soldier extends BaseBackground {
+  Soldier(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+    BuildContext context,
+  ) : super(BackgroundConfigs.soldier) {
+    apply(stats, tools, langs, context);
   }
-  
-  // Удаляет бонусы предыстории
-  @override
-  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs) {
-    // Убираем бонус от навыка Ловкости рук
-    stats[StatNames.Sleight_of_Hand]?.hasprofbounus -=1;
-    // Убираем бонус от навыка Обмана
-    stats[StatNames.Deception]?.hasprofbounus -=1;
-    // Удаляем инструменты предыстории
-    ToolSkill.deletebyMeta(tools, MetaFlags.IS_PICKED_ON_BG);
-  }
+}
 
-  @override
-  String BGName="Шарлатан";
+final class Outlander extends BaseBackground {
+  Outlander(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+    BuildContext context,
+  ) : super(BackgroundConfigs.outlander) {
+    apply(stats, tools, langs, context);
+  }
+}
+
+final class Charlatan extends BaseBackground {
+  Charlatan(
+    Map<StatNames, ProfBonusStat> stats,
+    Set<ToolSkill> tools,
+    Set<Langs> langs,
+    BuildContext context,
+  ) : super(BackgroundConfigs.charlatan) {
+    apply(stats, tools, langs, context);
+  }
 }

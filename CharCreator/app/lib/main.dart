@@ -5,6 +5,8 @@ import 'character.dart';
 import 'sys/db.dart';
 //import 'package:hive/hive.dart';
 import 'sys/config.dart';
+import 'items/armor.dart';
+import 'items/weapon.dart';
 import 'etc/pinterest.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -533,135 +535,234 @@ Widget _buildStyledInventoryTab() {
         ],
       ),
     ),
-    padding: const EdgeInsets.all(24),
     child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Иконка инвентаря
-        Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
+        // Заголовок и информация о деньгах
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Card(
             color: const Color(0xFF2d1b00),
-            borderRadius: BorderRadius.circular(60),
-            border: Border.all(color: Colors.amber, width: 3),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.amber.withValues(alpha: 0.3),
-                blurRadius: 15,
-                spreadRadius: 2,
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: Colors.amber, width: 2),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  // Заголовок
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.backpack, color: Colors.amber, size: 24),
+                      SizedBox(width: 8),
+                      Text(
+                        '🎒 Инвентарь',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.amber,
+                          fontFamily: 'Fantasy',
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Деньги
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.amber.withValues(alpha: 0.5)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildCurrencyItem('ЗМ', c.inventory.money.gold, Colors.amber),
+                        _buildCurrencyItem('СМ', c.inventory.money.silver, Colors.grey),
+                        _buildCurrencyItem('ММ', c.inventory.money.copper, Colors.orange),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Прогресс бар загрузки
+                  Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Загрузка инвентаря',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.amber,
+                            ),
+                          ),
+                          Text(
+                            '${c.inventory.totalWeight.toStringAsFixed(1)} / ${c.inventory.maxWeight} фунтов',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[300],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      LinearProgressIndicator(
+                        value: c.inventory.weightPercentage,
+                        backgroundColor: Colors.grey[800],
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          c.inventory.isOverloaded ? Colors.red : Colors.amber,
+                        ),
+                        minHeight: 12,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        c.inventory.isOverloaded 
+                            ? 'ПЕРЕГРУЗКА! Скорость уменьшена'
+                            : '${(c.inventory.weightPercentage * 100).toStringAsFixed(0)}% загружено',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: c.inventory.isOverloaded ? Colors.red : Colors.grey[400],
+                          fontWeight: c.inventory.isOverloaded ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: const Icon(
-            Icons.backpack,
-            color: Colors.amber,
-            size: 60,
+            ),
           ),
         ),
-        
-        const SizedBox(height: 32),
-        
-        // Заголовок
-        const Text(
-          '🎒 Инвентарь',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.amber,
-            fontFamily: 'Fantasy',
+
+        // Экипированные предметы
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Card(
+            color: const Color(0xFF2d1b00),
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: Colors.green, width: 2),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.green, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'Экипировано',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      if (c.inventory.equippedWeapon != null)
+                        _buildEquippedItem(
+                          'Оружие',
+                          _getWeaponName(c.inventory.equippedWeapon!.type),
+                          Colors.blue,
+                        ),
+                      if (c.inventory.equippedArmor != null)
+                        _buildEquippedItem(
+                          'Броня',
+                          _getArmorName(c.inventory.equippedArmor!.type),
+                          Colors.green,
+                        ),
+                      if (c.inventory.equippedShield != null)
+                        _buildEquippedItem(
+                          'Щит',
+                          _getArmorName(c.inventory.equippedShield!.type),
+                          Colors.orange,
+                        ),
+                      if (c.inventory.equippedWeapon == null && 
+                          c.inventory.equippedArmor == null && 
+                          c.inventory.equippedShield == null)
+                        const Text(
+                          'Нет экипированных предметов',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
-        // Описание
-        const Text(
-          'Система инвентаря находится в разработке',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey,
-            fontStyle: FontStyle.italic,
-          ),
-        ),
-        
-        const SizedBox(height: 24),
-        
-        // Карточка с информацией
-        Card(
-          color: const Color(0xFF2d1b00),
-          elevation: 8,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: Colors.amber, width: 2),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
+
+        // Список предметов
+        Expanded(
+          child: DefaultTabController(
+            length: 3,
             child: Column(
               children: [
-                const Icon(
-                  Icons.construction,
-                  color: Colors.amber,
-                  size: 40,
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'В разработке',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.amber,
+                // Вкладки категорий
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2d1b00),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.amber, width: 1),
+                  ),
+                  child: TabBar(
+                    labelColor: Colors.black,
+                    unselectedLabelColor: Colors.amber,
+                    indicator: BoxDecoration(
+                      color: Colors.amber,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    tabs: const [
+                      Tab(text: 'Оружие'),
+                      Tab(text: 'Броня'),
+                      Tab(text: 'Прочее'),
+                    ],
                   ),
                 ),
+                
                 const SizedBox(height: 8),
-                Text(
-                  'Скоро здесь появится:\n• Управление предметами\n• Экипировка\n• Вес и ёмкость\n• Быстрый доступ',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[400],
-                    height: 1.4,
+                
+                // Содержимое вкладок
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      // Вкладка оружия
+                      _buildWeaponsTab(),
+                      
+                      // Вкладка брони
+                      _buildArmorTab(),
+                      
+                      // Вкладка прочих предметов
+                      _buildMiscItemsTab(),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-        ),
-        
-        const SizedBox(height: 20),
-        
-        // Прогресс бар
-        Container(
-          width: 200,
-          height: 6,
-          decoration: BoxDecoration(
-            color: Colors.grey[800],
-            borderRadius: BorderRadius.circular(3),
-          ),
-          child: Stack(
-            children: [
-              Container(
-                width: 120,
-                height: 6,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Colors.amber, Colors.orange],
-                  ),
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              ),
-            ],
-          ),
-        ),
-        
-        const SizedBox(height: 8),
-        
-        Text(
-          '45% завершено',
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[500],
           ),
         ),
       ],
@@ -669,6 +770,438 @@ Widget _buildStyledInventoryTab() {
   );
 }
 
+// Вкладка оружия
+Widget _buildWeaponsTab() {
+  return ListView.builder(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    itemCount: c.inventory.weapons.length,
+    itemBuilder: (context, index) {
+      final weapon = c.inventory.weapons.elementAt(index);
+      final isEquipped = c.inventory.equippedWeapon == weapon;
+      
+      return _buildInventoryItem(
+        name: _getWeaponName(weapon.type),
+        type: 'Оружие',
+        weight: _getWeaponWeight(weapon.type),
+        isEquipped: isEquipped,
+        onEquip: () => setState(() {
+          c.inventory.equipWeapon(weapon);
+        }),
+        onUnequip: () => setState(() {
+          c.inventory.unequipWeapon();
+        }),
+        color: Colors.blue,
+      );
+    },
+  );
+}
+
+// Вкладка брони
+Widget _buildArmorTab() {
+  return ListView.builder(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    itemCount: c.inventory.armors.length,
+    itemBuilder: (context, index) {
+      final armor = c.inventory.armors.elementAt(index);
+      final isEquipped = c.inventory.equippedArmor == armor || 
+                        c.inventory.equippedShield == armor;
+      final isShield = armor.type == ArmorType.Shield;
+      
+      return _buildInventoryItem(
+        name: _getArmorName(armor.type),
+        type: isShield ? 'Щит' : 'Броня',
+        weight: _getArmorWeight(armor.type),
+        isEquipped: isEquipped,
+        onEquip: () => setState(() {
+          if (isShield) {
+            c.inventory.equipArmor(armor); // Для щита
+          } else {
+            c.inventory.equipArmor(armor); // Для брони
+          }
+        }),
+        onUnequip: () => setState(() {
+          if (isShield) {
+            c.inventory.unequipShield();
+          } else {
+            c.inventory.unequipArmor();
+          }
+        }),
+        color: isShield ? Colors.orange : Colors.green,
+      );
+    },
+  );
+}
+
+// Вкладка прочих предметов
+Widget _buildMiscItemsTab() {
+  return ListView.builder(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    itemCount: c.inventory.miscItems.length,
+    itemBuilder: (context, index) {
+      final item = c.inventory.miscItems.elementAt(index);
+      
+      return _buildMiscInventoryItem(
+        name: item.name,
+        quantity: item.qty,
+        weight: item.weight,
+        color: Colors.purple,
+      );
+    },
+  );
+}
+
+// Виджет для отображения денег
+Widget _buildCurrencyItem(String name, int amount, Color color) {
+  return Column(
+    children: [
+      Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color, width: 2),
+        ),
+        child: Center(
+          child: Text(
+            name,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: color,
+              fontSize: 12,
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: 4),
+      Text(
+        amount.toString(),
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: color,
+          fontSize: 16,
+        ),
+      ),
+    ],
+  );
+}
+
+// Виджет для экипированных предметов
+Widget _buildEquippedItem(String type, String name, Color color) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.1),
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: color, width: 1),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          type,
+          style: TextStyle(
+            fontSize: 12,
+            color: color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          name,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// Виджет для предметов инвентаря
+Widget _buildInventoryItem({
+  required String name,
+  required String type,
+  required double weight,
+  required bool isEquipped,
+  required VoidCallback onEquip,
+  required VoidCallback onUnequip,
+  required Color color,
+}) {
+  return Card(
+    color: const Color(0xFF2d1b00),
+    margin: const EdgeInsets.only(bottom: 8),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(8),
+      side: BorderSide(
+        color: isEquipped ? Colors.green : color,
+        width: 2,
+      ),
+    ),
+    child: ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color, width: 2),
+        ),
+        child: Icon(
+          _getItemIcon(type),
+          color: color,
+          size: 20,
+        ),
+      ),
+      title: Text(
+        name,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: isEquipped ? Colors.green : Colors.white,
+        ),
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            type,
+            style: TextStyle(
+              fontSize: 12,
+              color: color,
+            ),
+          ),
+          Text(
+            'Вес: ${weight.toStringAsFixed(1)} фунтов',
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.grey,
+            ),
+          ),
+        ],
+      ),
+      trailing: isEquipped
+          ? OutlinedButton.icon(
+              onPressed: onUnequip,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red,
+                side: const BorderSide(color: Colors.red),
+              ),
+              icon: const Icon(Icons.remove_circle, size: 16),
+              label: const Text('Снять'),
+            )
+          : ElevatedButton.icon(
+              onPressed: onEquip,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+                foregroundColor: Colors.white,
+              ),
+              icon: const Icon(Icons.add_circle, size: 16),
+              label: const Text('Надеть'),
+            ),
+    ),
+  );
+}
+
+// Виджет для прочих предметов
+Widget _buildMiscInventoryItem({
+  required String name,
+  required int quantity,
+  required double weight,
+  required Color color,
+}) {
+  return Card(
+    color: const Color(0xFF2d1b00),
+    margin: const EdgeInsets.only(bottom: 8),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(8),
+      side: BorderSide(color: color, width: 1),
+    ),
+    child: ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color, width: 2),
+        ),
+        child: const Icon(
+          Icons.inventory_2,
+          color: Colors.purple,
+          size: 20,
+        ),
+      ),
+      title: Text(
+        name,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Количество: $quantity',
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.grey,
+            ),
+          ),
+          Text(
+            'Вес: ${(weight * quantity).toStringAsFixed(1)} фунтов',
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.grey,
+            ),
+          ),
+        ],
+      ),
+      trailing: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: color),
+        ),
+        child: Text(
+          'x$quantity',
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+// Вспомогательные методы для получения названий и весов
+String _getWeaponName(WeaponType? type) {
+  switch (type) {
+    case WeaponType.Dagger:
+      return "Кинжал";
+    case WeaponType.ShortSword:
+      return "Короткий меч";
+    case WeaponType.LongSword:
+      return "Длинный меч";
+    case WeaponType.Greatsword:
+      return "Двуручный меч";
+    case WeaponType.ShortBow:
+      return "Короткий лук";
+    case WeaponType.LongBow:
+      return "Длинный лук";
+    case WeaponType.LightCrossBow:
+      return "Арбалет легкий";
+    case WeaponType.HeavyCrossBow:
+      return "Арбалет тяжелый";
+    case WeaponType.CombatStaff:
+      return "Боевой посох";
+    case WeaponType.Spear:
+      return "Копье";
+    default:
+      return "Оружие";
+  }
+}
+
+String _getArmorName(ArmorType? type) {
+  switch (type) {
+    case ArmorType.LeatherArmor:
+      return "Кожаный доспех";
+    case ArmorType.ChainShirt:
+      return "Кольчуга";
+    case ArmorType.ScaleMailArmor:
+      return "Чешуйчатый доспех";
+    case ArmorType.Breastplate:
+      return "Кираса";
+    case ArmorType.HalfPlateArmor:
+      return "Полулаты";
+    case ArmorType.RingMailArmor:
+      return "Кольчатый доспех";
+    case ArmorType.ChainMail:
+      return "Кольчужный доспех";
+    case ArmorType.SplintArmor:
+      return "Пластинчатый доспех";
+    case ArmorType.PlateArmor:
+      return "Латный доспех";
+    case ArmorType.Shield:
+      return "Щит";
+    default:
+      return "Броня";
+  }
+}
+
+double _getWeaponWeight(WeaponType? type) {
+  switch (type) {
+    case WeaponType.Dagger:
+      return 1.0;
+    case WeaponType.ShortSword:
+      return 2.0;
+    case WeaponType.LongSword:
+      return 3.0;
+    case WeaponType.Greatsword:
+      return 6.0;
+    case WeaponType.ShortBow:
+      return 2.0;
+    case WeaponType.LongBow:
+      return 2.0;
+    case WeaponType.LightCrossBow:
+      return 5.0;
+    case WeaponType.HeavyCrossBow:
+      return 18.0;
+    case WeaponType.CombatStaff:
+      return 4.0;
+    case WeaponType.Spear:
+      return 3.0;
+    default:
+      return 2.0;
+  }
+}
+
+double _getArmorWeight(ArmorType? type) {
+  switch (type) {
+    case ArmorType.LeatherArmor:
+      return 10.0;
+    case ArmorType.ChainShirt:
+      return 20.0;
+    case ArmorType.ScaleMailArmor:
+      return 45.0;
+    case ArmorType.Breastplate:
+      return 20.0;
+    case ArmorType.HalfPlateArmor:
+      return 40.0;
+    case ArmorType.RingMailArmor:
+      return 40.0;
+    case ArmorType.ChainMail:
+      return 55.0;
+    case ArmorType.SplintArmor:
+      return 60.0;
+    case ArmorType.PlateArmor:
+      return 65.0;
+    case ArmorType.Shield:
+      return 6.0;
+    default:
+      return 10.0;
+  }
+}
+
+IconData _getItemIcon(String type) {
+  switch (type) {
+    case 'Оружие':
+      return Icons.psychology;
+    case 'Броня':
+      return Icons.security;
+    case 'Щит':
+      return Icons.shield;
+    default:
+      return Icons.backpack;
+  }
+}
 
 Widget _buildStyledAboutTab() {
   return Container(
@@ -889,8 +1422,6 @@ Widget _buildCharacterImage(String imageUrl) {
     }
   }
 }
-
-
   Widget _buildStyledHomeTab(Character c) {
     return Container(
       decoration: const BoxDecoration(

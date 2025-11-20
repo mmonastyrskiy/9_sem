@@ -4,6 +4,7 @@ import 'background.dart';
 import 'stat.dart';
 import 'tool.dart';
 import 'langs.dart';
+import 'inventory.dart';
 import 'package:flutter/material.dart';
 import 'items/item.dart';
 import 'money.dart';
@@ -148,7 +149,7 @@ class Character {
   Money wallet = Money();
   
   @HiveField(41)
-  List<SellableItem> inventory = [];
+  InventorySystem inventory =InventorySystem();
   
   // Физические характеристики
   @HiveField(42)
