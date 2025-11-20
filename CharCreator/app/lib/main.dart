@@ -1,14 +1,14 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:flutter/material.dart';
-import 'items/armor.dart';
-import 'items/weapon.dart';
 import 'character.dart';
 import 'sys/db.dart';
 //import 'package:hive/hive.dart';
 import 'sys/config.dart';
 import 'etc/pinterest.dart';
 import 'package:provider/provider.dart';
+import 'items/armor.dart';
+import 'items/weapon.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,13 +23,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData.light().copyWith(
+      theme: ThemeData.light(useMaterial3: true).copyWith(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
       ),
-      darkTheme: ThemeData.dark().copyWith(
+      darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
-        useMaterial3: true,
       ),
       themeMode: ThemeMode.system,
       home: CharacterSheetScreen(),
@@ -128,13 +126,11 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> with SingleT
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return MaterialApp(
-            theme: ThemeData.light().copyWith(
+            theme: ThemeData.light(useMaterial3: true).copyWith(
               colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-              useMaterial3: true,
             ),
-            darkTheme: ThemeData.dark().copyWith(
+            darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
               colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
-              useMaterial3: true,
             ),
             themeMode: themeProvider.themeMode,
             home: Scaffold(
@@ -604,7 +600,7 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> with SingleT
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
                 side: BorderSide(color: accentColor, width: 2),
-              ),
+            ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -2177,7 +2173,7 @@ class EditCharacterDialogState extends State<EditCharacterDialog> {
                     const SizedBox(height: 16),
                     
                     DropdownButtonFormField<String>(
-                      value: selectedRace,
+                      initialValue: selectedRace,
                       decoration: InputDecoration(
                         labelText: 'Раса персонажа',
                         labelStyle: TextStyle(color: accentColor),
@@ -2226,7 +2222,7 @@ class EditCharacterDialogState extends State<EditCharacterDialog> {
                     const SizedBox(height: 16),
                     
                     DropdownButtonFormField<String>(
-                      value: selectedClass,
+                      initialValue: selectedClass,
                       decoration: InputDecoration(
                         labelText: 'Класс персонажа',
                         labelStyle: TextStyle(color: accentColor),
@@ -2275,7 +2271,7 @@ class EditCharacterDialogState extends State<EditCharacterDialog> {
                     const SizedBox(height: 16),
                     
                     DropdownButtonFormField<String>(
-                      value: selectedBackground,
+                      initialValue: selectedBackground,
                       decoration: InputDecoration(
                         labelText: 'Предыстория',
                         labelStyle: TextStyle(color: accentColor),

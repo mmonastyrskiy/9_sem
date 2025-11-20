@@ -34,7 +34,6 @@ class Pinterest {
       if (imgElement != null) {
         final imageUrl = imgElement.attributes['src'];
         if (imageUrl != null && imageUrl.isNotEmpty) {
-          print('Found image URL: $imageUrl');
           return imageUrl;
         }
       }
@@ -44,14 +43,11 @@ class Pinterest {
     final allImages = document.querySelectorAll('img');
     for (final img in allImages) {
       final src = img.attributes['src'] ?? '';
-      print(src);
       if (src.contains('i.pinimg.com') && src.isNotEmpty) {
-        print('Found Pinterest image URL: $src');
         return src;
       }
     }
 
-    print('No suitable image found');
     return "";
   }
 
@@ -60,7 +56,6 @@ class Pinterest {
       final htmlContent = await fetchHtml(url); // Added 'await' here
       return parseWebsite(htmlContent);
     } catch (e) {
-      print('Error parsing Pinterest URL: $e');
       rethrow;
     }
   }

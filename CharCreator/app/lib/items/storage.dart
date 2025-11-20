@@ -8,4 +8,5 @@ bool add(SellableItem item) ;
 bool del(SellableItem item) ;
 
 }
+// ignore: non_constant_identifier_names
 double MAX_SIZE = 10000;
