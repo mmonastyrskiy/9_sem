@@ -1,4 +1,4 @@
-// ignore_for_file: non_constant_identifier_names, collection_methods_unrelated_type
+// ignore_for_file: non_constant_identifier_names, collection_methods_unrelated_type, constant_identifier_names
 
 // Импорт необходимых модулей и библиотек
 import 'meta.dart';
@@ -9,9 +9,7 @@ import 'items/item.dart';
 import 'items/weapon.dart';
 import 'items/armor.dart';
 import 'tool.dart';
-import 'package:flutter/material.dart';
-
-// ignore_for_file: constant_identifier_names
+import 'ui/modal_service.dart';
 
 // Перечисление названий классов персонажей на английском
 enum CharClassNames {
@@ -40,8 +38,7 @@ extension DiceTypeExtension on DiceType {
       case DiceType.D10: return 10;
       case DiceType.D12: return 12;
       case DiceType.D20: return 20;
-      default:
-      return 100;
+      default: return 100;
     }
   }
 }
@@ -97,6 +94,17 @@ class ClassProficiencies {
   };
 }
 
+// Результат применения класса персонажа
+class ClassApplicationResult {
+  final Set<String> selectedSkills;
+  final String? selectedTool;
+
+  ClassApplicationResult({
+    required this.selectedSkills,
+    this.selectedTool,
+  });
+}
+
 // Базовый абстрактный класс с общими методами
 abstract base class BaseCharClass implements CharClass {
   final DiceType hitDice;
@@ -122,17 +130,17 @@ abstract base class BaseCharClass implements CharClass {
   });
 
   @override
-  Future<void> apply(
+  Future<ClassApplicationResult> apply(
     Health charHeath,
     Map<BasicStatNames, BasicStat> stats,
     Map<StatNames, Skill> skills,
     Set<AbstractArmor> canUseArmor,
     Set<AbstractWeapon> canUseWeapon,
     Set<ToolSkill> tools,
-    BuildContext context,
+    ModalService modalService,
   ) async {
     // Устанавливаем кость хитов
-    charHeath.HitDice = hitDice;
+    charHeath.hitDice = hitDice;
     
     // Рассчитываем здоровье
     final CONmodifier = stats[BasicStatNames.CON]!.mod;
@@ -157,7 +165,7 @@ abstract base class BaseCharClass implements CharClass {
 
     // Добавляем инструменты
     for (final tool in toolProficiencies) {
-      tools.add(ToolSkill(tool, {
+      tools.add(ToolSkill(tool,modalService, {
         MetaFlags.IS_PICKED,
         MetaFlags.IS_PICKED_ON_CLASS
       }));
@@ -169,20 +177,24 @@ abstract base class BaseCharClass implements CharClass {
     }
 
     // Выбор навыков
-    final choices = await Skill('').pickmany(
-      context, 
-      null, 
-      skillChoices,
-      availableSkills,
+    final skillNames = availableSkills.map((skill) => skill.displayName).toSet();
+    final choices = await modalService.showMultiSelectListPicker(
+      items: skillNames,
+      initialSelections: null,
     );
     
     for (final choice in choices) {
-      final skillToAdd = Skill.string2skill()[choice]!;
-      skills[skillToAdd]!
+      final skillToAdd = Skills.values.firstWhere(
+        (skill) => skill.displayName == choice,
+        orElse: () => Skills.Acrobatics
+      );
+      skills[StatNames.fromSkill(skillToAdd)]!
         ..addMeta(MetaFlags.IS_PICKED_ON_CLASS)
         ..addMeta(MetaFlags.IS_PICKED)
         ..hasprofbounus += 1;
     }
+
+    return ClassApplicationResult(selectedSkills: choices);
   }
 
   @override
@@ -194,7 +206,7 @@ abstract base class BaseCharClass implements CharClass {
     Set<AbstractWeapon> canUseWeapon,
     Set<ToolSkill> tools,
   ) {
-    charHeath.HitDice = null;
+    charHeath.hitDice = null;
     charHeath.max_health = 0;
     charHeath.current_health = 0;
     
@@ -209,83 +221,62 @@ abstract base class BaseCharClass implements CharClass {
     Skill.deletebyMeta(skills, MetaFlags.IS_PICKED_ON_CLASS);
   }
 }
+
 // Абстрактный интерфейс для классов персонажей
 abstract interface class CharClass implements AffectsStatClass {
   String get classname;
   
-  factory CharClass(String chosen, Character c) {
-    final constructor = _classConstructors[chosen.toLowerCase()];
+  factory CharClass.create(String className, Character character) {
+    final constructor = _classConstructors[className.toLowerCase()];
     if (constructor != null) {
-      return constructor(
-        c.health, 
-        c.getbasicstats(), 
-        c.getskills(), 
-        c.CanUseArmor, 
-        c.canUseWeapon, 
-        c.getToolingskills(), 
-        c.UIContext
-      );
+      return constructor(character);
     }
-    return Undefined(
-      c.health, 
-      c.getbasicstats(), 
-      c.getskills(), 
-      c.CanUseArmor, 
-      c.canUseWeapon, 
-      c.getToolingskills(), 
-      c.UIContext
-    );
+    return Undefined(character);
   }
   
-  static final _classConstructors = <String, CharClass Function(
-    Health health,
-    Map<BasicStatNames, BasicStat> stats,
-    Map<StatNames, Skill> skills,
-    Set<AbstractArmor> canUseArmor,
-    Set<AbstractWeapon> canUseWeapon,
-    Set<ToolSkill> tools,
-    BuildContext context
-  )>{
-    'бард': (health, stats, skills, armor, weapons, tools, context) => 
-      Bard(health, stats, skills, armor, weapons, tools, context),
-    'варвар': (health, stats, skills, armor, weapons, tools, context) => 
-      Barbarian(health, stats, skills, armor, weapons, tools, context),
-    'воин': (health, stats, skills, armor, weapons, tools, context) => 
-      Fighter(health, stats, skills, armor, weapons, tools, context),
-    'волшебник': (health, stats, skills, armor, weapons, tools, context) => 
-      Wizzard(health, stats, skills, armor, weapons, tools, context),
-    'друид': (health, stats, skills, armor, weapons, tools, context) => 
-      Druid(health, stats, skills, armor, weapons, tools, context),
-    'жрец': (health, stats, skills, armor, weapons, tools, context) => 
-      Clerc(health, stats, skills, armor, weapons, tools, context),
-    'изобретатель': (health, stats, skills, armor, weapons, tools, context) => 
-      Artifier(health, stats, skills, armor, weapons, tools, context),
-    'колдун': (health, stats, skills, armor, weapons, tools, context) => 
-      Warlock(health, stats, skills, armor, weapons, tools, context),
-    'монах': (health, stats, skills, armor, weapons, tools, context) => 
-      Monk(health, stats, skills, armor, weapons, tools, context),
-    'паладин': (health, stats, skills, armor, weapons, tools, context) => 
-      Paladin(health, stats, skills, armor, weapons, tools, context),
-    'плут': (health, stats, skills, armor, weapons, tools, context) => 
-      Rouge(health, stats, skills, armor, weapons, tools, context),
-    'следопыт': (health, stats, skills, armor, weapons, tools, context) => 
-      Ranger(health, stats, skills, armor, weapons, tools, context),
-    'чародей': (health, stats, skills, armor, weapons, tools, context) => 
-      Sorcerer(health, stats, skills, armor, weapons, tools, context),
+  static final _classConstructors = <String, CharClass Function(Character character)>{
+    'бард': (character) => Bard(character),
+    'варвар': (character) => Barbarian(character),
+    'воин': (character) => Fighter(character),
+    'волшебник': (character) => Wizzard(character),
+    'друид': (character) => Druid(character),
+    'жрец': (character) => Clerc(character),
+    'изобретатель': (character) => Artifier(character),
+    'колдун': (character) => Warlock(character),
+    'монах': (character) => Monk(character),
+    'паладин': (character) => Paladin(character),
+    'плут': (character) => Rouge(character),
+    'следопыт': (character) => Ranger(character),
+    'чародей': (character) => Sorcerer(character),
   };
-}
 
-// Класс для неопределенного/невыбранного класса
-final class Undefined extends BaseCharClass {
-  Undefined(
+  static Set<String> get availableClasses => _classConstructors.keys.toSet();
+
+  @override
+  Future<ClassApplicationResult> apply(
     Health charHeath,
     Map<BasicStatNames, BasicStat> stats,
     Map<StatNames, Skill> skills,
     Set<AbstractArmor> canUseArmor,
     Set<AbstractWeapon> canUseWeapon,
     Set<ToolSkill> tools,
-    BuildContext context,
-  ) : super(
+    ModalService modalService,
+  );
+
+  @override
+  void delete(
+    Health charHeath,
+    Map<BasicStatNames, BasicStat> stats,
+    Map<StatNames, Skill> skills,
+    Set<AbstractArmor> canUseArmor,
+    Set<AbstractWeapon> canUseWeapon,
+    Set<ToolSkill> tools,
+  );
+}
+
+// Класс для неопределенного/невыбранного класса
+final class Undefined extends BaseCharClass {
+  Undefined(Character character) : super(
     classname: "Не выбрано",
     hitDice: DiceType.D6,
     armorProficiencies: {},
@@ -294,59 +285,54 @@ final class Undefined extends BaseCharClass {
     savingThrowProficiencies: {},
     availableSkills: {},
     skillChoices: 0,
-  ) {
-    apply(charHeath, stats, skills, canUseArmor, canUseWeapon, tools, context);
-  }
-  
+  );
+
   @override
-  Future<void> apply(
+  Future<ClassApplicationResult> apply(
     Health charHeath,
     Map<BasicStatNames, BasicStat> stats,
     Map<StatNames, Skill> skills,
     Set<AbstractArmor> canUseArmor,
     Set<AbstractWeapon> canUseWeapon,
     Set<ToolSkill> tools,
-    BuildContext context,
+    ModalService modalService,
   ) async {
     // Не применяем никаких изменений для неопределенного класса
+    return ClassApplicationResult(selectedSkills: {});
   }
 }
 
+// Базовый конструктор для всех классов
+base class CharacterClass extends BaseCharClass {
+  CharacterClass({
+    required super.classname,
+    required super.hitDice,
+    required super.armorProficiencies,
+    required super.weaponProficiencies,
+    required super.toolProficiencies,
+    required super.savingThrowProficiencies,
+    required super.availableSkills,
+    required super.skillChoices,
+  });
+}
+
 // Класс "Бард"
-final class Bard extends BaseCharClass {
-  Bard(
-    Health charHeath,
-    Map<BasicStatNames, BasicStat> stats,
-    Map<StatNames, Skill> skills,
-    Set<AbstractArmor> canUseArmor,
-    Set<AbstractWeapon> canUseWeapon,
-    Set<ToolSkill> tools,
-    BuildContext context,
-  ) : super(
+final class Bard extends CharacterClass {
+  Bard(Character character) : super(
     classname: "Бард",
     hitDice: DiceType.D8,
     armorProficiencies: ClassProficiencies.lightArmor,
     weaponProficiencies: ClassProficiencies.bardWeapons,
     toolProficiencies: {"музыкальные инструменты"},
     savingThrowProficiencies: {BasicStatNames.DEX, BasicStatNames.CHR},
-    availableSkills: Skills.values.toSet(), // Бард может выбрать любые навыки
+    availableSkills: Skills.values.toSet(),
     skillChoices: 3,
-  ) {
-    apply(charHeath, stats, skills, canUseArmor, canUseWeapon, tools, context);
-  }
+  );
 }
 
 // Класс "Варвар"
-final class Barbarian extends BaseCharClass {
-  Barbarian(
-    Health charHeath,
-    Map<BasicStatNames, BasicStat> stats,
-    Map<StatNames, Skill> skills,
-    Set<AbstractArmor> canUseArmor,
-    Set<AbstractWeapon> canUseWeapon,
-    Set<ToolSkill> tools,
-    BuildContext context,
-  ) : super(
+final class Barbarian extends CharacterClass {
+  Barbarian(Character character) : super(
     classname: "Варвар",
     hitDice: DiceType.D12,
     armorProficiencies: ClassProficiencies.mediumArmor,
@@ -361,22 +347,12 @@ final class Barbarian extends BaseCharClass {
       Skills.Animal_Handling,
     },
     skillChoices: 2,
-  ) {
-    apply(charHeath, stats, skills, canUseArmor, canUseWeapon, tools, context);
-  }
+  );
 }
 
 // Класс "Воин"
-final class Fighter extends BaseCharClass {
-  Fighter(
-    Health charHeath,
-    Map<BasicStatNames, BasicStat> stats,
-    Map<StatNames, Skill> skills,
-    Set<AbstractArmor> canUseArmor,
-    Set<AbstractWeapon> canUseWeapon,
-    Set<ToolSkill> tools,
-    BuildContext context,
-  ) : super(
+final class Fighter extends CharacterClass {
+  Fighter(Character character) : super(
     classname: "Воин",
     hitDice: DiceType.D10,
     armorProficiencies: ClassProficiencies.allArmor,
@@ -394,22 +370,12 @@ final class Fighter extends BaseCharClass {
       Skills.Animal_Handling,
     },
     skillChoices: 2,
-  ) {
-    apply(charHeath, stats, skills, canUseArmor, canUseWeapon, tools, context);
-  }
+  );
 }
 
 // Класс "Волшебник"
-final class Wizzard extends BaseCharClass {
-  Wizzard(
-    Health charHeath,
-    Map<BasicStatNames, BasicStat> stats,
-    Map<StatNames, Skill> skills,
-    Set<AbstractArmor> canUseArmor,
-    Set<AbstractWeapon> canUseWeapon,
-    Set<ToolSkill> tools,
-    BuildContext context,
-  ) : super(
+final class Wizzard extends CharacterClass {
+  Wizzard(Character character) : super(
     classname: "Волшебник",
     hitDice: DiceType.D6,
     armorProficiencies: {},
@@ -425,22 +391,12 @@ final class Wizzard extends BaseCharClass {
       Skills.Religion,
     },
     skillChoices: 2,
-  ) {
-    apply(charHeath, stats, skills, canUseArmor, canUseWeapon, tools, context);
-  }
+  );
 }
 
 // Класс "Друид"
-final class Druid extends BaseCharClass {
-  Druid(
-    Health charHeath,
-    Map<BasicStatNames, BasicStat> stats,
-    Map<StatNames, Skill> skills,
-    Set<AbstractArmor> canUseArmor,
-    Set<AbstractWeapon> canUseWeapon,
-    Set<ToolSkill> tools,
-    BuildContext context,
-  ) : super(
+final class Druid extends CharacterClass {
+  Druid(Character character) : super(
     classname: "Друид",
     hitDice: DiceType.D8,
     armorProficiencies: ClassProficiencies.mediumArmor,
@@ -458,22 +414,12 @@ final class Druid extends BaseCharClass {
       Skills.Religion,
     },
     skillChoices: 2,
-  ) {
-    apply(charHeath, stats, skills, canUseArmor, canUseWeapon, tools, context);
-  }
+  );
 }
 
 // Класс "Жрец"
-final class Clerc extends BaseCharClass {
-  Clerc(
-    Health charHeath,
-    Map<BasicStatNames, BasicStat> stats,
-    Map<StatNames, Skill> skills,
-    Set<AbstractArmor> canUseArmor,
-    Set<AbstractWeapon> canUseWeapon,
-    Set<ToolSkill> tools,
-    BuildContext context,
-  ) : super(
+final class Clerc extends CharacterClass {
+  Clerc(Character character) : super(
     classname: "Жрец",
     hitDice: DiceType.D8,
     armorProficiencies: ClassProficiencies.mediumArmor,
@@ -488,22 +434,12 @@ final class Clerc extends BaseCharClass {
       Skills.Persuasion,
     },
     skillChoices: 2,
-  ) {
-    apply(charHeath, stats, skills, canUseArmor, canUseWeapon, tools, context);
-  }
+  );
 }
 
 // Класс "Изобретатель"
-final class Artifier extends BaseCharClass {
-  Artifier(
-    Health charHeath,
-    Map<BasicStatNames, BasicStat> stats,
-    Map<StatNames, Skill> skills,
-    Set<AbstractArmor> canUseArmor,
-    Set<AbstractWeapon> canUseWeapon,
-    Set<ToolSkill> tools,
-    BuildContext context,
-  ) : super(
+final class Artifier extends CharacterClass {
+  Artifier(Character character) : super(
     classname: "Изобретатель",
     hitDice: DiceType.D8,
     armorProficiencies: ClassProficiencies.mediumArmor,
@@ -524,22 +460,12 @@ final class Artifier extends BaseCharClass {
       Skills.Investigation,
     },
     skillChoices: 2,
-  ) {
-    apply(charHeath, stats, skills, canUseArmor, canUseWeapon, tools, context);
-  }
+  );
 }
 
 // Класс "Колдун"
-final class Warlock extends BaseCharClass {
-  Warlock(
-    Health charHeath,
-    Map<BasicStatNames, BasicStat> stats,
-    Map<StatNames, Skill> skills,
-    Set<AbstractArmor> canUseArmor,
-    Set<AbstractWeapon> canUseWeapon,
-    Set<ToolSkill> tools,
-    BuildContext context,
-  ) : super(
+final class Warlock extends CharacterClass {
+  Warlock(Character character) : super(
     classname: "Колдун",
     hitDice: DiceType.D8,
     armorProficiencies: ClassProficiencies.lightArmor,
@@ -556,22 +482,12 @@ final class Warlock extends BaseCharClass {
       Skills.Religion,
     },
     skillChoices: 2,
-  ) {
-    apply(charHeath, stats, skills, canUseArmor, canUseWeapon, tools, context);
-  }
+  );
 }
 
 // Класс "Монах"
-final class Monk extends BaseCharClass {
-  Monk(
-    Health charHeath,
-    Map<BasicStatNames, BasicStat> stats,
-    Map<StatNames, Skill> skills,
-    Set<AbstractArmor> canUseArmor,
-    Set<AbstractWeapon> canUseWeapon,
-    Set<ToolSkill> tools,
-    BuildContext context,
-  ) : super(
+final class Monk extends CharacterClass {
+  Monk(Character character) : super(
     classname: "Монах",
     hitDice: DiceType.D8,
     armorProficiencies: {},
@@ -579,7 +495,7 @@ final class Monk extends BaseCharClass {
       WeaponType.SimpleWeapon,
       WeaponType.ShortSword,
     },
-    toolProficiencies: {}, // Выбирается отдельно в apply
+    toolProficiencies: {},
     savingThrowProficiencies: {BasicStatNames.STR, BasicStatNames.DEX},
     availableSkills: {
       Skills.Acrobatics,
@@ -590,46 +506,49 @@ final class Monk extends BaseCharClass {
       Skills.Stealth,
     },
     skillChoices: 2,
-  ) {
-    apply(charHeath, stats, skills, canUseArmor, canUseWeapon, tools, context);
-  }
+  );
 
   @override
-  Future<void> apply(
+  Future<ClassApplicationResult> apply(
     Health charHeath,
     Map<BasicStatNames, BasicStat> stats,
     Map<StatNames, Skill> skills,
     Set<AbstractArmor> canUseArmor,
     Set<AbstractWeapon> canUseWeapon,
     Set<ToolSkill> tools,
-    BuildContext context,
+    ModalService modalService,
   ) async {
-    // Сначала вызываем базовый apply
-    await super.apply(charHeath, stats, skills, canUseArmor, canUseWeapon, tools, context);
-    
-    // Затем добавляем специфичную для монаха логику выбора инструмента
-    final chosen = ToolSkill('').pick(context, {
-      ToolsNames.Artisans_Tools,
-      ToolsNames.Musical_Instruments
-    });
-    tools.add(ToolSkill(chosen!, {
-      MetaFlags.IS_PICKED,
-      MetaFlags.IS_PICKED_ON_CLASS
-    }));
+    final result = await super.apply(
+      charHeath, stats, skills, canUseArmor, canUseWeapon, tools, modalService
+    );
+
+    // Выбор инструмента для монаха
+    final toolOptions = {"инструменты ремесленника", "музыкальные инструменты"};
+    final toolChoices = await modalService.showMultiSelectListPicker(
+      items: toolOptions,
+      initialSelections: null,
+    );
+
+    if (toolChoices.isNotEmpty) {
+      final chosenTool = toolChoices.first;
+      tools.add(ToolSkill(chosenTool,modalService, {
+        MetaFlags.IS_PICKED,
+        MetaFlags.IS_PICKED_ON_CLASS
+      }));
+      
+      return ClassApplicationResult(
+        selectedSkills: result.selectedSkills,
+        selectedTool: chosenTool,
+      );
+    }
+
+    return result;
   }
 }
 
 // Класс "Паладин"
-final class Paladin extends BaseCharClass {
-  Paladin(
-    Health charHeath,
-    Map<BasicStatNames, BasicStat> stats,
-    Map<StatNames, Skill> skills,
-    Set<AbstractArmor> canUseArmor,
-    Set<AbstractWeapon> canUseWeapon,
-    Set<ToolSkill> tools,
-    BuildContext context,
-  ) : super(
+final class Paladin extends CharacterClass {
+  Paladin(Character character) : super(
     classname: "Паладин",
     hitDice: DiceType.D10,
     armorProficiencies: ClassProficiencies.allArmor,
@@ -645,22 +564,12 @@ final class Paladin extends BaseCharClass {
       Skills.Persuasion,
     },
     skillChoices: 2,
-  ) {
-    apply(charHeath, stats, skills, canUseArmor, canUseWeapon, tools, context);
-  }
+  );
 }
 
 // Класс "Плут"
-final class Rouge extends BaseCharClass {
-  Rouge(
-    Health charHeath,
-    Map<BasicStatNames, BasicStat> stats,
-    Map<StatNames, Skill> skills,
-    Set<AbstractArmor> canUseArmor,
-    Set<AbstractWeapon> canUseWeapon,
-    Set<ToolSkill> tools,
-    BuildContext context,
-  ) : super(
+final class Rouge extends CharacterClass {
+  Rouge(Character character) : super(
     classname: "Плут",
     hitDice: DiceType.D8,
     armorProficiencies: ClassProficiencies.lightArmor,
@@ -681,22 +590,12 @@ final class Rouge extends BaseCharClass {
       Skills.Persuasion,
     },
     skillChoices: 4,
-  ) {
-    apply(charHeath, stats, skills, canUseArmor, canUseWeapon, tools, context);
-  }
+  );
 }
 
 // Класс "Следопыт"
-final class Ranger extends BaseCharClass {
-  Ranger(
-    Health charHeath,
-    Map<BasicStatNames, BasicStat> stats,
-    Map<StatNames, Skill> skills,
-    Set<AbstractArmor> canUseArmor,
-    Set<AbstractWeapon> canUseWeapon,
-    Set<ToolSkill> tools,
-    BuildContext context,
-  ) : super(
+final class Ranger extends CharacterClass {
+  Ranger(Character character) : super(
     classname: "Следопыт",
     hitDice: DiceType.D10,
     armorProficiencies: ClassProficiencies.mediumArmor,
@@ -714,22 +613,12 @@ final class Ranger extends BaseCharClass {
       Skills.Animal_Handling,
     },
     skillChoices: 3,
-  ) {
-    apply(charHeath, stats, skills, canUseArmor, canUseWeapon, tools, context);
-  }
+  );
 }
 
 // Класс "Чародей"
-final class Sorcerer extends BaseCharClass {
-  Sorcerer(
-    Health charHeath,
-    Map<BasicStatNames, BasicStat> stats,
-    Map<StatNames, Skill> skills,
-    Set<AbstractArmor> canUseArmor,
-    Set<AbstractWeapon> canUseWeapon,
-    Set<ToolSkill> tools,
-    BuildContext context,
-  ) : super(
+final class Sorcerer extends CharacterClass {
+  Sorcerer(Character character) : super(
     classname: "Чародей",
     hitDice: DiceType.D6,
     armorProficiencies: {},
@@ -745,7 +634,5 @@ final class Sorcerer extends BaseCharClass {
       Skills.Persuasion,
     },
     skillChoices: 2,
-  ) {
-    apply(charHeath, stats, skills, canUseArmor, canUseWeapon, tools, context);
-  }
+  );
 }

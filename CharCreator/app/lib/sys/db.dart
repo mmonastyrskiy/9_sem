@@ -15,31 +15,50 @@ class HiveService {
     await Hive.openBox<Character>('characters');
   }
 }
+// В CharacterRepository добавьте:
 class CharacterRepository {
-  final Box<Character> _characterBox;
-  
-  CharacterRepository(this._characterBox);
-  
-  // Обновление существующей записи
-  Future<void> updateCharacter(String key, Character updatedCharacter) async {
-    if (_characterBox.containsKey(key)) {
-      await _characterBox.put(key, updatedCharacter);
-    } else {
-      throw Exception('Персонаж с ключом $key не найден');
+  final Box<Character> box;
+
+  CharacterRepository(this.box);
+
+  // Добавить нового персонажа
+  void addCharacter(Character character) {
+    box.add(character); // Это добавит нового персонажа в конец списка
+    //print("Персонаж добавлен ${character.name}");
+  }
+
+  // Обновить существующего персонажа
+void safeUpdate(String key, Character character) {
+    try {
+      // Просто сохраняем персонажа - Hive сам разберется с индексами
+      character.save(); // Если Character extends HiveObject
+      // Или:
+      // box.put(character.key, character); // Если используете ключи
+      // Или просто добавляем:
+      // box.add(character);
+      
+      //print('Персонаж "${character.name}" сохранен');
+    } catch (e) {
+      //print('Ошибка сохранения персонажа: $e');
+      // Можно попробовать альтернативный способ сохранения
+      _fallbackSave(character);
     }
   }
   
-  // Обновление с проверкой существования
-  Future<bool> safeUpdate(String key, Character updatedCharacter) async {
-    if (_characterBox.containsKey(key)) {
-      await _characterBox.put(key, updatedCharacter);
-      return true;
+  void _fallbackSave(Character character) {
+    try {
+      // Альтернативный способ - всегда добавляем нового
+      box.add(character);
+      //print('Персонаж "${character.name}" сохранен через fallback');
+    } catch (e) {
+      //print('Критическая ошибка сохранения: $e');
+      throw Exception('Не удалось сохранить персонажа');
     }
-    return false;
   }
-  
-  // Обновление или создание, если не существует
-  Future<void> upsertCharacter(String key, Character character) async {
-    await _characterBox.put(key, character);
+
+
+  // Получить всех персонажей
+  List<Character> getAllCharacters() {
+    return box.values.toList();
   }
 }

@@ -1,12 +1,11 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, camel_case_types
 
-import 'package:flutter/material.dart';
+import 'package:flutter_application_1/ui/modal_service.dart';
 import 'stat.dart';
 import 'tool.dart';
 import 'langs.dart';
 import 'meta.dart';
 import 'character.dart';
-
 enum BackgroundNames {
   Entertainer,
   Urchin,
@@ -53,7 +52,7 @@ abstract base class BaseBackground implements Background {
     Map<StatNames, ProfBonusStat> stats,
     Set<ToolSkill> tools,
     Set<Langs> langs,
-    BuildContext context,
+    ModalService modalService,
   ) async {
     // Применяем бонусы к навыкам
     for (final skill in config.skillProficiencies) {
@@ -62,7 +61,7 @@ abstract base class BaseBackground implements Background {
 
     // Добавляем инструменты
     for (final tool in config.toolProficiencies) {
-      tools.add(ToolSkill(tool, {
+      tools.add(ToolSkill(tool,modalService, {
         MetaFlags.IS_PICKED,
         MetaFlags.IS_PICKED_ON_BG
       }));
@@ -70,7 +69,7 @@ abstract base class BaseBackground implements Background {
 
     // Добавляем языки, если есть
     if (config.extraLanguages > 0) {
-      await _addLanguages(langs, context, config.extraLanguages);
+      await _addLanguages(langs, modalService, config.extraLanguages);
     }
   }
 
@@ -93,52 +92,54 @@ abstract base class BaseBackground implements Background {
   }
 
   Future<void> _addLanguages(
-    Set<Langs> langs,
-    BuildContext context,
-    int count,
-  ) async {
-    if (count == 1) {
-      // Один язык
-      final chosen = Langs('').pick(context);
-      if (chosen != null) {
-        langs.add(Langs(chosen, {
+  Set<Langs> langs,
+  ModalService modalService,
+  int count,
+) async {
+  if (count == 1) {
+    // One language - await the Future
+    final chosen = await Langs('').pick();
+    
+    if (chosen != null) {
+      langs.add(Langs(chosen, {
+        MetaFlags.IS_PICKED,
+        MetaFlags.IS_PICKED_ON_BG
+      }, modalService));
+    }
+  } else {
+    // Multiple languages
+    final chosen = await Langs('').pickmany();
+    
+    if (chosen != null) {
+      for (final language in chosen) {
+        langs.add(Langs(language, {
           MetaFlags.IS_PICKED,
           MetaFlags.IS_PICKED_ON_BG
-        }));
-      }
-    } else {
-      // Несколько языков
-      final chosen = await Langs('').pickmany(context);
-      if (chosen != null) {
-        for (final language in chosen) {
-          langs.add(Langs(language, {
-            MetaFlags.IS_PICKED,
-            MetaFlags.IS_PICKED_ON_BG
-          }));
-        }
+        }, modalService));
       }
     }
   }
+}
 }
 // Абстрактный интерфейс для предысторий
 abstract interface class Background implements AffectsStatBackground, Stat {
   String get BGName;
   
-  factory Background(String chosen, Character char) {
+  factory Background.withContext(String chosen, Character char,ModalService modalService) {
     final constructor = _backgroundConstructors[chosen.toLowerCase()];
     if (constructor != null) {
       return constructor(
         char.getskills(),
         char.getToolingskills(),
         char.getLangs(),
-        char.UIContext,
+        modalService
       );
     }
     return Undefined(
       char.getskills(),
       char.getToolingskills(),
       char.getLangs(),
-      char.UIContext,
+      modalService
     );
   }
   
@@ -146,7 +147,7 @@ abstract interface class Background implements AffectsStatBackground, Stat {
     Map<StatNames, ProfBonusStat> stats,
     Set<ToolSkill> tools,
     Set<Langs> langs,
-    BuildContext context,
+    ModalService context,
   )>{
     'артист': (stats, tools, langs, context) => 
       Entertainer(stats, tools, langs, context),
@@ -343,7 +344,7 @@ final class Undefined extends BaseBackground {
     Map<StatNames, ProfBonusStat> stats,
     Set<ToolSkill> tools,
     Set<Langs> langs,
-    BuildContext context,
+    ModalService context,
   ) : super(const BackgroundConfig(
     name: "Не выбрано",
     skillProficiencies: {},
@@ -357,7 +358,7 @@ final class Undefined extends BaseBackground {
     Map<StatNames, ProfBonusStat> stats,
     Set<ToolSkill> tools,
     Set<Langs> langs,
-    BuildContext context,
+    ModalService modalService,
   ) async {
     // Не применяем никаких изменений
   }
@@ -369,7 +370,7 @@ final class Entertainer extends BaseBackground {
     Map<StatNames, ProfBonusStat> stats,
     Set<ToolSkill> tools,
     Set<Langs> langs,
-    BuildContext context,
+    ModalService context,
   ) : super(BackgroundConfigs.entertainer) {
     apply(stats, tools, langs, context);
   }
@@ -380,7 +381,7 @@ final class Urchin extends BaseBackground {
     Map<StatNames, ProfBonusStat> stats,
     Set<ToolSkill> tools,
     Set<Langs> langs,
-    BuildContext context,
+    ModalService context,
   ) : super(BackgroundConfigs.urchin) {
     apply(stats, tools, langs, context);
   }
@@ -391,7 +392,7 @@ final class Noble extends BaseBackground {
     Map<StatNames, ProfBonusStat> stats,
     Set<ToolSkill> tools,
     Set<Langs> langs,
-    BuildContext context,
+    ModalService context,
   ) : super(BackgroundConfigs.noble) {
     apply(stats, tools, langs, context);
   }
@@ -402,7 +403,7 @@ final class GuildArtisan extends BaseBackground {
     Map<StatNames, ProfBonusStat> stats,
     Set<ToolSkill> tools,
     Set<Langs> langs,
-    BuildContext context,
+    ModalService context,
   ) : super(BackgroundConfigs.guildArtisan) {
     apply(stats, tools, langs, context);
   }
@@ -413,7 +414,7 @@ final class Sailor extends BaseBackground {
     Map<StatNames, ProfBonusStat> stats,
     Set<ToolSkill> tools,
     Set<Langs> langs,
-    BuildContext context,
+    ModalService context,
   ) : super(BackgroundConfigs.sailor) {
     apply(stats, tools, langs, context);
   }
@@ -424,7 +425,7 @@ final class Sage extends BaseBackground {
     Map<StatNames, ProfBonusStat> stats,
     Set<ToolSkill> tools,
     Set<Langs> langs,
-    BuildContext context,
+    ModalService context,
   ) : super(BackgroundConfigs.sage) {
     apply(stats, tools, langs, context);
   }
@@ -435,7 +436,7 @@ final class FolkHero extends BaseBackground {
     Map<StatNames, ProfBonusStat> stats,
     Set<ToolSkill> tools,
     Set<Langs> langs,
-    BuildContext context,
+    ModalService context,
   ) : super(BackgroundConfigs.folkHero) {
     apply(stats, tools, langs, context);
   }
@@ -446,7 +447,7 @@ final class Hermit extends BaseBackground {
     Map<StatNames, ProfBonusStat> stats,
     Set<ToolSkill> tools,
     Set<Langs> langs,
-    BuildContext context,
+    ModalService context,
   ) : super(BackgroundConfigs.hermit) {
     apply(stats, tools, langs, context);
   }
@@ -457,7 +458,7 @@ final class Pirate extends BaseBackground {
     Map<StatNames, ProfBonusStat> stats,
     Set<ToolSkill> tools,
     Set<Langs> langs,
-    BuildContext context,
+    ModalService context,
   ) : super(BackgroundConfigs.pirate) {
     apply(stats, tools, langs, context);
   }
@@ -468,7 +469,7 @@ final class Criminal extends BaseBackground {
     Map<StatNames, ProfBonusStat> stats,
     Set<ToolSkill> tools,
     Set<Langs> langs,
-    BuildContext context,
+    ModalService context,
   ) : super(BackgroundConfigs.criminal) {
     apply(stats, tools, langs, context);
   }
@@ -479,7 +480,7 @@ final class Acolyte extends BaseBackground {
     Map<StatNames, ProfBonusStat> stats,
     Set<ToolSkill> tools,
     Set<Langs> langs,
-    BuildContext context,
+    ModalService context,
   ) : super(BackgroundConfigs.acolyte) {
     apply(stats, tools, langs, context);
   }
@@ -490,7 +491,7 @@ final class Soldier extends BaseBackground {
     Map<StatNames, ProfBonusStat> stats,
     Set<ToolSkill> tools,
     Set<Langs> langs,
-    BuildContext context,
+    ModalService context,
   ) : super(BackgroundConfigs.soldier) {
     apply(stats, tools, langs, context);
   }
@@ -501,7 +502,7 @@ final class Outlander extends BaseBackground {
     Map<StatNames, ProfBonusStat> stats,
     Set<ToolSkill> tools,
     Set<Langs> langs,
-    BuildContext context,
+    ModalService context,
   ) : super(BackgroundConfigs.outlander) {
     apply(stats, tools, langs, context);
   }
@@ -512,7 +513,7 @@ final class Charlatan extends BaseBackground {
     Map<StatNames, ProfBonusStat> stats,
     Set<ToolSkill> tools,
     Set<Langs> langs,
-    BuildContext context,
+    ModalService context,
   ) : super(BackgroundConfigs.charlatan) {
     apply(stats, tools, langs, context);
   }

@@ -5,20 +5,18 @@ import 'stat.dart';
 import 'tool.dart';
 import 'langs.dart';
 import 'inventory.dart';
-import 'package:flutter/material.dart';
 import 'items/item.dart';
 import 'money.dart';
 import 'race.dart';
 import 'charclass.dart';
 import 'package:hive/hive.dart';
-part 'sys/character.g.dart'; 
+import 'ui/modal_service.dart';
+part 'character.g.dart'; 
 
 // Основной класс персонажа для RPG системы
 @HiveType(typeId: 0)
-class Character {
+class Character extends HiveObject {
   // Контекст UI для взаимодействия с Flutter виджетами
-  @HiveField(0)
-  late BuildContext UIContext;
   
   // Имя персонажа
   @HiveField(1)
@@ -250,7 +248,7 @@ class Character {
   Set<Langs> getLangs() => langs;
 
   // Вычисляет модификатор для указанной базовой характеристики
-  int getModifier(BasicStatNames s) => getbasicstats()[s]!.Stat2Modifier();
+  int getModifier(BasicStatNames s) => getbasicstats()[s]!.stat2Modifier();
 
   String currentclass() {
     return class_?.classname ?? "";
@@ -260,18 +258,18 @@ class Character {
     if (class_ != null && new_ != currentclass()) {
       class_?.delete(health, getbasicstats(), getskills(), CanUseArmor, canUseWeapon, tools);
     }
-    class_ = CharClass(new_, this);
+    class_ = CharClass.create(new_, this);
   }
 
   String currentbg() {
     return bg?.BGName ?? "";
   }
 
-  void HandleBgChange(String new_) {
+  void HandleBgChange(String new_,ModalService service) {
     if (bg != null && new_ != currentbg()) {
       bg?.delete(getskills(), tools, langs);
     }
-    bg = Background(new_, this);
+    bg = Background.withContext(new_, this,service);
   }
 
   String currentRace() {
@@ -282,44 +280,59 @@ class Character {
     if (race != null && new_ != currentRace()) {
       race?.delete(getbasicstats(), size, speed, langs, tools, CanUseArmor, health, getskills(), canUseWeapon);
     }
-    race = Race(new_, this);
+    race = Race.create(new_, this);
   }
 
-  Character(this.UIContext) {
-    STR = BasicStat().generate();
-    DEX = BasicStat().generate();
-    CON = BasicStat().generate();
-    INT = BasicStat().generate();
-    WIS = BasicStat().generate();
-    CHR = BasicStat().generate();
-    name = "Безымянный";
-    Acrobatics = Skill("ловкость");
-    Animal_Handling = Skill("Мудрость");
-    Arcana = Skill("Интеллект");
-    Athletics = Skill("сила");
-    Deception = Skill("Харизма");
-    History = Skill("Интеллект");
-    Insight = Skill("Мудрость");
-    Intimidation = Skill("Харизма");
-    Investigation = Skill("интеллект");
-    Medicine = Skill("Мудрость");
-    Nature = Skill("Интеллект");
-    Perception = Skill("Мудрость");
-    Performance = Skill("Харизма");
-    Persuasion = Skill("Харизма");
-    Religion = Skill("Интеллект");
-    Sleight_of_Hand = Skill("Ловкость");
-    Stealth = Skill("Ловкость");
-    Survival = Skill("Мудрость");
-    bg = Background('', this);
-    class_ = CharClass("", this);
-    race = Race("", this);
+Character() {
+  STR = BasicStat().generate();
+  DEX = BasicStat().generate();
+  CON = BasicStat().generate();
+  INT = BasicStat().generate();
+  WIS = BasicStat().generate();
+  CHR = BasicStat().generate();
+  name = "Безымянный";
+  Acrobatics = Skill("ловкость");
+  Animal_Handling = Skill("Мудрость");
+  Arcana = Skill("Интеллект");
+  Athletics = Skill("сила");
+  Deception = Skill("Харизма");
+  History = Skill("Интеллект");
+  Insight = Skill("Мудрость");
+  Intimidation = Skill("Харизма");
+  Investigation = Skill("интеллект");
+  Medicine = Skill("Мудрость");
+  Nature = Skill("Интеллект");
+  Perception = Skill("Мудрость");
+  Performance = Skill("Харизма");
+  Persuasion = Skill("Харизма");
+  Religion = Skill("Интеллект");
+  Sleight_of_Hand = Skill("Ловкость");
+  Stealth = Skill("Ловкость");
+  Survival = Skill("Мудрость");
+  class_ = CharClass.create("", this);
+  race = Race.create("", this);
 
-    PassiveInsight = 10;
-    InitiativeBonus = 0;
-    armor = 0;
-    speed = 30;
-  }
+  // Initialize without service initially
+  //bg = Background('', this);
+
+  PassiveInsight = 10;
+  InitiativeBonus = 0;
+  armor = 0;
+  speed = 30;
+}
+
+// Method to set background with service
+void initializeBackground(ModalService service) {
+  bg = Background.withContext('', this, service);
+}
+
+// Factory that creates and initializes
+factory Character.withContext(ModalService service) {
+  final character = Character();
+  character.initializeBackground(service);
+  return character;
+}
+
 
   void SetName(String new_) {
     name = new_;

@@ -29,13 +29,13 @@ final class EntertainersPack with DefaultQty implements Pack{
 
   @override
   bool add(SellableItem item) {
-    // TODO: implement add
+
     throw UnimplementedError();
   }
 
   @override
   bool del(SellableItem item) {
-    // TODO: implement del
+
     throw UnimplementedError();
   }
 
@@ -67,13 +67,13 @@ final class BurglarsPack with DefaultQty implements Pack{
 
   @override
   bool add(SellableItem item) {
-    // TODO: implement add
+
     throw UnimplementedError();
   }
 
   @override
   bool del(SellableItem item) {
-    // TODO: implement del
+
     throw UnimplementedError();
   }
 
@@ -105,13 +105,13 @@ final class DiplomatsPack with DefaultQty implements Pack{
 
   @override
   bool add(SellableItem item) {
-    // TODO: implement add
+ 
     throw UnimplementedError();
   }
 
   @override
   bool del(SellableItem item) {
-    // TODO: implement del
+
     throw UnimplementedError();
   }
 
@@ -145,13 +145,13 @@ final class DungeroneersPack with DefaultQty implements Pack{
 
   @override
   bool add(SellableItem item) {
-    // TODO: implement add
+
     throw UnimplementedError();
   }
 
   @override
   bool del(SellableItem item) {
-    // TODO: implement del
+
     throw UnimplementedError();
   }
 
@@ -183,13 +183,12 @@ final class ExplorersPack with DefaultQty implements Pack{
 
   @override
   bool add(SellableItem item) {
-    // TODO: implement add
+
     throw UnimplementedError();
   }
 
   @override
   bool del(SellableItem item) {
-    // TODO: implement del
     throw UnimplementedError();
   }
 
@@ -223,13 +222,12 @@ final class PriestsPack with DefaultQty implements Pack{
 
   @override
   bool add(SellableItem item) {
-    // TODO: implement add
     throw UnimplementedError();
   }
 
   @override
   bool del(SellableItem item) {
-    // TODO: implement del
+
     throw UnimplementedError();
   }
 
@@ -260,13 +258,13 @@ final class ScholarsPack with DefaultQty implements Pack{
 
   @override
   bool add(SellableItem item) {
-    // TODO: implement add
+
     throw UnimplementedError();
   }
 
   @override
   bool del(SellableItem item) {
-    // TODO: implement del
+
     throw UnimplementedError();
   }
 

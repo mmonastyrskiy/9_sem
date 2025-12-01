@@ -1,36 +1,67 @@
 // ignore_for_file: non_constant_identifier_names
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'character.dart';
 import 'sys/db.dart';
-//import 'package:hive/hive.dart';
-import 'sys/config.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'etc/pinterest.dart';
-import 'package:provider/provider.dart';
 import 'items/armor.dart';
 import 'items/weapon.dart';
+import 'package:provider/provider.dart';
+import 'ui/modal_service.dart';
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
+void main() async {
+   WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  Hive.registerAdapter(CharacterAdapter());
+  await Hive.openBox<Character>('characters');
   HiveService.init();
   
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+   @override
+     State<MyApp> createState() => _MyAppState();
+}
+
+
+class _MyAppState extends State<MyApp> {
+  final ModalService modalService = ModalService();
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData.light(useMaterial3: true).copyWith(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider.value(value: modalService),
+      ],
+      child: Builder(
+        builder: (context) {
+          // Устанавливаем контекст для ModalService
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            modalService.setContext(context);
+          });
+
+          return Consumer<ThemeProvider>(
+            builder: (context, themeProvider, child) {
+              return MaterialApp(
+                theme: ThemeData.light(useMaterial3: true).copyWith(
+                  colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+                ),
+                darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
+                  colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
+                ),
+                themeMode: themeProvider.themeMode,
+                home: CharacterSheetScreen(),
+              );
+            },
+          );
+        },
       ),
-      darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
-      ),
-      themeMode: ThemeMode.system,
-      home: CharacterSheetScreen(),
     );
   }
 }
@@ -63,20 +94,128 @@ class CharacterSheetScreen extends StatefulWidget {
 class CharacterSheetScreenState extends State<CharacterSheetScreen> with SingleTickerProviderStateMixin {
   late Character c;
   late CharacterRepository characterRepository;
-  final ThemeProvider _themeProvider = ThemeProvider();
   late TabController _tabController;
+  late Box<Character> charactersBox;
+  bool _characterLoaded = false;
 
+
+  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   @override
   void initState() {
     super.initState();
-    c = Character(context);
+    charactersBox = Hive.box<Character>('characters');
+    characterRepository = CharacterRepository(charactersBox);
     _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
+  void didChangeDependencies() {
+  super.didChangeDependencies();
+  
+  if (!_characterLoaded) {
+    _characterLoaded = true;
+    
+    // Get ModalService from Provider
+    final modalService = Provider.of<ModalService>(context, listen: false);
+    
+    if (charactersBox.isNotEmpty) {
+      c = charactersBox.getAt(0)!;
+    } else {
+      // Create new character with ModalService
+      c = Character.withContext(modalService);
+      
+      // Сохраняем без показа SnackBar при создании
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _saveCharacterSilently();
+      });
+    }
+  }
+}
+
+  @override
   void dispose() {
     _tabController.dispose();
+    Hive.close();
     super.dispose();
+  }
+
+  // Метод для сохранения без UI уведомлений
+  void _saveCharacterSilently() {
+    try {
+      characterRepository.safeUpdate(c.name, c);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Ошибка сохранения: $e');
+      }
+    }
+  }
+
+  // Основной метод сохранения с проверками
+void _saveCharacter() {
+    if (!mounted) return;
+    
+    try {
+      characterRepository.safeUpdate(c.name, c);
+      _showSnackBar(
+        'Персонаж "${c.name}" сохранен',
+        Colors.green,
+      );
+    } catch (e) {
+      _showSnackBar(
+        'Ошибка сохранения: $e',
+        Colors.red,
+      );
+    }
+  }
+
+  // Безопасный метод показа SnackBar
+    void _showSnackBar(String message, Color backgroundColor) {
+    if (!mounted) return;
+    
+    // Используем GlobalKey вместо context
+    _scaffoldMessengerKey.currentState?.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+
+  // Метод для загрузки персонажа
+  void _loadCharacter(int index) {
+    if (index < charactersBox.length) {
+      setState(() {
+        c = charactersBox.getAt(index)!;
+      });
+      _showSnackBar(
+        'Загружен персонаж "${c.name}"',
+        Colors.blue,
+      );
+    }
+  }
+
+  // Метод для создания нового персонажа
+// Метод для создания нового персонажа
+void _createNewCharacter() {
+  // Get ModalService from Provider
+  final modalService = Provider.of<ModalService>(context, listen: false);
+  
+  setState(() {
+    // Create new character with ModalService
+    c = Character.withContext(modalService);
+  });
+  _saveCharacter();
+}
+
+  // Обновленный метод для двойного тапа с безопасным сохранением
+  void _handleDoubleTapReroll() {
+    setState(() {
+      c.Reroll();
+    });
+    // Сохраняем без показа SnackBar при перебросе
+    _saveCharacterSilently();
   }
 
   Color _getAbilityColor(int value, bool isDarkMode) {
@@ -87,118 +226,161 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> with SingleT
   }
 
   void _updateCharacter(String name, String characterClass, String race, String background) {
+    final modalService = Provider.of<ModalService>(context, listen: false);
     setState(() {
       c.name = name;
       c.SetName(name);
       c.HandleClassChange(characterClass);
       c.HandleRaceChange(race);
-      if(FLAG_ENABLE_HIVE){
-      characterRepository.safeUpdate(c.name,c);
-      }
+      c.HandleBgChange(background,modalService);
+      _saveCharacter(); // Сохраняем изменения
     });
   }
 
   void _updateCharacterImage(String imageUrl) {
     setState(() {
       c.setImageUrl(imageUrl);
-      if(FLAG_ENABLE_HIVE){
-        characterRepository.safeUpdate(c.name, c);
-      }
+      _saveCharacter(); // Сохраняем изменения
     });
   }
 
-  void _toggleTheme() {
-    setState(() {
-      if (_themeProvider.themeMode == ThemeMode.dark) {
-        _themeProvider.setThemeMode(ThemeMode.light);
-      } else {
-        _themeProvider.setThemeMode(ThemeMode.dark);
-      }
-    });
-  }
+ void _toggleTheme() {
+  final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+  themeProvider.setThemeMode(
+    themeProvider.themeMode == ThemeMode.dark 
+        ? ThemeMode.light 
+        : ThemeMode.dark
+  );
+}
+  // Метод для отображения диалога управления персонажами
+void _showCharactersManagementDialog() {
+  showDialog(
+    context: context,
+    builder: (context) => Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return CharactersManagementDialog(
+          charactersBox: charactersBox,
+          onCharacterSelected: _loadCharacter,
+          onCreateNewCharacter: _createNewCharacter,
+          isDarkMode: themeProvider.isDarkMode,
+        );
+      },
+    ),
+  );
+}
 
-  @override
-  Widget build(BuildContext context) {
-    final isDarkMode = _themeProvider.isDarkMode;
-    
-    return ChangeNotifierProvider.value(
-      value: _themeProvider,
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, child) {
-          return MaterialApp(
-            theme: ThemeData.light(useMaterial3: true).copyWith(
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-            ),
-            darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
-            ),
-            themeMode: themeProvider.themeMode,
-            home: Scaffold(
-              appBar: AppBar(
-                title: GestureDetector(
-                  onLongPress: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => EditCharacterDialog(
-                        character: c,
-                        onCharacterChanged: (newName, newClass, newRace, newBackground) {
-                          _updateCharacter(newName, newClass, newRace, newBackground);
-                        },
-                        isDarkMode: isDarkMode,
-                      ),
-                    );
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.psychology, color: isDarkMode ? Colors.amber : Colors.blue.shade700, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        c.name,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: isDarkMode ? Colors.white : Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                actions: [
-                  IconButton(
-                    icon: Icon(
-                      isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                      color: isDarkMode ? Colors.amber : Colors.grey.shade700,
+
+@override
+Widget build(BuildContext context) {
+  return Consumer<ThemeProvider>(
+    builder: (context, themeProvider, child) {
+      final isDarkMode = themeProvider.isDarkMode;
+      
+      return MaterialApp(
+        theme: ThemeData.light(useMaterial3: true).copyWith(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        ),
+        darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.blue, 
+            brightness: Brightness.dark
+          ),
+        ),
+        themeMode: themeProvider.themeMode,
+        home: ScaffoldMessenger(
+          key: _scaffoldMessengerKey,
+          child: Scaffold(
+            appBar: AppBar(
+              title: GestureDetector(
+                onLongPress: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => EditCharacterDialog(
+                      character: c,
+                      onCharacterChanged: (newName, newClass, newRace, newBackground) {
+                        _updateCharacter(newName, newClass, newRace, newBackground);
+                      },
+                      isDarkMode: isDarkMode,
                     ),
-                    onPressed: _toggleTheme,
-                    tooltip: isDarkMode ? 'Светлая тема' : 'Темная тема',
-                  ),
-                ],
-                bottom: TabBar(
-                  controller: _tabController,
-                  tabs: const [
-                    Tab(text: "🏰"),
-                    Tab(text: "🎒"),
-                    Tab(text: "🔥"),
-                    Tab(text: "🧑")
+                  );
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.psychology, 
+                      color: isDarkMode ? Colors.amber : Colors.blue.shade700, 
+                      size: 20
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      c.name,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              body: TabBarView(
+              actions: [
+                IconButton(
+                  icon: Icon(
+                    Icons.save,
+                    color: isDarkMode ? Colors.green : Colors.green.shade700,
+                  ),
+                  onPressed: _saveCharacter,
+                  tooltip: 'Сохранить персонажа',
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.people,
+                    color: isDarkMode ? Colors.blue : Colors.blue.shade700,
+                  ),
+                  onPressed: _showCharactersManagementDialog,
+                  tooltip: 'Управление персонажами',
+                ),
+                IconButton(
+                  icon: Icon(
+                    themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                    color: isDarkMode ? Colors.amber : Colors.grey.shade700,
+                  ),
+                  onPressed: _toggleTheme,
+                  tooltip: isDarkMode ? 'Светлая тема' : 'Темная тема',
+                ),
+              ],
+              bottom: TabBar(
                 controller: _tabController,
-                children: <Widget>[
-                  _buildStyledHomeTab(c, isDarkMode),
-                  _buildStyledInventoryTab(isDarkMode),
-                  _buildStyledSpellsTab(isDarkMode),
-                  _buildStyledAboutTab(isDarkMode),
+                tabs: const [
+                  Tab(text: "🏰"),
+                  Tab(text: "🎒"),
+                  Tab(text: "🔥"),
+                  Tab(text: "🧑")
                 ],
               ),
             ),
-          );
-        },
-      ),
-    );
-  }
+            body: TabBarView(
+              controller: _tabController,
+              children: <Widget>[
+                _buildStyledHomeTab(c, isDarkMode),
+                _buildStyledInventoryTab(isDarkMode),
+                _buildStyledSpellsTab(isDarkMode),
+                _buildStyledAboutTab(isDarkMode),
+              ],
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: _saveCharacter,
+              backgroundColor: isDarkMode ? Colors.green : Colors.green.shade700,
+              tooltip: 'Быстрое сохранение',
+              child: const Icon(Icons.save, color: Colors.white),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
 
   Widget _buildStyledHomeTab(Character c, bool isDarkMode) {
     final cardColor = isDarkMode ? const Color(0xFF2d1b00) : Colors.white;
@@ -291,17 +473,14 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> with SingleT
           ),
 
           const SizedBox(height: 20),
-          CharacteristicsHeader(
-            onRerollAll: () {
-              setState(() {
-                c.Reroll();
-                if (FLAG_ENABLE_HIVE){
-                characterRepository.safeUpdate(c.name, c);
-                }
-              });
-            },
-            isDarkMode: isDarkMode,
-          ),
+CharacteristicsHeader(
+  onRerollAll: () {
+    setState(() {
+      c.Reroll();
+      _saveCharacterSilently();
+    });
+  },
+),
 
           const SizedBox(height: 16),
 
@@ -328,9 +507,7 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> with SingleT
                         side: BorderSide(color: accentColor, width: 1),
                       ),
                       child: GestureDetector(
-                        onDoubleTap: () => setState(() {
-                          c.Reroll();
-                        }),
+                        onDoubleTap: _handleDoubleTapReroll,
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           leading: Container(
@@ -600,7 +777,7 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> with SingleT
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
                 side: BorderSide(color: accentColor, width: 2),
-            ),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -841,9 +1018,11 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> with SingleT
                 isEquipped: isEquipped,
                 onEquip: () => setState(() {
                   c.inventory.equipWeapon(weapon);
+                  _saveCharacterSilently();
                 }),
                 onUnequip: () => setState(() {
                   c.inventory.unequipWeapon();
+                  _saveCharacterSilently();
                 }),
                 color: accentColor,
                 isDarkMode: isDarkMode,
@@ -878,6 +1057,7 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> with SingleT
                   } else {
                     c.inventory.equipArmor(armor);
                   }
+                  _saveCharacterSilently();
                 }),
                 onUnequip: () => setState(() {
                   if (isShield) {
@@ -885,6 +1065,7 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> with SingleT
                   } else {
                     c.inventory.unequipArmor();
                   }
+                  _saveCharacterSilently();
                 }),
                 color: isShield ? shieldColor : accentColor,
                 isDarkMode: isDarkMode,
@@ -1343,9 +1524,6 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> with SingleT
                     setState(() {
                       c.setImageUrl(newUrl);
                       _updateCharacterImage(newUrl);
-                      if (FLAG_ENABLE_HIVE) {
-                        characterRepository.safeUpdate(c.name, c);
-                      }
                     });
                   },
                   isDarkMode: isDarkMode,
@@ -1645,15 +1823,203 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> with SingleT
   }
 }
 
+// Диалог для управления персонажами
+class CharactersManagementDialog extends StatefulWidget {
+  final Box<Character> charactersBox;
+  final Function(int) onCharacterSelected;
+  final VoidCallback onCreateNewCharacter;
+  final bool isDarkMode;
+
+  const CharactersManagementDialog({
+    super.key,
+    required this.charactersBox,
+    required this.onCharacterSelected,
+    required this.onCreateNewCharacter,
+    required this.isDarkMode,
+  });
+
+  @override
+  State<CharactersManagementDialog> createState() => _CharactersManagementDialogState();
+}
+
+class _CharactersManagementDialogState extends State<CharactersManagementDialog> {
+  @override
+  Widget build(BuildContext context) {
+    final accentColor = widget.isDarkMode ? Colors.amber : Colors.blue.shade700;
+
+    return Dialog(
+      backgroundColor: widget.isDarkMode ? Colors.grey[900] : Colors.grey.shade100,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: accentColor, width: 2),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        width: MediaQuery.of(context).size.width * 0.9,
+        height: MediaQuery.of(context).size.height * 0.8,
+        child: Column(
+          children: [
+            Text(
+              'Управление персонажами (${widget.charactersBox.length})',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: accentColor,
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Кнопка обновления
+            ElevatedButton.icon(
+              onPressed: () {
+                setState(() {}); // Принудительно обновляем состояние
+              },
+              icon: const Icon(Icons.refresh),
+              label: const Text('Обновить список'),
+            ),
+            const SizedBox(height: 16),
+            
+            Expanded(
+              child: widget.charactersBox.isEmpty
+                  ? _buildEmptyState()
+                  : _buildCharactersList(),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                widget.onCreateNewCharacter();
+                setState(() {}); // Обновляем после создания
+                Navigator.of(context).pop();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accentColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+              icon: const Icon(Icons.add),
+              label: const Text('Создать нового персонажа'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    final textColor = widget.isDarkMode ? Colors.white : Colors.black87;
+    final accentColor = widget.isDarkMode ? Colors.amber : Colors.blue.shade700;
+    
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.people_outline,
+            size: 64,
+            color: accentColor.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Нет сохраненных персонажей',
+            style: TextStyle(
+              fontSize: 18,
+              color: textColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCharactersList() {
+    final cardColor = widget.isDarkMode ? const Color(0xFF2d1b00) : Colors.white;
+    final textColor = widget.isDarkMode ? Colors.white : Colors.black87;
+    final accentColor = widget.isDarkMode ? Colors.amber : Colors.blue.shade700;
+
+    return ListView.builder(
+      itemCount: widget.charactersBox.length,
+      itemBuilder: (context, index) {
+        final character = widget.charactersBox.getAt(index);
+        return Card(
+          color: cardColor,
+          margin: const EdgeInsets.symmetric(vertical: 4),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: accentColor,
+              child: Text(
+                character?.name.substring(0, 1) ?? '?',
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+            title: Text(
+              character?.name ?? 'Неизвестный',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
+            ),
+            subtitle: Text(
+              '${character?.currentclass()} • ${character?.currentRace()} • Ур. ${character?.lvl}',
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () => _deleteCharacter(index, context),
+                  tooltip: 'Удалить',
+                ),
+              ],
+            ),
+            onTap: () {
+              widget.onCharacterSelected(index);
+              Navigator.of(context).pop();
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  void _deleteCharacter(int index, BuildContext context) {
+    final character = widget.charactersBox.getAt(index);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Удалить персонажа'),
+        content: Text('Вы уверены, что хотите удалить персонажа "${character?.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Отмена'),
+          ),
+          TextButton(
+            onPressed: () {
+              widget.charactersBox.deleteAt(index);
+              setState(() {}); // Обновляем состояние после удаления
+              Navigator.of(context).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Персонаж удален'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            },
+            child: const Text('Удалить'),
+          ),
+        ],
+      ),
+    );
+  }
+}
 // Обновленный CharacteristicsHeader для поддержки темы
 class CharacteristicsHeader extends StatefulWidget {
   final VoidCallback onRerollAll;
-  final bool isDarkMode;
 
   const CharacteristicsHeader({
     super.key,
     required this.onRerollAll,
-    required this.isDarkMode,
   });
 
   @override
@@ -1681,49 +2047,54 @@ class CharacteristicsHeaderState extends State<CharacteristicsHeader> {
 
   @override
   Widget build(BuildContext context) {
-    final accentColor = widget.isDarkMode ? Colors.amber : Colors.blue.shade700;
-    
-    return GestureDetector(
-      onDoubleTap: _handleDoubleTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: _isHighlighted ? accentColor.withValues(alpha: 0.2) : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: _isHighlighted 
-              ? Border.all(color: accentColor, width: 2)
-              : null,
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.auto_stories, color: accentColor, size: 24),
-            const SizedBox(width: 8),
-            Text(
-              'Характеристики персонажа',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: accentColor,
-              ),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final isDarkMode = themeProvider.isDarkMode;
+        final accentColor = isDarkMode ? Colors.amber : Colors.blue.shade700;
+        
+        return GestureDetector(
+          onDoubleTap: _handleDoubleTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: _isHighlighted ? accentColor.withAlpha(30) : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+              border: _isHighlighted 
+                  ? Border.all(color: accentColor, width: 2)
+                  : null,
             ),
-            const Spacer(),
-            AnimatedOpacity(
-              duration: const Duration(milliseconds: 200),
-              opacity: _isHighlighted ? 0.7 : 1.0,
-              child: Text(
-                'Двойной тап для\nпереброса всех',
-                textAlign: TextAlign.right,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.grey.shade600,
-                  fontStyle: FontStyle.italic,
+            child: Row(
+              children: [
+                Icon(Icons.auto_stories, color: accentColor, size: 24),
+                const SizedBox(width: 8),
+                Text(
+                  'Характеристики персонажа',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: accentColor,
+                  ),
                 ),
-              ),
+                const Spacer(),
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: _isHighlighted ? 0.7 : 1.0,
+                  child: Text(
+                    'Двойной тап для\nпереброса всех',
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey.shade600,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

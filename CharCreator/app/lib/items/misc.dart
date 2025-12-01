@@ -91,7 +91,6 @@ final class Chest with DefaultQty implements Storage, SellableItem,HasMeta {
  
   @override
   bool del(SellableItem item) {
-    // TODO: implement del
     throw UnimplementedError();
   }
 

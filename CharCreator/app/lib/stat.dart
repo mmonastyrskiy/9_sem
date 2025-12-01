@@ -1,14 +1,12 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names
 
 // Импорт необходимых библиотек и модулей
-import 'ui/uicore.dart';
-import 'package:flutter/material.dart';
 import 'tool.dart';
 import 'langs.dart';
 import 'dice.dart';
 import 'items/item.dart';
 import 'meta.dart';
-import 'ui/uisnippets.dart';
+import 'ui/modal_service.dart';
 
 // Перечисление всех имен статистик в системе (базовые характеристики + навыки + прочее)
 enum StatNames {
@@ -37,7 +35,31 @@ enum StatNames {
   Sleight_of_Hand,   // Ловкость рук (навык)
   Stealth,           // Скрытность (навык)
   Survival,          // Выживание (навык)
-  ToolSkills         // Владение инструментами
+  ToolSkills;
+
+  static StatNames fromSkill(Skills skillToAdd) {
+    switch (skillToAdd) {
+      case Skills.Athletics: return StatNames.Athletics;
+      case Skills.Acrobatics: return StatNames.Acrobatics;
+      case Skills.Sleight_of_Hand: return StatNames.Sleight_of_Hand;
+      case Skills.Stealth: return StatNames.Stealth;
+      case Skills.Investigation: return StatNames.Investigation;
+      case Skills.History: return StatNames.History;
+      case Skills.Arcana: return StatNames.Arcana;
+      case Skills.Nature: return StatNames.Nature;
+      case Skills.Religion: return StatNames.Religion;
+      case Skills.Perception: return StatNames.Perception;
+      case Skills.Survival: return StatNames.Survival;
+      case Skills.Medicine: return StatNames.Medicine;
+      case Skills.Insight: return StatNames.Insight;
+      case Skills.Animal_Handling: return StatNames.Animal_Handling;
+      case Skills.Performance: return StatNames.Performance;
+      case Skills.Intimidation: return StatNames.Intimidation;
+      case Skills.Deception: return StatNames.Deception;
+      case Skills.Persuasion: return StatNames.Persuasion;
+    }
+
+  }         // Владение инструментами
 }
 
 // Перечисление только базовых характеристик (без навыков)
@@ -47,7 +69,7 @@ enum BasicStatNames {
   CON,  // Телосложение
   INT,  // Интеллект
   WIS,  // Мудрость
-  CHR,   // Харизма
+  CHR,  // Харизма
   NULL
 }
 
@@ -73,40 +95,156 @@ enum Skills {
   Survival           // Выживание
 }
 
+// Extension для удобного получения отображаемых имен навыков
+extension SkillsExtension on Skills {
+  String get displayName {
+    switch (this) {
+      case Skills.Athletics: return 'атлетика';
+      case Skills.Acrobatics: return 'акробатика';
+      case Skills.Sleight_of_Hand: return 'ловкость рук';
+      case Skills.Stealth: return 'скрытность';
+      case Skills.Investigation: return 'анализ';
+      case Skills.History: return 'история';
+      case Skills.Arcana: return 'магия';
+      case Skills.Nature: return 'природа';
+      case Skills.Religion: return 'религия';
+      case Skills.Perception: return 'восприятие';
+      case Skills.Survival: return 'выживание';
+      case Skills.Medicine: return 'медицина';
+      case Skills.Insight: return 'проницательность';
+      case Skills.Animal_Handling: return 'уход за животными';
+      case Skills.Performance: return 'выступление';
+      case Skills.Intimidation: return 'запугивание';
+      case Skills.Deception: return 'обман';
+      case Skills.Persuasion: return 'убеждение';
+    }
+  }
+}
+
+// Extension для преобразования Skills в StatNames
+extension SkillsToStatNames on Skills {
+  StatNames get toStatName {
+    switch (this) {
+      case Skills.Athletics: return StatNames.Athletics;
+      case Skills.Acrobatics: return StatNames.Acrobatics;
+      case Skills.Sleight_of_Hand: return StatNames.Sleight_of_Hand;
+      case Skills.Stealth: return StatNames.Stealth;
+      case Skills.Investigation: return StatNames.Investigation;
+      case Skills.History: return StatNames.History;
+      case Skills.Arcana: return StatNames.Arcana;
+      case Skills.Nature: return StatNames.Nature;
+      case Skills.Religion: return StatNames.Religion;
+      case Skills.Perception: return StatNames.Perception;
+      case Skills.Survival: return StatNames.Survival;
+      case Skills.Medicine: return StatNames.Medicine;
+      case Skills.Insight: return StatNames.Insight;
+      case Skills.Animal_Handling: return StatNames.Animal_Handling;
+      case Skills.Performance: return StatNames.Performance;
+      case Skills.Intimidation: return StatNames.Intimidation;
+      case Skills.Deception: return StatNames.Deception;
+      case Skills.Persuasion: return StatNames.Persuasion;
+    }
+  }
+}
+
+// Extension для преобразования StatNames в Skills
+extension StatNamesToSkills on StatNames {
+  Skills? get toSkill {
+    switch (this) {
+      case StatNames.Athletics: return Skills.Athletics;
+      case StatNames.Acrobatics: return Skills.Acrobatics;
+      case StatNames.Sleight_of_Hand: return Skills.Sleight_of_Hand;
+      case StatNames.Stealth: return Skills.Stealth;
+      case StatNames.Investigation: return Skills.Investigation;
+      case StatNames.History: return Skills.History;
+      case StatNames.Arcana: return Skills.Arcana;
+      case StatNames.Nature: return Skills.Nature;
+      case StatNames.Religion: return Skills.Religion;
+      case StatNames.Perception: return Skills.Perception;
+      case StatNames.Survival: return Skills.Survival;
+      case StatNames.Medicine: return Skills.Medicine;
+      case StatNames.Insight: return Skills.Insight;
+      case StatNames.Animal_Handling: return Skills.Animal_Handling;
+      case StatNames.Performance: return Skills.Performance;
+      case StatNames.Intimidation: return Skills.Intimidation;
+      case StatNames.Deception: return Skills.Deception;
+      case StatNames.Persuasion: return Skills.Persuasion;
+      default: return null;
+    }
+  }
+}
+
 // Базовый интерфейс для всех объектов, которые влияют на статистики
 abstract interface class AffectsStat {}
 
 // Интерфейс для объектов, влияющих на статистики через предысторию (Background)
 abstract interface class AffectsStatBackground implements AffectsStat {
   // Применяет эффекты предыстории к статистикам, инструментам и языкам
-  void apply(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs, BuildContext context);
+  Future<void> apply(
+    Map<StatNames, ProfBonusStat> stats, 
+    Set<ToolSkill> tools, 
+    Set<Langs> langs,
+    ModalService modalService
+  );
   // Удаляет эффекты предыстории
-  void delete(Map<StatNames, ProfBonusStat> stats, Set<ToolSkill> tools, Set<Langs> langs);
+  void delete(
+    Map<StatNames, ProfBonusStat> stats, 
+    Set<ToolSkill> tools, 
+    Set<Langs> langs
+  );
 }
 
 // Интерфейс для объектов, влияющих на статистики через класс (Class)
 abstract interface class AffectsStatClass implements AffectsStat {
   // Применяет эффекты класса к здоровью, характеристикам, навыкам, броне, оружию и инструментам
-  void apply(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills, 
-             Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools, BuildContext context);
+  Future<void> apply(
+    Health charHeath, 
+    Map<BasicStatNames, BasicStat> stats, 
+    Map<StatNames, Skill> skills, 
+    Set<AbstractArmor> canUseArmor, 
+    Set<AbstractWeapon> canUseWeapon, 
+    Set<ToolSkill> tools,
+    ModalService modalService
+  );
   // Удаляет эффекты класса
-  void delete(Health charHeath, Map<BasicStatNames, BasicStat> stats, Map<StatNames, Skill> skills,
-              Set<AbstractArmor> canUseArmor, Set<AbstractWeapon> canUseWeapon, Set<ToolSkill> tools);
+  void delete(
+    Health charHeath, 
+    Map<BasicStatNames, BasicStat> stats, 
+    Map<StatNames, Skill> skills,
+    Set<AbstractArmor> canUseArmor, 
+    Set<AbstractWeapon> canUseWeapon, 
+    Set<ToolSkill> tools
+  );
 }
 
 // Интерфейс для объектов, влияющих на статистики через расу (Race)
 abstract interface class AffectsStatRace implements AffectsStat {
   // Применяет эффекты расы к характеристикам, размеру, скорости, языкам, инструментам, броне и здоровью
-  void apply(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, 
-             Set<ToolSkill> tools, Set<AbstractArmor> canUseArmor, Health health,Map<StatNames, Skill> skills,BuildContext context,Set<AbstractWeapon> canUseWeapon);
+  Future<void> apply(
+    Map<BasicStatNames, BasicStat> stats,
+    Size? size,
+    int? speed,
+    Set<Langs> langs,
+    Set<ToolSkill> tools,
+    Set<AbstractArmor> canUseArmor,
+    Health health,
+    Map<StatNames, Skill> skills,
+    ModalService modalService,
+    Set<AbstractWeapon> canUseWeapon,
+  );
   // Удаляет эффекты расы
-  void delete(Map<BasicStatNames, BasicStat> stats, Size? size, int? speed, Set<Langs> langs, 
-              Set<ToolSkill> tools, Set<AbstractArmor> canUseArmor, Health health,Map<StatNames, Skill> skills,Set<AbstractWeapon> canUseWeapon); 
+  void delete(
+    Map<BasicStatNames, BasicStat> stats, 
+    Size? size, 
+    int? speed, 
+    Set<Langs> langs, 
+    Set<ToolSkill> tools, 
+    Set<AbstractArmor> canUseArmor, 
+    Health health,
+    Map<StatNames, Skill> skills,
+    Set<AbstractWeapon> canUseWeapon
+  ); 
 }
-
-
-
-
 
 // Базовый интерфейс для всех статистик
 abstract interface class Stat {}
@@ -114,7 +252,7 @@ abstract interface class Stat {}
 // Интерфейс для объектов, которые могут быть обновлены (имеют модификаторы)
 abstract interface class Updateable {
   // Список модификаторов, влияющих на этот объект
-  List<Modifier> affectedby = [];
+  List<Modifier> get affectedby;
   // Обновляет значение с указанным эффектом и флагами
   void update(int effect, Set<MetaFlags> flags);
   // Удаляет модификаторы по указанному мета-флагу
@@ -124,94 +262,107 @@ abstract interface class Updateable {
 // Интерфейс для статистик, которые могут иметь бонус владения
 abstract interface class ProfBonusStat implements Stat {
   // Уровень бонуса владения (0 - нет владения, 1+ - есть владение)
-  int hasprofbounus = 0;  // Опечатка: должно быть hasproficiencybonus
+  int get hasprofbounus;
+  set hasprofbounus(int value);
+}
+
+// Интерфейс для объектов, которые можно выбирать
+abstract interface class Pickable {
+  Future<String?> pick(ModalService modalService);
+  Future<Set<String>> pickmany(
+    ModalService modalService, 
+    [List<String>? initialSelections, 
+    int howmany = 2,
+    Set<Skills>? includeSkills
+  ]);
 }
 
 // Класс для базовых характеристик (сила, ловкость, телосложение, интеллект, мудрость, харизма)
-class BasicStat implements Stat, Updateable,Pickable {
+class BasicStat implements Stat, Updateable, Pickable {
   late int value;        // Базовое значение характеристики (например, 15 для силы)
   int mod = 0;           // Модификатор характеристики (рассчитывается из value)
   int savingthrow = 0;   // Бонус спасброска (0 - нет, 1 - есть)
   int savingthrowvalue = 0;
+  
   @override
-  List<Modifier> affectedby = [];  // Список модификаторов, влияющих на эту характеристику
+  final List<Modifier> affectedby = [];  // Список модификаторов, влияющих на эту характеристику
 
   // Метод для расчета модификатора характеристики по D&D правилам: (value - 10) / 2 с округлением вниз
-  int Stat2Modifier() => mod = ((value - 10) / 2).floor();
-  BasicStat generate(){
-    ThrowObject tosser = ThrowObject();
-    tosser.add(6,ammount: 4);
+  int stat2Modifier() => mod = ((value - 10) / 2).floor();
+  
+  BasicStat generate() {
+    final tosser = ThrowObject();
+    tosser.add(6, ammount: 4);
     tosser.DoRoll();
-    //print(tosser.tostr());
-    //print("------------------------------");
     tosser.strip(1);
-    //print(tosser.tostr());
-    //print("------------------------------");
     value = tosser.total();
-    Stat2Modifier();
+    stat2Modifier();
     return this;
   }
   
   // Конструктор базовой характеристики
-  BasicStat([int val=10]) {
+  BasicStat([int val = 10]) {
     value = val;          // Устанавливаем базовое значение
-    mod = Stat2Modifier(); // Рассчитываем модификатор
+    mod = stat2Modifier(); // Рассчитываем модификатор
   }
   
   @override
   void update(int effect, Set<MetaFlags> flags) {
     value += effect;                    // Изменяем значение характеристики
-    mod = Stat2Modifier();              // Пересчитываем модификатор
+    mod = stat2Modifier();              // Пересчитываем модификатор
     affectedby.add(Modifier(effect, flags)); // Добавляем модификатор в список
-    // TODO: Надо еще пересчитывать статы зависимые от базовых статов (навыки и т.д.)
   }
   
   @override
   void deletebyMeta(MetaFlags m) {
-    //print(affectedby.length);
-    if(affectedby.isEmpty){
-      return;
-    }
+    if (affectedby.isEmpty) return;
+    
     // Проходим по всем модификаторам
-    for (Modifier l in affectedby) {
+    for (Modifier l in List.from(affectedby)) {
       // Если модификатор имеет указанный мета-флаг
       if (l.metadata.MetaFlags_.contains(m)) {
         value -= l.value;          // Отменяем эффект модификатора 
-        mod = Stat2Modifier();          // Пересчитываем модификатор
-        affectedby.remove(l);           // Удаляем модификатор из списка
-        // TODO: Надо еще пересчитывать статы зависимые от базовых статов
+        mod = stat2Modifier();     // Пересчитываем модификатор
+        affectedby.remove(l);      // Удаляем модификатор из списка
       }
     }
   }
-  
 
-
-  @override
-  Set<String> menu=str2BasicStat().keys.toSet();
+  Set<String> get menu => str2BasicStat().keys.toSet();
   
-  @override
-  Set ret=str2BasicStat().values.toSet();
+  Set get ret => str2BasicStat().values.toSet();
   
   @override
-  String? pick(BuildContext bc) {
-
-    throw UnimplementedError();
+  Future<String?> pick(ModalService modalService) async {
+    final items = str2BasicStat();
+    return await modalService.showListPicker(items);
   }
   
   @override
-  Future<Set<String>> pickmany(BuildContext bc, [List<String>? initialSelections, int howmany = 2]) {
-    throw UnimplementedError();
+  Future<Set<String>> pickmany(
+    ModalService modalService, 
+    [List<String>? initialSelections, 
+    int howmany = 2,
+    Set<Skills>? includeSkills
+  ]) async {
+    final items = str2BasicStat();
+    final selectedKeys = await modalService.showMultiSelectListPicker(
+      items: items.keys.toSet(),
+      initialSelections: initialSelections,
+    );
+    return selectedKeys;
   }
- static Map<String,BasicStatNames> str2BasicStat(){
-  return {
-  "сила" :BasicStatNames.STR,  // Сила
-  "ловкость":BasicStatNames.DEX,  // Ловкость
-  "телосложение":BasicStatNames.CON,  // Телосложение
-  "интеллект":BasicStatNames.INT,  // Интеллект
-  "мудрость":BasicStatNames.WIS,  // Мудрость
-  "харизма":BasicStatNames.CHR   // Харизма
-};
-}
+  
+  static Map<String, BasicStatNames> str2BasicStat() {
+    return {
+      "сила": BasicStatNames.STR,
+      "ловкость": BasicStatNames.DEX,
+      "телосложение": BasicStatNames.CON,
+      "интеллект": BasicStatNames.INT,
+      "мудрость": BasicStatNames.WIS,
+      "харизма": BasicStatNames.CHR
+    };
+  }
 }
 
 // Класс для представления модификатора (изменения значения)
@@ -234,6 +385,8 @@ extension IntToBasicStat on int {
 final class Skill implements ProfBonusStat, Pickable {
   late BasicStatNames bs;  // Базовая характеристика, от которой зависит этот навык
   Meta metadata = Meta();   // Метаданные навыка
+  @override
+  int hasprofbounus = 0;   // Бонус владения навыком
 
   // Конструктор навыка
   Skill(String bsn, {Set<MetaFlags>? flags}) {
@@ -245,11 +398,11 @@ final class Skill implements ProfBonusStat, Pickable {
       case "интеллект": bs = BasicStatNames.INT;  
       case "мудрость": bs = BasicStatNames.WIS;
       case "харизма": bs = BasicStatNames.CHR;
-      default: bs =BasicStatNames.NULL;
+      default: bs = BasicStatNames.NULL;
     }
-    if(flags != null){
+    if (flags != null) {
       metadata.MetaFlags_ = flags;
-    } // Устанавливаем флаги метаданных
+    }
   }
   
   // Метод для добавления мета-флага к навыку
@@ -281,39 +434,32 @@ final class Skill implements ProfBonusStat, Pickable {
     };
   }
 
-
-
-
-
- static Map<Skills,StatNames> S2SN() {
+  static Map<Skills, StatNames> skillToStatName() {
     return {
-      Skills.Athletics:StatNames.Athletics,
-      Skills.Acrobatics:StatNames.Acrobatics,
-      Skills.Sleight_of_Hand:StatNames.Sleight_of_Hand,
-      Skills.Stealth:StatNames.Stealth,
-      Skills.Investigation:StatNames.Investigation,
-      Skills.History:StatNames.History,
-      Skills.Arcana:StatNames.Arcana,
-      Skills.Nature:StatNames.Nature,
-      Skills.Religion:StatNames.Religion,
-      Skills.Perception:StatNames.Perception,
-      Skills.Survival:StatNames.Survival,
-      Skills.Medicine:StatNames.Medicine,
-      Skills.Insight:StatNames.Insight,
-      Skills.Animal_Handling:StatNames.Animal_Handling,
-      Skills.Performance:StatNames.Performance,
-      Skills.Intimidation:StatNames.Intimidation,
-      Skills.Deception:StatNames.Deception,
-      Skills.Persuasion:StatNames.Persuasion  
+      Skills.Athletics: StatNames.Athletics,
+      Skills.Acrobatics: StatNames.Acrobatics,
+      Skills.Sleight_of_Hand: StatNames.Sleight_of_Hand,
+      Skills.Stealth: StatNames.Stealth,
+      Skills.Investigation: StatNames.Investigation,
+      Skills.History: StatNames.History,
+      Skills.Arcana: StatNames.Arcana,
+      Skills.Nature: StatNames.Nature,
+      Skills.Religion: StatNames.Religion,
+      Skills.Perception: StatNames.Perception,
+      Skills.Survival: StatNames.Survival,
+      Skills.Medicine: StatNames.Medicine,
+      Skills.Insight: StatNames.Insight,
+      Skills.Animal_Handling: StatNames.Animal_Handling,
+      Skills.Performance: StatNames.Performance,
+      Skills.Intimidation: StatNames.Intimidation,
+      Skills.Deception: StatNames.Deception,
+      Skills.Persuasion: StatNames.Persuasion  
     };
   }
 
-
-
-
   // Статический метод для удаления бонусов владения по мета-флагу
   static void deletebyMeta(Map<StatNames, Skill> skills, MetaFlags flag) {
-    for (Skill s in skills.values) {
+    for (final s in skills.values) {
       if (s.metadata.MetaFlags_.contains(flag)) {
         s.hasprofbounus -= 1;  // Уменьшаем бонус владения
         s.metadata.MetaFlags_.remove(MetaFlags.IS_PICKED_ON_CLASS);  // Удаляем флаг выбора на классе
@@ -322,59 +468,54 @@ final class Skill implements ProfBonusStat, Pickable {
     }
   }
 
-  @override
-  int hasprofbounus = 0;  // Бонус владения навыком
+  Set<String> get menu => string2skill().keys.toSet();
+  
+  Set get ret => string2skill().values.toSet();
   
   @override
-  Set<String> menu = string2skill().keys.toSet();  // Меню для выбора (русские названия)
-  
-  @override
-  Set ret = string2skill().values.toSet();  // Соответствующие enum значения
-  
-  @override
-  String? pick(BuildContext bc) {
-    throw UnimplementedError();
+  Future<String?> pick(ModalService modalService) async {
+    final items = string2skill();
+    return await modalService.showListPicker(items);
   }
-  
 
-@override
-  Future<Set<String>> pickmany(BuildContext bc, [List<String>? initialSelections, int? howmany = 2, Set? include]) async {
-  //print("RAN pickmany");
-  Map<String,Skills> t = string2skill();
-  
-  // Если указан набор для включения, фильтруем только эти элементы
-if (include != null) {
-  //print("Removed");
-  t.removeWhere((key, value) => !include.contains(value));
-  menu = t.keys.toSet();
-}
-  
-  Set<String> res = await ModalDispatcher.showMultiSelectListPicker(
-    context: bc, 
-    items: menu, 
-    initialSelections: initialSelections
-  );
-  
-
-  return res;
-}
+  @override
+  Future<Set<String>> pickmany(
+    ModalService modalService, 
+    [List<String>? initialSelections, 
+    int howmany = 2,
+    Set<Skills>? includeSkills
+  ]) async {
+    Map<String, Skills> availableSkills = string2skill();
+    
+    // Если указан набор для включения, фильтруем только эти элементы
+    if (includeSkills != null) {
+      availableSkills.removeWhere((key, value) => !includeSkills.contains(value));
+    }
+    
+    final selectedSkills = await modalService.showMultiSelectListPicker(
+      items: availableSkills.keys.toSet(),
+      initialSelections: initialSelections,
+    );
+    
+    return selectedSkills;
+  }
 }
 
 // Класс для представления здоровья персонажа
 class Health implements Updateable {
   int max_health = 0;      // Максимальное здоровье
   int current_health = 0;  // Текущее здоровье
-  DiceType? HitDice;       // Тип кости хитов (D6, D8, D10, D12)
+  DiceType? hitDice;       // Тип кости хитов (D6, D8, D10, D12)
   
   @override
-  List<Modifier> affectedby = [];  // Список модификаторов здоровья
+  final List<Modifier> affectedby = [];  // Список модификаторов здоровья
   
   @override
   void deletebyMeta(MetaFlags m) {
-    for (Modifier l in affectedby) {
+    for (Modifier l in List.from(affectedby)) {
       if (l.metadata.MetaFlags_.contains(m)) {
+        max_health -= l.value;          // Отменяем эффект модификатора
         affectedby.remove(l);           // Удаляем модификатор
-        max_health -= l.value;     // Отменяем эффект модификатора
       }
     }
   }
