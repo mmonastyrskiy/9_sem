@@ -1,10 +1,12 @@
 // inventory.dart
 
+// ignore_for_file: non_constant_identifier_names
+
 import 'meta.dart';
-import 'money.dart';
 import 'items/weapon.dart';
 import 'items/armor.dart';
 import 'items/item.dart';
+import 'package:hive/hive.dart';
 
 // Основной класс системы инвентаря
 class InventorySystem {
@@ -20,9 +22,7 @@ class InventorySystem {
   
   // Максимальная грузоподъемность (в фунтах)
   double maxWeight = 150.0;
-  
-  // Деньги персонажа
-  Price money = Price();
+
 
   // Получить общий вес инвентаря
   double get totalWeight {
@@ -457,6 +457,7 @@ extension FirstWhereOrNullExtension<E> on Iterable<E> {
 
 // Класс для создания тестовых предметов
 class ItemFactory {
+
   static AbstractWeapon createWeapon(WeaponType type, [Set<MetaFlags>? metadata]) {
     return AbstractWeapon(type, metadata);
   }
@@ -528,10 +529,36 @@ class ItemFactory {
     */
     
     // Стартовые деньги
-    inventory.money.gold = 10;
     
   return null;
   }
     return null;
   }
+}
+@HiveType(typeId: 2)
+class InventoryView{
+List<String> weapons = [];
+List<String> armor = [];
+List<String> items = [];
+
+String? eq_weapon = "";
+String? eq_armor = "";
+String? eq_shield = "";
+
+InventoryView();
+InventoryView.FromInventory(InventorySystem inventory){
+  for(var w in inventory.weapons){
+    weapons.add(w.name);
+  }
+
+    for(var a in inventory.armors){
+    armor.add(a.name);
+}
+    for(var i in inventory.miscItems){
+    items.add(i.name);
+}
+eq_armor = inventory.equippedArmor?.name;
+eq_weapon = inventory.equippedWeapon?.name;
+eq_shield = inventory.equippedShield?.name;
+}
 }

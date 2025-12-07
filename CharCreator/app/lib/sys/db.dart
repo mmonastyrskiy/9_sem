@@ -9,26 +9,26 @@ class HiveService {
     Hive.init(appDocumentDirectory.path);
     
     // Регистрируем все адаптеры
-    Hive.registerAdapter(CharacterAdapter());
+    Hive.registerAdapter(CharacterViewAdapter());
     // Добавьте другие адаптеры по мере создания
     
-    await Hive.openBox<Character>('characters');
+    await Hive.openBox<CharacterView>('characters');
   }
 }
 // В CharacterRepository добавьте:
 class CharacterRepository {
-  final Box<Character> box;
+  final Box<CharacterView> box;
 
   CharacterRepository(this.box);
 
   // Добавить нового персонажа
-  void addCharacter(Character character) {
+  void addCharacter(CharacterView character) {
     box.add(character); // Это добавит нового персонажа в конец списка
     //print("Персонаж добавлен ${character.name}");
   }
 
   // Обновить существующего персонажа
-void safeUpdate(String key, Character character) {
+void safeUpdate(String key, CharacterView character) {
     try {
       // Просто сохраняем персонажа - Hive сам разберется с индексами
       character.save(); // Если Character extends HiveObject
@@ -45,7 +45,7 @@ void safeUpdate(String key, Character character) {
     }
   }
   
-  void _fallbackSave(Character character) {
+  void _fallbackSave(CharacterView character) {
     try {
       // Альтернативный способ - всегда добавляем нового
       box.add(character);
@@ -58,7 +58,7 @@ void safeUpdate(String key, Character character) {
 
 
   // Получить всех персонажей
-  List<Character> getAllCharacters() {
+  List<CharacterView> getAllCharacters() {
     return box.values.toList();
   }
 }

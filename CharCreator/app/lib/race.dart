@@ -606,7 +606,7 @@ final class Undefined extends CharacterRace {
     ModalService modalService,
     Set<AbstractWeapon> canUseWeapon,
   ) async {
-    // Не применяем никаких изменений
+    // TODO
     return RaceApplicationResult(
       selectedLanguages: {},
       selectedSkills: {},

@@ -64,8 +64,59 @@ enum WeaponType {
   Musket,
   AutoPistol,
   Pistol,
-  Net
+  Net;
+
+    @override
+  String toString() {
+    return switch (this) {
+      WeaponType.SimpleWeapon => "Простое оружие",
+      WeaponType.MartialWearpon => "Воинское оружие",
+      WeaponType.LongSword => "Длинный меч",
+      WeaponType.ShortSword => "Короткий меч",
+      WeaponType.Rapier => "Рапира",
+      WeaponType.HandCrossBow => "Ручной арбалет",
+      WeaponType.Dagger => "Кинжал",
+      WeaponType.Dart => "Дротик",
+      WeaponType.Sling => "Праща",
+      WeaponType.CombatStaff => "Боевой посох",
+      WeaponType.LightCrossBow => "Лёгкий арбалет",
+      WeaponType.Mace => "Булава",
+      WeaponType.Club => "Дубина",
+      WeaponType.Javeline => "Метательное копьё",
+      WeaponType.Sickle => "Серп",
+      WeaponType.Scimitar => "Скимитар",
+      WeaponType.ShortBow => "Короткий лук",
+      WeaponType.LongBow => "Длинный лук",
+      WeaponType.Meele => "Оружие ближнего боя",
+      WeaponType.Distant => "Оружие дальнего боя",
+      WeaponType.Spear => "Копьё",
+      WeaponType.Hammer => "Молот",
+      WeaponType.Greatclub => "Большая дубина",
+      WeaponType.Handaxe => "Ручной топор",
+      WeaponType.Halberd => "Алебарда",
+      WeaponType.WarPick => "Боевая кирка",
+      WeaponType.Warhammer => "Боевой молот",
+      WeaponType.Battleaxe => "Боевой топор",
+      WeaponType.Glaive => "Глефа",
+      WeaponType.Greatsword => "Двуручный меч",
+      WeaponType.Lance => "Пика",
+      WeaponType.Whip => "Кнут",
+      WeaponType.Maul => "Молот",
+      WeaponType.Morningstar => "Моргенштерн",
+      WeaponType.Pike => "Пика",
+      WeaponType.Greataxe => "Двуручный топор",
+      WeaponType.Trident => "Трезубец",
+      WeaponType.Flail => "Цеп",
+      WeaponType.HeavyCrossBow => "Тяжёлый арбалет",
+      WeaponType.Blowgun => "Духовая трубка",
+      WeaponType.Musket => "Мушкет",
+      WeaponType.AutoPistol => "Автоматический пистолет",
+      WeaponType.Pistol => "Пистолет",
+      WeaponType.Net => "Сеть",
+    };
+  }
 }
+
 
 
 enum DamageType {

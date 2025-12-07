@@ -6,67 +6,65 @@ part of 'character.dart';
 // TypeAdapterGenerator
 // **************************************************************************
 
-class CharacterAdapter extends TypeAdapter<Character> {
+class CharacterViewAdapter extends TypeAdapter<CharacterView> {
   @override
-  final int typeId = 0;
+  final int typeId = 1;
 
   @override
-  Character read(BinaryReader reader) {
+  CharacterView read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Character()
+    return CharacterView()
       ..name = fields[1] as String
-      ..race = fields[2] as Race?
-      ..bg = fields[3] as Background?
-      ..class_ = fields[4] as CharClass?
-      ..STR = fields[5] as BasicStat
-      ..DEX = fields[6] as BasicStat
-      ..CON = fields[7] as BasicStat
-      ..INT = fields[8] as BasicStat
-      ..WIS = fields[9] as BasicStat
-      ..CHR = fields[10] as BasicStat
-      ..Acrobatics = fields[11] as Skill?
-      ..Animal_Handling = fields[12] as Skill?
-      ..Arcana = fields[13] as Skill?
-      ..Athletics = fields[14] as Skill?
-      ..Deception = fields[15] as Skill?
-      ..History = fields[16] as Skill?
-      ..Insight = fields[17] as Skill?
-      ..Intimidation = fields[18] as Skill?
-      ..Investigation = fields[19] as Skill?
-      ..Medicine = fields[20] as Skill?
-      ..Nature = fields[21] as Skill?
-      ..Perception = fields[22] as Skill?
-      ..Performance = fields[23] as Skill?
-      ..Persuasion = fields[24] as Skill?
-      ..Religion = fields[25] as Skill?
-      ..Sleight_of_Hand = fields[26] as Skill?
-      ..Stealth = fields[27] as Skill?
-      ..Survival = fields[28] as Skill?
-      ..ProfBonus = fields[29] as int
-      ..lvl = fields[30] as int
-      ..exp = fields[31] as int
-      ..PassiveInsight = fields[32] as int
-      ..InitiativeBonus = fields[33] as int
-      ..armor = fields[34] as int
-      ..tools = (fields[35] as Set).cast<ToolSkill>()
-      ..langs = (fields[36] as Set).cast<Langs>()
-      ..health = fields[37] as Health
-      ..CanUseArmor = (fields[38] as Set).cast<AbstractArmor>()
-      ..canUseWeapon = (fields[39] as Set).cast<AbstractWeapon>()
-      ..wallet = fields[40] as Money
-      ..inventory = fields[41] as InventorySystem
-      ..size = fields[42] as Size?
-      ..speed = fields[43] as int?
-      ..PortraitURL = fields[44] as String;
+      ..race = fields[2] as String
+      ..bg = fields[3] as String
+      ..class_ = fields[4] as String
+      ..STR = fields[5] as String
+      ..DEX = fields[6] as String
+      ..CON = fields[7] as String
+      ..INT = fields[8] as String
+      ..WIS = fields[9] as String
+      ..CHR = fields[10] as String
+      ..Acrobatics = fields[11] as String
+      ..Animal_Handling = fields[12] as String
+      ..Arcana = fields[13] as String
+      ..Athletics = fields[14] as String
+      ..Deception = fields[15] as String
+      ..History = fields[16] as String
+      ..Insight = fields[17] as String
+      ..Intimidation = fields[18] as String
+      ..Investigation = fields[19] as String
+      ..Medicine = fields[20] as String
+      ..Nature = fields[21] as String
+      ..Perception = fields[22] as String
+      ..Performance = fields[23] as String
+      ..Persuasion = fields[24] as String
+      ..Religion = fields[25] as String
+      ..Sleight_of_Hand = fields[26] as String
+      ..Stealth = fields[27] as String
+      ..ProfBonus = fields[28] as int
+      ..lvl = fields[29] as int
+      ..exp = fields[30] as int
+      ..PassiveInsight = fields[31] as int?
+      ..InitiativeBonus = fields[32] as int?
+      ..armor = fields[33] as int?
+      ..tools = (fields[34] as List).cast<String>()
+      ..langs = (fields[35] as List).cast<String>()
+      ..health = fields[36] as String
+      ..usearmor = (fields[37] as List).cast<String>()
+      ..useweapon = (fields[38] as List).cast<String>()
+      ..copperMoney = fields[39] as int
+      ..size = fields[40] as String
+      ..speed = fields[41] as int
+      ..PortraitURL = fields[42] as String;
   }
 
   @override
-  void write(BinaryWriter writer, Character obj) {
+  void write(BinaryWriter writer, CharacterView obj) {
     writer
-      ..writeByte(44)
+      ..writeByte(42)
       ..writeByte(1)
       ..write(obj.name)
       ..writeByte(2)
@@ -122,38 +120,34 @@ class CharacterAdapter extends TypeAdapter<Character> {
       ..writeByte(27)
       ..write(obj.Stealth)
       ..writeByte(28)
-      ..write(obj.Survival)
-      ..writeByte(29)
       ..write(obj.ProfBonus)
-      ..writeByte(30)
+      ..writeByte(29)
       ..write(obj.lvl)
-      ..writeByte(31)
+      ..writeByte(30)
       ..write(obj.exp)
-      ..writeByte(32)
+      ..writeByte(31)
       ..write(obj.PassiveInsight)
-      ..writeByte(33)
+      ..writeByte(32)
       ..write(obj.InitiativeBonus)
-      ..writeByte(34)
+      ..writeByte(33)
       ..write(obj.armor)
+      ..writeByte(34)
+      ..write(obj.tools)
       ..writeByte(35)
-      ..write(obj.tools.toList())
+      ..write(obj.langs)
       ..writeByte(36)
-      ..write(obj.langs.toList())
-      ..writeByte(37)
       ..write(obj.health)
+      ..writeByte(37)
+      ..write(obj.usearmor)
       ..writeByte(38)
-      ..write(obj.CanUseArmor.toList())
+      ..write(obj.useweapon)
       ..writeByte(39)
-      ..write(obj.canUseWeapon.toList())
+      ..write(obj.copperMoney)
       ..writeByte(40)
-      ..write(obj.wallet)
-      ..writeByte(41)
-      ..write(obj.inventory)
-      ..writeByte(42)
       ..write(obj.size)
-      ..writeByte(43)
+      ..writeByte(41)
       ..write(obj.speed)
-      ..writeByte(44)
+      ..writeByte(42)
       ..write(obj.PortraitURL);
   }
 
@@ -163,7 +157,7 @@ class CharacterAdapter extends TypeAdapter<Character> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is CharacterAdapter &&
+      other is CharacterViewAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

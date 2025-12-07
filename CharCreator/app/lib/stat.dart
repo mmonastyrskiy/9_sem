@@ -282,7 +282,6 @@ class BasicStat implements Stat, Updateable, Pickable {
   late int value;        // Базовое значение характеристики (например, 15 для силы)
   int mod = 0;           // Модификатор характеристики (рассчитывается из value)
   int savingthrow = 0;   // Бонус спасброска (0 - нет, 1 - есть)
-  int savingthrowvalue = 0;
   
   @override
   final List<Modifier> affectedby = [];  // Список модификаторов, влияющих на эту характеристику
@@ -299,7 +298,10 @@ class BasicStat implements Stat, Updateable, Pickable {
     stat2Modifier();
     return this;
   }
-  
+
+  String Str (String statname){
+    return "$statname:$value:$savingthrow";
+  }
   // Конструктор базовой характеристики
   BasicStat([int val = 10]) {
     value = val;          // Устанавливаем базовое значение
@@ -374,6 +376,10 @@ class Modifier {
   Modifier(this.value, Set<MetaFlags> flags) {
     metadata.MetaFlags_ = flags;  // Устанавливаем флаги метаданных
   }
+  @override
+  String toString(){
+    return "$value:${metadata.ToInt().toString()}";
+  }
 }
 
 // Extension для удобного преобразования int в BasicStat
@@ -388,6 +394,9 @@ final class Skill implements ProfBonusStat, Pickable {
   @override
   int hasprofbounus = 0;   // Бонус владения навыком
 
+  String Str(String statname){
+    return "$statname:${metadata.ToInt().toString()}:${hasprofbounus.toString()}";
+  }
   // Конструктор навыка
   Skill(String bsn, {Set<MetaFlags>? flags}) {
     // Определяем базовую характеристику based на переданной строке
@@ -511,6 +520,13 @@ class Health implements Updateable {
   final List<Modifier> affectedby = [];  // Список модификаторов здоровья
   
   @override
+  String toString(){
+  var str = "$max_health:$current_health:${hitDice?.displayName}:${affectedby.map((data){
+    return data.toString();
+  })}";
+  return str;
+  }
+  @override
   void deletebyMeta(MetaFlags m) {
     for (Modifier l in List.from(affectedby)) {
       if (l.metadata.MetaFlags_.contains(m)) {
@@ -545,5 +561,14 @@ enum MindSets {
 enum Size {
   SMALL,   // Маленький (гномы, полурослики)
   MEDIUM,  // Средний (люди, эльфы, дварфы)
-  LARGE    // Большой (огры, великаны)
+  LARGE;    // Большой (огры, великаны)
+  
+  @override
+  String toString() {
+    return switch (this) {
+      Size.SMALL => "Маленький",
+      Size.MEDIUM => "Средний",
+      Size.LARGE => "Большой",
+    };
+  }
 }

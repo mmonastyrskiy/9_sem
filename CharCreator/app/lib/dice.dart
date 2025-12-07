@@ -5,6 +5,24 @@ import 'dart:math';
 // Перечисление типов игральных костей
 enum DiceType  {
 D4,D6,D10,D12,D100,D8,D20,DN,None
+
+}
+
+
+extension DiceTypeExtension on DiceType {
+  String get displayName {
+    switch (this) {
+      case DiceType.D4: return "d4";
+      case DiceType.D6: return "d6";
+      case DiceType.D8: return "d8";
+      case DiceType.D10: return "d10";
+      case DiceType.D12: return "d12";
+      case DiceType.D20: return "d20";
+      case DiceType.D100: return "d100";
+      case DiceType.DN: return "dn";
+      case DiceType.None: return "none";
+    }
+  }
 }
 
 // Класс для хранения результата броска кости
@@ -13,6 +31,7 @@ class DieResult
   DiceType? type;    // Тип кости
   int result=0;      // Результат броска
   
+
   // Преобразует количество граней в тип кости
   DiceType dim2type (int dt){
 

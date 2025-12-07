@@ -25,7 +25,29 @@ enum ArmorType {
   RingMailArmor,
   ChainMail,
   SplintArmor,
-  PlateArmor
+  PlateArmor;
+
+    String get displayName => switch (this) {
+    ArmorType.Light => "Легкая броня",
+    ArmorType.Medium => "Средняя броня",
+    ArmorType.Heavy => "Тяжелая броня",
+    ArmorType.Shield => "Щит",
+    ArmorType.PaddedArmor => "Стеганая броня",
+    ArmorType.LeatherArmor => "Кожаная броня",
+    ArmorType.StuddedLeatherArmor => "Кожаная броня с заклепками",
+    ArmorType.HideArmor => "Броня из шкур",
+    ArmorType.ChainShirt => "Кольчужная рубаха",
+    ArmorType.ScaleMailArmor => "Чешуйчатый доспех",
+    ArmorType.Breastplate => "Кираса",
+    ArmorType.HalfPlateArmor => "Полулаты",
+    ArmorType.RingMailArmor => "Кольчатый доспех",
+    ArmorType.ChainMail => "Кольчуга",
+    ArmorType.SplintArmor => "Пластинчатый доспех",
+    ArmorType.PlateArmor => "Латный доспех",
+  };
+  
+  @override
+  String toString() => displayName;
 }
 
 enum ArmorProperty {

@@ -10,12 +10,14 @@ import 'items/armor.dart';
 import 'items/weapon.dart';
 import 'package:provider/provider.dart';
 import 'ui/modal_service.dart';
+//import 'inventory.dart';
 
 void main() async {
    WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  Hive.registerAdapter(CharacterAdapter());
-  await Hive.openBox<Character>('characters');
+  Hive.registerAdapter(CharacterViewAdapter());
+  //Hive.registerAdapter(InventoryAdapter());
+  await Hive.openBox<CharacterView>('characters');
   HiveService.init();
   
   runApp(const MyApp());
@@ -95,7 +97,7 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> with SingleT
   late Character c;
   late CharacterRepository characterRepository;
   late TabController _tabController;
-  late Box<Character> charactersBox;
+  late Box<CharacterView> charactersBox;
   bool _characterLoaded = false;
 
 
@@ -103,7 +105,7 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> with SingleT
   @override
   void initState() {
     super.initState();
-    charactersBox = Hive.box<Character>('characters');
+    charactersBox = Hive.box<CharacterView>('characters');
     characterRepository = CharacterRepository(charactersBox);
     _tabController = TabController(length: 4, vsync: this);
   }
@@ -119,7 +121,7 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> with SingleT
     final modalService = Provider.of<ModalService>(context, listen: false);
     
     if (charactersBox.isNotEmpty) {
-      c = charactersBox.getAt(0)!;
+      c.FromView(charactersBox.getAt(0)!);
     } else {
       // Create new character with ModalService
       c = Character.withContext(modalService);
@@ -142,7 +144,7 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> with SingleT
   // Метод для сохранения без UI уведомлений
   void _saveCharacterSilently() {
     try {
-      characterRepository.safeUpdate(c.name, c);
+      characterRepository.safeUpdate(c.name, c.ToView());
     } catch (e) {
       if (kDebugMode) {
         print('Ошибка сохранения: $e');
@@ -155,7 +157,7 @@ void _saveCharacter() {
     if (!mounted) return;
     
     try {
-      characterRepository.safeUpdate(c.name, c);
+      characterRepository.safeUpdate(c.name, c.ToView());
       _showSnackBar(
         'Персонаж "${c.name}" сохранен',
         Colors.green,
@@ -187,7 +189,7 @@ void _saveCharacter() {
   void _loadCharacter(int index) {
     if (index < charactersBox.length) {
       setState(() {
-        c = charactersBox.getAt(index)!;
+        c.FromView(charactersBox.getAt(index)!);
       });
       _showSnackBar(
         'Загружен персонаж "${c.name}"',
@@ -811,9 +813,9 @@ CharacteristicsHeader(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _buildCurrencyItem('ЗМ', c.inventory.money.gold, isDarkMode ? Colors.amber : Colors.orange, isDarkMode),
-                          _buildCurrencyItem('СМ', c.inventory.money.silver, Colors.grey, isDarkMode),
-                          _buildCurrencyItem('ММ', c.inventory.money.copper, isDarkMode ? Colors.orange : Colors.brown, isDarkMode),
+                          _buildCurrencyItem('ЗМ', c.wallet.gold, isDarkMode ? Colors.amber : Colors.orange, isDarkMode),
+                          _buildCurrencyItem('СМ', c.wallet.silver, Colors.grey, isDarkMode),
+                          _buildCurrencyItem('ММ', c.wallet.copper, isDarkMode ? Colors.orange : Colors.brown, isDarkMode),
                         ],
                       ),
                     ),
@@ -1825,7 +1827,7 @@ CharacteristicsHeader(
 
 // Диалог для управления персонажами
 class CharactersManagementDialog extends StatefulWidget {
-  final Box<Character> charactersBox;
+  final Box<CharacterView> charactersBox;
   final Function(int) onCharacterSelected;
   final VoidCallback onCreateNewCharacter;
   final bool isDarkMode;
@@ -1959,7 +1961,7 @@ class _CharactersManagementDialogState extends State<CharactersManagementDialog>
               ),
             ),
             subtitle: Text(
-              '${character?.currentclass()} • ${character?.currentRace()} • Ур. ${character?.lvl}',
+              '${character?.class_} • ${character?.race} • Ур. ${character?.lvl}',
               style: TextStyle(color: Colors.grey.shade600),
             ),
             trailing: Row(

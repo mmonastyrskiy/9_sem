@@ -10,16 +10,16 @@ import 'armor.dart';
 
 // Абстрактный интерфейс для представления любого предмета в игре
 abstract interface class Item {
+  String name = "";
   // Базовый интерфейс, который могут реализовывать все предметы
   // Не содержит методов, служит только для маркировки объектов как предметов
 }
 
 // Абстрактный интерфейс для предметов, которые можно продавать/покупать
-abstract interface class SellableItem {
+abstract interface class SellableItem  implements Item{
   // Цена предмета - используется для торговли и экономики
   Price price = Price();
   double weight = 0;
-  String name = "";
   int qty=1;
 }
 
@@ -53,6 +53,10 @@ class AbstractArmor implements Item {
     // Устанавливаем метаданные (если переданы) или оставляем пустыми
     this.metadata.MetaFlags_ = metadata!;
   }
+  @override
+  String toString(){
+    return "${type.toString()}:${metadata.ToInt().toString()}";
+  }
 
   // Статический метод для удаления брони из набора по определенному мета-флагу
   // Аргументы:
@@ -65,6 +69,9 @@ class AbstractArmor implements Item {
     }
     armor.removeWhere((val)=>  val.metadata.MetaFlags_.contains(m));
   }
+
+  @override
+  String name="";
 }
 
 // Класс, представляющий оружие в игре
@@ -74,6 +81,10 @@ class AbstractWeapon implements Item {
   // Метаданные оружия - флаги для отслеживания статуса и происхождения
   Meta metadata = Meta();
 
+@override
+  String toString(){
+  return "${type.toString()}:${metadata.ToInt().toString()}";
+}
   // Конструктор оружия
   // Аргументы:
   // - weapon: тип создаваемого оружия
@@ -96,6 +107,9 @@ class AbstractWeapon implements Item {
     // Проходим по всем элементам оружия в наборе
     weapon.removeWhere((val)=> val.metadata.MetaFlags_.contains(m));
   }
+
+  @override
+  String name="";
 }
 
 mixin DefaultQty implements SellableItem{
