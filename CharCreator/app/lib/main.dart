@@ -13,14 +13,36 @@ import 'ui/modal_service.dart';
 //import 'inventory.dart';
 
 void main() async {
-   WidgetsFlutterBinding.ensureInitialized();
-  await Hive.initFlutter();
-  Hive.registerAdapter(CharacterViewAdapter());
-  //Hive.registerAdapter(InventoryAdapter());
-  await Hive.openBox<CharacterView>('characters');
-  HiveService.init();
+  WidgetsFlutterBinding.ensureInitialized();
   
-  runApp(const MyApp());
+  try {
+    await Hive.initFlutter();
+    Hive.registerAdapter(CharacterViewAdapter());
+    //Hive.registerAdapter(InventoryAdapter());
+    
+    // Try to open box with error handling
+    try {
+      await Hive.openBox<CharacterView>('characters');
+    } catch (e) {
+      print('Error opening box, deleting corrupted data: $e');
+      //await Hive.deleteBoxFromDisk('characters');
+      await Hive.openBox<CharacterView>('characters');
+    }
+    
+    runApp(const MyApp());
+  } catch (e) {
+    print('Fatal error initializing app: $e');
+    // Handle error gracefully
+    runApp(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Text('Error initializing app: $e'),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class MyApp extends StatefulWidget {
@@ -100,39 +122,48 @@ class CharacterSheetScreenState extends State<CharacterSheetScreen> with SingleT
   late Box<CharacterView> charactersBox;
   bool _characterLoaded = false;
 
-
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
   @override
   void initState() {
     super.initState();
     charactersBox = Hive.box<CharacterView>('characters');
     characterRepository = CharacterRepository(charactersBox);
     _tabController = TabController(length: 4, vsync: this);
+    
+    // Initialize character here
+    _initializeCharacter();
   }
 
-  @override
-  void didChangeDependencies() {
-  super.didChangeDependencies();
-  
-  if (!_characterLoaded) {
-    _characterLoaded = true;
-    
-    // Get ModalService from Provider
+  void _initializeCharacter() {
     final modalService = Provider.of<ModalService>(context, listen: false);
     
-    if (charactersBox.isNotEmpty) {
-      c.FromView(charactersBox.getAt(0)!);
+    if (charactersBox.isNotEmpty ) {
+      // Create character first, then load data
+      c = Character.withContext(modalService);
+      //c.FromView(charactersBox.getAt(0)!, modalService);
     } else {
-      // Create new character with ModalService
+      // Create new character
       c = Character.withContext(modalService);
       
-      // Сохраняем без показа SnackBar при создании
+      // Save without showing SnackBar
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _saveCharacterSilently();
       });
     }
+    
+    _characterLoaded = true;
   }
-}
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Only initialize if not already loaded
+    if (!_characterLoaded && mounted) {
+      _initializeCharacter();
+    }
+  }
 
   @override
   void dispose() {
@@ -187,9 +218,11 @@ void _saveCharacter() {
 
   // Метод для загрузки персонажа
   void _loadCharacter(int index) {
+    print("Load Char");
+     final modalService = Provider.of<ModalService>(context, listen: false);
     if (index < charactersBox.length) {
       setState(() {
-        c.FromView(charactersBox.getAt(index)!);
+        c.FromView(charactersBox.getAt(index)!,modalService);
       });
       _showSnackBar(
         'Загружен персонаж "${c.name}"',

@@ -397,6 +397,29 @@ final class Skill implements ProfBonusStat, Pickable {
   String Str(String statname){
     return "$statname:${metadata.ToInt().toString()}:${hasprofbounus.toString()}";
   }
+
+  static Skill FromStr(String str) {
+    final parts = str.split(':');
+    if (parts.length != 3) {
+      throw FormatException('Некорректный формат строки для Skill: $str');
+    }
+
+    final statname = parts[0];
+    final metaValue = int.tryParse(parts[1]);
+    final profBonus = int.tryParse(parts[2]);
+
+    if (metaValue == null || profBonus == null) {
+      throw FormatException('Некорректные числовые значения в строке: $str');
+    }
+
+    // Создаем объект Skill
+    final skill = Skill(statname)
+      ..bs = BasicStatNames.CHR // FIXME: THIS IS JUST FOR TEST
+      ..metadata.MetaFlags_ = Meta.FromInt(metaValue)
+      ..hasprofbounus = profBonus;
+
+    return skill;
+  }
   // Конструктор навыка
   Skill(String bsn, {Set<MetaFlags>? flags}) {
     // Определяем базовую характеристику based на переданной строке

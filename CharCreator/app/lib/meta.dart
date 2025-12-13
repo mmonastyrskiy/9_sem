@@ -33,6 +33,32 @@ class Meta {
     
     return result;
   }
+
+   // Преобразование целого числа в набор флагов
+  static Set<MetaFlags> FromInt(int value) {
+    final result = <MetaFlags>{};
+    
+    // Проходим по всем значениям перечисления MetaFlags
+    for (var flag in MetaFlags.values) {
+      // Проверяем, установлен ли соответствующий бит в значении
+      if ((value & flag.value) != 0) {
+        result.add(flag);
+      }
+    }
+    
+    return result;
+  }
+
+  // Альтернативный метод для установки флагов из целого числа (нестатический)
+  void FromIntInstance(int value) {
+    MetaFlags_.clear();
+    
+    for (var flag in MetaFlags.values) {
+      if ((value & flag.value) != 0) {
+        MetaFlags_.add(flag);
+      }
+    }
+  }
   
   // Конструктор по умолчанию создает объект с пустым набором флагов
   // Дополнительные методы могут быть добавлены для работы с флагами:

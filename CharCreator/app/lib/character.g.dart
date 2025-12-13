@@ -44,6 +44,7 @@ class CharacterViewAdapter extends TypeAdapter<CharacterView> {
       ..Religion = fields[25] as String
       ..Sleight_of_Hand = fields[26] as String
       ..Stealth = fields[27] as String
+      ..Survaival = fields[43] as String
       ..ProfBonus = fields[28] as int
       ..lvl = fields[29] as int
       ..exp = fields[30] as int
@@ -64,7 +65,7 @@ class CharacterViewAdapter extends TypeAdapter<CharacterView> {
   @override
   void write(BinaryWriter writer, CharacterView obj) {
     writer
-      ..writeByte(42)
+      ..writeByte(43)
       ..writeByte(1)
       ..write(obj.name)
       ..writeByte(2)
@@ -119,6 +120,8 @@ class CharacterViewAdapter extends TypeAdapter<CharacterView> {
       ..write(obj.Sleight_of_Hand)
       ..writeByte(27)
       ..write(obj.Stealth)
+      ..writeByte(43)
+      ..write(obj.Survaival)
       ..writeByte(28)
       ..write(obj.ProfBonus)
       ..writeByte(29)

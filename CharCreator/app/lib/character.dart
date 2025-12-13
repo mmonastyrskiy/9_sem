@@ -1,5 +1,9 @@
 // ignore_for_file: non_constant_identifier_names
 
+import 'package:flutter_application_1/items/armor.dart';
+import 'package:flutter_application_1/items/weapon.dart';
+import 'package:flutter_application_1/meta.dart';
+
 import 'background.dart';
 import 'stat.dart';
 import 'tool.dart';
@@ -305,8 +309,8 @@ CharacterView ToView(){
 
 
 }
-void FromView(CharacterView v){
-  v.unpack(this);
+void FromView(CharacterView v,ModalService service){
+  v.unpack(this,service);
 }
 }
 @HiveType(typeId: 1) 
@@ -391,6 +395,9 @@ class CharacterView extends HiveObject {
   
   @HiveField(27)
   String Stealth = "";
+
+  @HiveField(43)
+  String Survaival = "";
   
    @HiveField(28)
   int ProfBonus = 2;
@@ -458,12 +465,13 @@ CharacterView();
     Religion = c.Religion?.Str("Религия") ?? "";
     Sleight_of_Hand = c.Sleight_of_Hand?.Str("Ловкость рук") ?? "";
     Stealth = c.Stealth?.Str("Скрытность") ?? "";
+    Survaival = c.Survival?.Str("Выживание")??"";
 
   ProfBonus = c.ProfBonus;
   lvl = c.lvl;
   exp = c.exp;
   PassiveInsight = c.PassiveInsight;
-  InitiativeBonus = InitiativeBonus;
+  InitiativeBonus = c.InitiativeBonus;
   armor=c.armor;
   StringifyTools(c.tools, tools);
   StringifyLangs(c.langs, langs);
@@ -477,11 +485,11 @@ CharacterView();
 
 
   }
-  void unpack(Character c){
+  void unpack(Character c,ModalService modalService){
     c.name = name;
     c.race = Race.create(race, c);
     c.class_ = CharClass.create(class_, c);
-    // TODO: BACKGROUND
+    c.bg = Background.withContext(bg, c, modalService);
 
     c.STR = BasicStat(int.parse(STR.split(":")[1]));
     c.STR.stat2Modifier();
@@ -496,31 +504,221 @@ CharacterView();
       c.DEX.savingthrow = 1;
     }
     
-    
+    c.CON = BasicStat(int.parse(CON.split(":")[1]));
+    c.CON.stat2Modifier();
+    if(int.parse(CON.split(":")[2]) >=1){
+      c.CON.savingthrow = 1;
+    }
+    c.INT = BasicStat(int.parse(INT.split(":")[1]));
+    c.INT.stat2Modifier();
+    if(int.parse(INT.split(":")[2]) >=1){
+      c.INT.savingthrow = 1;
+    }
 
+    c.WIS = BasicStat(int.parse(WIS.split(":")[1]));
+    c.WIS.stat2Modifier();
+    if(int.parse(WIS.split(":")[2]) >=1){
+      c.WIS.savingthrow = 1;
+    }    
+
+c.CHR = BasicStat(int.parse(CHR.split(":")[1]));
+    c.CHR.stat2Modifier();
+    if(int.parse(CHR.split(":")[2]) >=1){
+      c.CHR.savingthrow = 1;
+    }
+
+c.Acrobatics = Skill.FromStr(Acrobatics);
+c.Animal_Handling = Skill.FromStr(Animal_Handling);
+c.Arcana = Skill.FromStr(Arcana);
+c.Athletics = Skill.FromStr(Athletics);
+c.Deception = Skill.FromStr(Deception);
+c.History = Skill.FromStr(History);
+c.Insight = Skill.FromStr(Insight);
+c.Intimidation = Skill.FromStr(Intimidation);
+c.Investigation = Skill.FromStr(Investigation);
+c.Medicine = Skill.FromStr(Medicine);
+c.Nature = Skill.FromStr(Nature);
+c.Perception = Skill.FromStr(Perception);
+c.Performance = Skill.FromStr(Performance);
+c.Persuasion = Skill.FromStr(Persuasion);
+c.Religion = Skill.FromStr(Religion);
+c.Sleight_of_Hand = Skill.FromStr(Sleight_of_Hand);
+c.Stealth = Skill.FromStr(Stealth);
+c.Survival = Skill.FromStr(Survaival);
+c.ProfBonus = ProfBonus;
+c.lvl = lvl;
+c.exp = exp;
+
+
+c.PassiveInsight = PassiveInsight!;
+c.InitiativeBonus = InitiativeBonus!;
+c.armor=armor!;
+c.speed = speed;
+c.PortraitURL = PortraitURL;
+
+UnstringifyTools(tools,c.tools,modalService);
+UnstringifyLangs(langs, c.langs, modalService);
+UnstringifyArmor(usearmor, c.CanUseArmor);
+UnstringifyWeapon(useweapon, c.canUseWeapon);
 
   }
 
 void StringifyTools(Set<ToolSkill> p,List<String> target){
   for (var data in p){
-    target.add("${data.displayName}:${data.metadata.ToInt()}");
+    target.add("${data.displayName}:${data.metadata.ToInt()}, ");
+  }
+}
+void UnstringifyTools(List<String> source, Set<ToolSkill> target,ModalService modalService) {
+  target.clear(); // Очищаем целевой набор перед загрузкой
+  
+  for (var str in source) {
+    try {
+      // Убираем возможные пробелы и запятую в конце
+      var cleanStr = str.trim();
+      if (cleanStr.endsWith(',')) {
+        cleanStr = cleanStr.substring(0, cleanStr.length - 1);
+      }
+      
+      // Разделяем на displayName и метаданные
+      final parts = cleanStr.split(':');
+      if (parts.length != 2) {
+        continue;
+      }
+      
+      final displayName = parts[0];
+      final metaValue = int.tryParse(parts[1]);
+      
+      if (metaValue == null) {
+        continue;
+      }
+      
+      // Создаем объект ToolSkill и восстанавливаем метаданные
+      final toolSkill = ToolSkill(displayName, modalService);
+      toolSkill.metadata.MetaFlags_ = Meta.FromInt(metaValue);
+      
+      target.add(toolSkill);
+      
+    } catch (e) {
+    }
+  }
+}
+
+
+void UnstringifyLangs(List<String> source, Set<Langs> target,ModalService modalService) {
+  target.clear(); // Очищаем целевой набор перед загрузкой
+  
+  for (var str in source) {
+    try {
+      // Убираем возможные пробелы и запятую в конце
+      var cleanStr = str.trim();
+      if (cleanStr.endsWith(', ')) {
+        cleanStr = cleanStr.substring(0, cleanStr.length - 2);
+      } else if (cleanStr.endsWith(',')) {
+        cleanStr = cleanStr.substring(0, cleanStr.length - 1);
+      }
+      
+      // Разделяем на displayName и метаданные
+      final parts = cleanStr.split(':');
+      if (parts.length != 2) {
+        continue;
+      }
+      
+      final displayName = parts[0];
+      final metaValue = int.tryParse(parts[1]);
+      
+      if (metaValue == null) {
+        continue;
+      }
+      
+      // Создаем объект Langs и восстанавливаем метаданные
+      final lang = Langs(displayName)
+        ..metadata.MetaFlags_ = Meta.FromInt(metaValue);
+      
+      target.add(lang);
+      
+    } catch (e) {
+    }
   }
 }
 
 void StringifyLangs(Set<Langs> p,List<String> target){
   for (var data in p){
-    target.add("${data.displayName}:${data.metadata.ToInt()}");
+    target.add("${data.displayName}:${data.metadata.ToInt()}, ");
   }
 }
 void StringifyArmor(Set<AbstractArmor> p,List<String> target){
 for(var data in p){
   target.add(data.toString());
+  target.add(",");
 }
+}
+void UnstringifyArmor(List<String> source, Set<AbstractArmor> target) {
+  target.clear(); // Очищаем целевой набор перед загрузкой
+  
+  // Объединяем все строки в одну и разбиваем по запятым
+  String combined = source.join('');
+  List<String> items = combined.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+  
+  for (var displayName in items) {
+    try {
+      // Находим ArmorType по displayName
+      ArmorType? armorType;
+      
+      // Ищем вручную по всем значениям перечисления
+      for (var type in ArmorType.values) {
+        if (type.displayName == displayName) {
+          armorType = type;
+          break;
+        }
+      }
+      
+      if (armorType == null) {
+        continue;
+      }
+      var a = AbstractArmor(armorType);
+      
+      target.add(a);
+      
+    } catch (e) {
+    }
+  }
 }
 
 void StringifyAWeapon(Set<AbstractWeapon> p,List<String> target){
 for(var data in p){
   target.add(data.toString());
+   target.add(",");
 }
+}
+void UnstringifyWeapon(List<String> source, Set<AbstractWeapon> target) {
+  target.clear(); // Очищаем целевой набор перед загрузкой
+  
+  // Объединяем все строки в одну и разбиваем по запятым
+  String combined = source.join('');
+  List<String> items = combined.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+  
+  for (var displayName in items) {
+    try {
+      // Находим ArmorType по displayName
+      WeaponType? wt;
+      
+      // Ищем вручную по всем значениям перечисления
+      for (var type in WeaponType.values) {
+        if (type.toString() == displayName) {
+          wt = type;
+          break;
+        }
+      }
+      
+      if (wt == null) {
+        continue;
+      }
+      var a = AbstractWeapon(wt);
+      
+      target.add(a);
+      
+    } catch (e) {
+    }
+  }
 }
 }
